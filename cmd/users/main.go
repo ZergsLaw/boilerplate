@@ -185,12 +185,17 @@ func setFlagsDB(cmd *cobra.Command) {
 }
 
 func setFlagsRestServer(cmd *cobra.Command) {
+	host, err := os.Hostname()
+	if err != nil {
+		log.Fatal(fmt.Errorf("get hostname: %w", err))
+	}
+
 	cmd.Flags().StringVar(&cfg.rest.jwtKey, "jwt-key", config.Env("JWT_KEY"), "jwt key for hashing auth")
-	cmd.Flags().StringVar(&cfg.rest.host, "rest-host", config.EnvOrDef("SERVER_HOST", ServerHost), "rest host")
+	cmd.Flags().StringVar(&cfg.rest.host, "rest-host", config.EnvOrDef("SERVER_HOST", host), "rest host")
 	cmd.Flags().IntVar(&cfg.rest.port, "rest-port", config.IntEnvOrDef("SERVER_PORT", ServerPort), "rest port")
 	cmd.Flags().StringVar(&cfg.rest.migrate, "migrate", config.Env("MIGRATE"), "goose migrate when you start the rest")
 
-	err := cmd.MarkFlagRequired("jwt-key")
+	err = cmd.MarkFlagRequired("jwt-key")
 	if err != nil {
 		log.Fatal(fmt.Errorf("mark required flag: %w", err))
 	}
