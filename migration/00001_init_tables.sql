@@ -39,4 +39,5 @@ create table notifications
 -- +goose Down
 -- SQL in this section is executed when the migration is rolled back.
 drop table sessions;
+drop table notifications;
 drop table users;

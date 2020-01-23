@@ -5,20 +5,22 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/zergslaw/users/internal/api/rest/generated/models"
 	"github.com/zergslaw/users/internal/api/rest/generated/restapi/operations"
+	"github.com/zergslaw/users/internal/log"
+	"net/http"
 )
 
 //go:generate genny -in=$GOFILE -out=gen-$GOFILE gen "CreateUser=Login,Logout,VerificationEmail,VerificationUsername,GetUser,DeleteUser,UpdatePassword,UpdateUsername,UpdateEmail,GetUsers"
 
 //nolint:dupl,goconst
-func errCreateUser(log logrus.FieldLogger, err error, code int) operations.CreateUserResponder { //nolint:deadcode,unused
-	if code < 500 {
-		log.WithFields(logrus.Fields{LogHTTPStatus: code, LogError: "client"}).Info(err)
+func errCreateUser(logger logrus.FieldLogger, err error, code int) operations.CreateUserResponder { //nolint:deadcode,unused
+	if code < http.StatusInternalServerError {
+		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "client"}).Info(err)
 	} else {
-		log.WithFields(logrus.Fields{LogHTTPStatus: code, LogError: "server"}).Warn(err)
+		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "server"}).Warn(err)
 	}
 
 	msg := err.Error()
-	if code == 500 { // Do no expose details about internal errors.
+	if code == http.StatusInternalServerError { // Do no expose details about internal errors.
 		msg = "internal error"
 	}
 

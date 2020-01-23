@@ -5,22 +5,25 @@
 package rest
 
 import (
+	"net/http"
+
 	"github.com/go-openapi/swag"
 	"github.com/sirupsen/logrus"
 	"github.com/zergslaw/users/internal/api/rest/generated/models"
 	"github.com/zergslaw/users/internal/api/rest/generated/restapi/operations"
+	"github.com/zergslaw/users/internal/log"
 )
 
 //nolint:dupl,goconst
-func errLogin(log logrus.FieldLogger, err error, code int) operations.LoginResponder { //nolint:deadcode,unused
-	if code < 500 {
-		log.WithFields(logrus.Fields{LogHTTPStatus: code, LogError: "client"}).Info(err)
+func errLogin(logger logrus.FieldLogger, err error, code int) operations.LoginResponder { //nolint:deadcode,unused
+	if code < http.StatusInternalServerError {
+		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "client"}).Info(err)
 	} else {
-		log.WithFields(logrus.Fields{LogHTTPStatus: code, LogError: "server"}).Warn(err)
+		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "server"}).Warn(err)
 	}
 
 	msg := err.Error()
-	if code == 500 { // Do no expose details about internal errors.
+	if code == http.StatusInternalServerError { // Do no expose details about internal errors.
 		msg = "internal error"
 	}
 
@@ -28,15 +31,15 @@ func errLogin(log logrus.FieldLogger, err error, code int) operations.LoginRespo
 }
 
 //nolint:dupl,goconst
-func errLogout(log logrus.FieldLogger, err error, code int) operations.LogoutResponder { //nolint:deadcode,unused
-	if code < 500 {
-		log.WithFields(logrus.Fields{LogHTTPStatus: code, LogError: "client"}).Info(err)
+func errLogout(logger logrus.FieldLogger, err error, code int) operations.LogoutResponder { //nolint:deadcode,unused
+	if code < http.StatusInternalServerError {
+		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "client"}).Info(err)
 	} else {
-		log.WithFields(logrus.Fields{LogHTTPStatus: code, LogError: "server"}).Warn(err)
+		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "server"}).Warn(err)
 	}
 
 	msg := err.Error()
-	if code == 500 { // Do no expose details about internal errors.
+	if code == http.StatusInternalServerError { // Do no expose details about internal errors.
 		msg = "internal error"
 	}
 
@@ -44,15 +47,15 @@ func errLogout(log logrus.FieldLogger, err error, code int) operations.LogoutRes
 }
 
 //nolint:dupl,goconst
-func errVerificationEmail(log logrus.FieldLogger, err error, code int) operations.VerificationEmailResponder { //nolint:deadcode,unused
-	if code < 500 {
-		log.WithFields(logrus.Fields{LogHTTPStatus: code, LogError: "client"}).Info(err)
+func errVerificationEmail(logger logrus.FieldLogger, err error, code int) operations.VerificationEmailResponder { //nolint:deadcode,unused
+	if code < http.StatusInternalServerError {
+		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "client"}).Info(err)
 	} else {
-		log.WithFields(logrus.Fields{LogHTTPStatus: code, LogError: "server"}).Warn(err)
+		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "server"}).Warn(err)
 	}
 
 	msg := err.Error()
-	if code == 500 { // Do no expose details about internal errors.
+	if code == http.StatusInternalServerError { // Do no expose details about internal errors.
 		msg = "internal error"
 	}
 
@@ -60,15 +63,15 @@ func errVerificationEmail(log logrus.FieldLogger, err error, code int) operation
 }
 
 //nolint:dupl,goconst
-func errVerificationUsername(log logrus.FieldLogger, err error, code int) operations.VerificationUsernameResponder { //nolint:deadcode,unused
-	if code < 500 {
-		log.WithFields(logrus.Fields{LogHTTPStatus: code, LogError: "client"}).Info(err)
+func errVerificationUsername(logger logrus.FieldLogger, err error, code int) operations.VerificationUsernameResponder { //nolint:deadcode,unused
+	if code < http.StatusInternalServerError {
+		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "client"}).Info(err)
 	} else {
-		log.WithFields(logrus.Fields{LogHTTPStatus: code, LogError: "server"}).Warn(err)
+		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "server"}).Warn(err)
 	}
 
 	msg := err.Error()
-	if code == 500 { // Do no expose details about internal errors.
+	if code == http.StatusInternalServerError { // Do no expose details about internal errors.
 		msg = "internal error"
 	}
 
@@ -76,15 +79,15 @@ func errVerificationUsername(log logrus.FieldLogger, err error, code int) operat
 }
 
 //nolint:dupl,goconst
-func errGetUser(log logrus.FieldLogger, err error, code int) operations.GetUserResponder { //nolint:deadcode,unused
-	if code < 500 {
-		log.WithFields(logrus.Fields{LogHTTPStatus: code, LogError: "client"}).Info(err)
+func errGetUser(logger logrus.FieldLogger, err error, code int) operations.GetUserResponder { //nolint:deadcode,unused
+	if code < http.StatusInternalServerError {
+		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "client"}).Info(err)
 	} else {
-		log.WithFields(logrus.Fields{LogHTTPStatus: code, LogError: "server"}).Warn(err)
+		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "server"}).Warn(err)
 	}
 
 	msg := err.Error()
-	if code == 500 { // Do no expose details about internal errors.
+	if code == http.StatusInternalServerError { // Do no expose details about internal errors.
 		msg = "internal error"
 	}
 
@@ -92,15 +95,15 @@ func errGetUser(log logrus.FieldLogger, err error, code int) operations.GetUserR
 }
 
 //nolint:dupl,goconst
-func errDeleteUser(log logrus.FieldLogger, err error, code int) operations.DeleteUserResponder { //nolint:deadcode,unused
-	if code < 500 {
-		log.WithFields(logrus.Fields{LogHTTPStatus: code, LogError: "client"}).Info(err)
+func errDeleteUser(logger logrus.FieldLogger, err error, code int) operations.DeleteUserResponder { //nolint:deadcode,unused
+	if code < http.StatusInternalServerError {
+		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "client"}).Info(err)
 	} else {
-		log.WithFields(logrus.Fields{LogHTTPStatus: code, LogError: "server"}).Warn(err)
+		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "server"}).Warn(err)
 	}
 
 	msg := err.Error()
-	if code == 500 { // Do no expose details about internal errors.
+	if code == http.StatusInternalServerError { // Do no expose details about internal errors.
 		msg = "internal error"
 	}
 
@@ -108,15 +111,15 @@ func errDeleteUser(log logrus.FieldLogger, err error, code int) operations.Delet
 }
 
 //nolint:dupl,goconst
-func errUpdatePassword(log logrus.FieldLogger, err error, code int) operations.UpdatePasswordResponder { //nolint:deadcode,unused
-	if code < 500 {
-		log.WithFields(logrus.Fields{LogHTTPStatus: code, LogError: "client"}).Info(err)
+func errUpdatePassword(logger logrus.FieldLogger, err error, code int) operations.UpdatePasswordResponder { //nolint:deadcode,unused
+	if code < http.StatusInternalServerError {
+		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "client"}).Info(err)
 	} else {
-		log.WithFields(logrus.Fields{LogHTTPStatus: code, LogError: "server"}).Warn(err)
+		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "server"}).Warn(err)
 	}
 
 	msg := err.Error()
-	if code == 500 { // Do no expose details about internal errors.
+	if code == http.StatusInternalServerError { // Do no expose details about internal errors.
 		msg = "internal error"
 	}
 
@@ -124,15 +127,15 @@ func errUpdatePassword(log logrus.FieldLogger, err error, code int) operations.U
 }
 
 //nolint:dupl,goconst
-func errUpdateUsername(log logrus.FieldLogger, err error, code int) operations.UpdateUsernameResponder { //nolint:deadcode,unused
-	if code < 500 {
-		log.WithFields(logrus.Fields{LogHTTPStatus: code, LogError: "client"}).Info(err)
+func errUpdateUsername(logger logrus.FieldLogger, err error, code int) operations.UpdateUsernameResponder { //nolint:deadcode,unused
+	if code < http.StatusInternalServerError {
+		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "client"}).Info(err)
 	} else {
-		log.WithFields(logrus.Fields{LogHTTPStatus: code, LogError: "server"}).Warn(err)
+		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "server"}).Warn(err)
 	}
 
 	msg := err.Error()
-	if code == 500 { // Do no expose details about internal errors.
+	if code == http.StatusInternalServerError { // Do no expose details about internal errors.
 		msg = "internal error"
 	}
 
@@ -140,15 +143,15 @@ func errUpdateUsername(log logrus.FieldLogger, err error, code int) operations.U
 }
 
 //nolint:dupl,goconst
-func errUpdateEmail(log logrus.FieldLogger, err error, code int) operations.UpdateEmailResponder { //nolint:deadcode,unused
-	if code < 500 {
-		log.WithFields(logrus.Fields{LogHTTPStatus: code, LogError: "client"}).Info(err)
+func errUpdateEmail(logger logrus.FieldLogger, err error, code int) operations.UpdateEmailResponder { //nolint:deadcode,unused
+	if code < http.StatusInternalServerError {
+		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "client"}).Info(err)
 	} else {
-		log.WithFields(logrus.Fields{LogHTTPStatus: code, LogError: "server"}).Warn(err)
+		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "server"}).Warn(err)
 	}
 
 	msg := err.Error()
-	if code == 500 { // Do no expose details about internal errors.
+	if code == http.StatusInternalServerError { // Do no expose details about internal errors.
 		msg = "internal error"
 	}
 
@@ -156,15 +159,15 @@ func errUpdateEmail(log logrus.FieldLogger, err error, code int) operations.Upda
 }
 
 //nolint:dupl,goconst
-func errGetUsers(log logrus.FieldLogger, err error, code int) operations.GetUsersResponder { //nolint:deadcode,unused
-	if code < 500 {
-		log.WithFields(logrus.Fields{LogHTTPStatus: code, LogError: "client"}).Info(err)
+func errGetUsers(logger logrus.FieldLogger, err error, code int) operations.GetUsersResponder { //nolint:deadcode,unused
+	if code < http.StatusInternalServerError {
+		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "client"}).Info(err)
 	} else {
-		log.WithFields(logrus.Fields{LogHTTPStatus: code, LogError: "server"}).Warn(err)
+		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "server"}).Warn(err)
 	}
 
 	msg := err.Error()
-	if code == 500 { // Do no expose details about internal errors.
+	if code == http.StatusInternalServerError { // Do no expose details about internal errors.
 		msg = "internal error"
 	}
 

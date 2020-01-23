@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"net"
-	"runtime"
 	"testing"
 	"time"
 
@@ -12,10 +11,6 @@ import (
 	"github.com/zergslaw/users/internal/app"
 	"github.com/zergslaw/users/internal/mock"
 )
-
-func init() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
-}
 
 var (
 	ctx    = context.Background()

@@ -13,13 +13,13 @@ services:
       POSTGRES_DB: "postgres"
       POSTGRES_PASSWORD: postgres
 
-  users:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: users
-    container_name: users
-    restart: always
-    command: "./users serve --jwt-key testKey --db-host postgres --migrate up"
-    ports:
-      - "8080:8080"
+#  users:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    image: users
+#    container_name: users
+#    restart: always
+#    command: "./users serve --jwt-key testKey --db-host postgres --migrate up"
+#    ports:
+#      - "8080:8080"

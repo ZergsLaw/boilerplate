@@ -502,18 +502,18 @@ func (mr *AppMockRecorder) CreateUser(ctx, email, username, password, origin int
 }
 
 // User mocks base method
-func (m *App) User(arg0 context.Context, arg1 app.AuthUser, arg2 app.UserID) (*app.User, error) {
+func (m *App) User(arg0 context.Context, arg1 app.UserID) (*app.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "User", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "User", arg0, arg1)
 	ret0, _ := ret[0].(*app.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // User indicates an expected call of User
-func (mr *AppMockRecorder) User(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *AppMockRecorder) User(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "User", reflect.TypeOf((*App)(nil).User), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "User", reflect.TypeOf((*App)(nil).User), arg0, arg1)
 }
 
 // UserByAuthToken mocks base method

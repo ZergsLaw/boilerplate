@@ -99,10 +99,10 @@ func (svc *service) logout(params operations.LogoutParams, authUser *app.AuthUse
 	}
 }
 
-func (svc *service) getUser(params operations.GetUserParams, authUser *app.AuthUser) operations.GetUserResponder {
-	ctx, log, _ := fromRequest(params.HTTPRequest, authUser)
+func (svc *service) getUser(params operations.GetUserParams) operations.GetUserResponder {
+	ctx, log, _ := fromRequest(params.HTTPRequest, nil)
 
-	u, err := svc.app.User(ctx, *authUser, app.UserID(params.ID))
+	u, err := svc.app.User(ctx, app.UserID(params.ID))
 	switch {
 	case err == nil:
 		return operations.NewGetUserOK().WithPayload(User(u))

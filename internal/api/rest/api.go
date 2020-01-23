@@ -16,21 +16,7 @@ import (
 	"github.com/zergslaw/users/internal/api/rest/generated/restapi"
 	"github.com/zergslaw/users/internal/api/rest/generated/restapi/operations"
 	"github.com/zergslaw/users/internal/app"
-)
-
-// Log field names.
-const (
-	LogHost       = "host"
-	LogPort       = "port"
-	LogAddr       = "addr"
-	LogRemote     = "remote" // aligned IPv4:port "   192.168.0.42:1234 "
-	LogFunc       = "func"   // RPC method name, REST resource path
-	LogHTTPMethod = "httpMethod"
-	LogError      = "error"
-	LogHTTPStatus = "httpStatus"
-	LogUser       = "userID"
-	LogAPI        = "api"
-	LogVersion    = "version"
+	"github.com/zergslaw/users/internal/log"
 )
 
 type (
@@ -97,7 +83,7 @@ func New(application app.App, options ...Option) (*restapi.Server, error) {
 	}
 	swaggerSpec.Spec().BasePath = cfg.basePath
 	api := operations.NewServiceUserAPI(swaggerSpec)
-	api.Logger = logrus.New().WithField(LogAPI, "rest").Printf
+	api.Logger = logrus.New().WithField(log.API, "swagger").Printf
 	api.CookieKeyAuth = svc.cookieKeyAuth
 
 	api.VerificationEmailHandler = operations.VerificationEmailHandlerFunc(svc.verificationEmail)
@@ -156,20 +142,8 @@ func fromRequest(r *http.Request, authUser *app.AuthUser) (context.Context, logr
 	if authUser != nil {
 		userID = authUser.ID
 	}
-	log := logFromCtx(ctx).WithField(LogUser, userID)
+
+	logger := log.FromContext(ctx).WithField(log.User, userID)
 	remoteIP, _, _ := net.SplitHostPort(r.RemoteAddr)
-	return ctx, log, remoteIP
-}
-
-// logFromCtx retrieves the current logger from the context. If no logger is
-// available, the default logger is returned.
-func logFromCtx(ctx context.Context) logrus.FieldLogger {
-	val := ctx.Value(logKey)
-
-	log, ok := val.(logrus.FieldLogger)
-	if ok {
-		return log
-	}
-
-	return logrus.New()
+	return ctx, logger, remoteIP
 }

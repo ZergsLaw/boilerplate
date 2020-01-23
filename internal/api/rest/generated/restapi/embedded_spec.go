@@ -108,6 +108,7 @@ func init() {
     },
     "/user": {
       "get": {
+        "security": [],
         "description": "Open user profile.",
         "operationId": "getUser",
         "parameters": [
@@ -431,6 +432,9 @@ func init() {
         "username"
       ],
       "properties": {
+        "email": {
+          "$ref": "#/definitions/Email"
+        },
         "id": {
           "$ref": "#/definitions/UserID"
         },
@@ -574,6 +578,7 @@ func init() {
     },
     "/user": {
       "get": {
+        "security": [],
         "description": "Open user profile.",
         "operationId": "getUser",
         "parameters": [
@@ -923,6 +928,9 @@ func init() {
         "username"
       ],
       "properties": {
+        "email": {
+          "$ref": "#/definitions/Email"
+        },
         "id": {
           "$ref": "#/definitions/UserID"
         },

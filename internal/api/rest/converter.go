@@ -21,5 +21,6 @@ func User(u *app.User) *models.User {
 	return &models.User{
 		ID:       models.UserID(u.ID),
 		Username: models.Username(u.Username),
+		Email:    models.Email(u.Email),
 	}
 }

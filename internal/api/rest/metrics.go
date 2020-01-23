@@ -2,6 +2,7 @@ package rest
 
 import (
 	"encoding/json"
+	"net/http"
 	"strconv"
 
 	"github.com/go-openapi/loads"
@@ -26,7 +27,12 @@ const (
 var (
 	// Initialized with codes returned by swagger and middlewareFunc
 	// after metrics middlewareFunc (accessLog).
-	codeLabels = []int{400, 401, 403, 422}
+	codeLabels = []int{
+		http.StatusBadRequest,
+		http.StatusUnauthorized,
+		http.StatusForbidden,
+		http.StatusUnprocessableEntity,
+	}
 )
 
 // InitMetrics must be called once before using this package.

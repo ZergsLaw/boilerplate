@@ -49,7 +49,7 @@ func configureAPI(api *operations.ServiceUserAPI) http.Handler {
 	api.DeleteUserHandler = operations.DeleteUserHandlerFunc(func(params operations.DeleteUserParams, principal *app.AuthUser) operations.DeleteUserResponder {
 		return operations.DeleteUserNotImplemented()
 	})
-	api.GetUserHandler = operations.GetUserHandlerFunc(func(params operations.GetUserParams, principal *app.AuthUser) operations.GetUserResponder {
+	api.GetUserHandler = operations.GetUserHandlerFunc(func(params operations.GetUserParams) operations.GetUserResponder {
 		return operations.GetUserNotImplemented()
 	})
 	api.GetUsersHandler = operations.GetUsersHandlerFunc(func(params operations.GetUsersParams, principal *app.AuthUser) operations.GetUsersResponder {

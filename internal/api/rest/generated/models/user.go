@@ -16,6 +16,10 @@ import (
 // swagger:model User
 type User struct {
 
+	// email
+	// Format: email
+	Email Email `json:"email,omitempty"`
+
 	// id
 	// Required: true
 	ID UserID `json:"id"`
@@ -29,6 +33,10 @@ type User struct {
 func (m *User) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateEmail(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateID(formats); err != nil {
 		res = append(res, err)
 	}
@@ -40,6 +48,22 @@ func (m *User) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *User) validateEmail(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Email) { // not required
+		return nil
+	}
+
+	if err := m.Email.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("email")
+		}
+		return err
+	}
+
 	return nil
 }
 

@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"context"
 	"net"
 	"net/http"
 	"strconv"
@@ -10,6 +9,7 @@ import (
 	"github.com/felixge/httpsnoop"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+	"github.com/zergslaw/users/internal/log"
 	"github.com/zergslaw/users/internal/metrics"
 )
 
@@ -26,18 +26,18 @@ func recovery(next http.Handler) http.Handler {
 			switch err := recover(); err := err.(type) {
 			default:
 				metrics.PanicsTotal.Inc()
-				log := logFromCtx(r.Context())
-				log.WithFields(logrus.Fields{
-					LogHTTPStatus: code,
-					LogError:      "panic",
+				logger := log.FromContext(r.Context())
+				logger.WithFields(logrus.Fields{
+					log.HTTPStatus: code,
+					log.Error:      "panic",
 				}).Error(err)
 				w.WriteHeader(code)
 			case nil:
 			case net.Error:
-				log := logFromCtx(r.Context())
-				log.WithFields(logrus.Fields{
-					LogHTTPStatus: code,
-					LogError:      "recovered",
+				logger := log.FromContext(r.Context())
+				logger.WithFields(logrus.Fields{
+					log.HTTPStatus: code,
+					log.Error:      "recovered",
 				}).Error(err)
 				w.WriteHeader(code)
 			}
@@ -47,22 +47,18 @@ func recovery(next http.Handler) http.Handler {
 	})
 }
 
-type loggerKey uint8
-
-const logKey loggerKey = 1
-
 func logger(basePath string) middlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			log := logrus.New().WithFields(logrus.Fields{
-				LogRemote:     r.RemoteAddr,
-				LogHTTPStatus: "",
-				LogHTTPMethod: r.Method,
-				LogFunc:       strings.TrimPrefix(r.URL.Path, basePath),
+			logger := logrus.New().WithFields(logrus.Fields{
+				log.Remote:     r.RemoteAddr,
+				log.HTTPStatus: "",
+				log.HTTPMethod: r.Method,
+				log.Func:       strings.TrimPrefix(r.URL.Path, basePath),
+				log.API:        "rest",
 			})
 
-			ctx := context.WithValue(r.Context(), logKey, log)
-			r = r.WithContext(ctx)
+			r = r.WithContext(log.SetContext(r.Context(), logger))
 
 			next.ServeHTTP(w, r)
 		})
@@ -84,11 +80,11 @@ func accessLog(basePath string) middlewareFunc {
 			metric.reqTotal.With(l).Inc()
 			metric.reqDuration.With(l).Observe(m.Duration.Seconds())
 
-			log := logFromCtx(r.Context())
+			logger := log.FromContext(r.Context())
 			if m.Code < 500 {
-				log.WithField(LogHTTPStatus, m.Code).Info("handled")
+				logger.WithField(log.HTTPStatus, m.Code).Info("handled")
 			} else {
-				log.WithField(LogHTTPStatus, m.Code).Warn("failed to handle")
+				logger.WithField(log.HTTPStatus, m.Code).Warn("failed to handle")
 			}
 		})
 	}

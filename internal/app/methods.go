@@ -82,7 +82,7 @@ func (a *app) CreateUser(ctx context.Context, email, username, password string, 
 	return a.Login(ctx, email, password, origin)
 }
 
-func (a *app) User(ctx context.Context, _ AuthUser, userID UserID) (*User, error) {
+func (a *app) User(ctx context.Context, userID UserID) (*User, error) {
 	return a.repo.UserByID(ctx, userID)
 }
 

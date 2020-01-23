@@ -132,6 +132,8 @@ definitions:
         $ref: '#/definitions/UserID'
       username:
         $ref: '#/definitions/Username'
+      email:
+        $ref: '#/definitions/Email'
 
 responses:
 
@@ -225,6 +227,7 @@ paths:
     get:
       operationId: getUser
       description: Open user profile.
+      security: []
       parameters:
         - name: id
           in: query
