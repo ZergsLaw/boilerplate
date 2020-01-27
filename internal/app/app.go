@@ -99,8 +99,12 @@ type (
 	}
 	// App implements the business logic.
 	App interface {
-		Users
-		Verification
+		// VerificationEmail check if the user is registered with this email.
+		// Errors: ErrEmailExist, unknown.
+		VerificationEmail(ctx context.Context, email string) error
+		// VerificationUsername check if the user is registered with this username.
+		// Errors: ErrUsernameExist, unknown.
+		VerificationUsername(ctx context.Context, username string) error
 		// Login authorizes the user to the system.
 		// Errors: ErrNotFound, ErrNotValidPassword, unknown.
 		Login(ctx context.Context, email, password string, origin Origin) (*User, AuthToken, error)
@@ -113,6 +117,12 @@ type (
 		// DeleteUser deleting user profile.
 		// Errors: unknown.
 		DeleteUser(context.Context, AuthUser) error
+		// User returning user profile.
+		// Errors: ErrNotFound, unknown.
+		User(context.Context, AuthUser, UserID) (*User, error)
+		// UserByAuthToken returns user by authToken.
+		// Errors: ErrNotFound, unknown.
+		UserByAuthToken(ctx context.Context, token AuthToken) (*AuthUser, error)
 		// UpdateUsername refresh the username.
 		// Errors: ErrUsernameExist, ErrUsernameNeedDifferentiate, unknown.
 		UpdateUsername(context.Context, AuthUser, string) error
@@ -125,24 +135,6 @@ type (
 		// ListUserByUsername returns list user by username.
 		// Errors: unknown.
 		ListUserByUsername(context.Context, AuthUser, string, Page) ([]User, int, error)
-	}
-	// Verification contains method for verification user data.
-	Verification interface {
-		// VerificationEmail check if the user is registered with this email.
-		// Errors: ErrEmailExist, unknown.
-		VerificationEmail(ctx context.Context, email string) error
-		// VerificationUsername check if the user is registered with this username.
-		// Errors: ErrUsernameExist, unknown.
-		VerificationUsername(ctx context.Context, username string) error
-	}
-	// Users contain method for get user.
-	Users interface {
-		// User returning user profile.
-		// Errors: ErrNotFound, unknown.
-		User(context.Context, UserID) (*User, error)
-		// UserByAuthToken returns user by authToken.
-		// Errors: ErrNotFound, unknown.
-		UserByAuthToken(ctx context.Context, token AuthToken) (*AuthUser, error)
 	}
 
 	// UserID contains user id.

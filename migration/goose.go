@@ -15,7 +15,7 @@ import (
 // nolint:gochecknoglobals
 var (
 	gooseMu sync.Mutex
-	log     logrus.FieldLogger = logrus.New().WithField("package", "db")
+	log     logrus.FieldLogger = logrus.New().WithField("package", "migration")
 )
 
 func warnIfFail(fn func() error) {

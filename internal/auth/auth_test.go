@@ -18,7 +18,7 @@ var (
 	}
 )
 
-func TestToken(t *testing.T) {
+func TestAuthSmoke(t *testing.T) {
 	t.Parallel()
 
 	tokenizer := auth.New("super-duper-secret-key", auth.SetIDGenerator(generateID))

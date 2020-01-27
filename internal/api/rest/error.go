@@ -1,12 +1,13 @@
 package rest
 
 import (
+	"net/http"
+
 	"github.com/go-openapi/swag"
 	"github.com/sirupsen/logrus"
 	"github.com/zergslaw/users/internal/api/rest/generated/models"
 	"github.com/zergslaw/users/internal/api/rest/generated/restapi/operations"
 	"github.com/zergslaw/users/internal/log"
-	"net/http"
 )
 
 //go:generate genny -in=$GOFILE -out=gen-$GOFILE gen "CreateUser=Login,Logout,VerificationEmail,VerificationUsername,GetUser,DeleteUser,UpdatePassword,UpdateUsername,UpdateEmail,GetUsers"

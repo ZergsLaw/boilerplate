@@ -5,7 +5,6 @@ package auth
 import (
 	"errors"
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -57,11 +56,6 @@ func SetIDGenerator(generatorID func() (string, error)) Option {
 	}
 }
 
-const (
-	// CookieTokenName name for auth cookie
-	CookieTokenName = "__Secure-authKey" //nolint:gosec
-)
-
 // Token need for implements app.Auth.
 func (t *Auth) Token(expired time.Duration) (app.AuthToken, app.TokenID, error) {
 	tokenID, err := t.generatorID()
@@ -80,26 +74,12 @@ func (t *Auth) Token(expired time.Duration) (app.AuthToken, app.TokenID, error) 
 		return "", "", err
 	}
 
-	cookie := http.Cookie{
-		Name:     CookieTokenName,
-		Value:    tokenString,
-		Secure:   true,
-		Path:     "/",
-		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
-	}
-
-	return app.AuthToken(cookie.String()), app.TokenID(tokenID), nil
+	return app.AuthToken(tokenString), app.TokenID(tokenID), nil
 }
 
 // Parse need for implements app.Auth.
 func (t *Auth) Parse(authToken app.AuthToken) (app.TokenID, error) {
-	tokenString := parseToken(authToken)
-	if tokenString == "" {
-		return "", app.ErrInvalidToken
-	}
-
-	token, err := jwt.ParseWithClaims(tokenString, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(string(authToken), &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, ErrValidateAlg
 		}
@@ -116,17 +96,4 @@ func (t *Auth) Parse(authToken app.AuthToken) (app.TokenID, error) {
 	}
 
 	return app.TokenID(claims.Subject), nil
-}
-
-func parseToken(authToken app.AuthToken) string {
-	header := http.Header{}
-	header.Add("Cookie", string(authToken))
-	request := http.Request{Header: header}
-
-	cookieKey, err := request.Cookie(CookieTokenName)
-	if err != nil {
-		return ""
-	}
-
-	return cookieKey.Value
 }

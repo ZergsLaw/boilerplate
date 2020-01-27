@@ -501,19 +501,33 @@ func (mr *AppMockRecorder) CreateUser(ctx, email, username, password, origin int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*App)(nil).CreateUser), ctx, email, username, password, origin)
 }
 
-// User mocks base method
-func (m *App) User(arg0 context.Context, arg1 app.UserID) (*app.User, error) {
+// DeleteUser mocks base method
+func (m *App) DeleteUser(arg0 context.Context, arg1 app.AuthUser) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "User", arg0, arg1)
+	ret := m.ctrl.Call(m, "DeleteUser", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteUser indicates an expected call of DeleteUser
+func (mr *AppMockRecorder) DeleteUser(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*App)(nil).DeleteUser), arg0, arg1)
+}
+
+// User mocks base method
+func (m *App) User(arg0 context.Context, arg1 app.AuthUser, arg2 app.UserID) (*app.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "User", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*app.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // User indicates an expected call of User
-func (mr *AppMockRecorder) User(arg0, arg1 interface{}) *gomock.Call {
+func (mr *AppMockRecorder) User(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "User", reflect.TypeOf((*App)(nil).User), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "User", reflect.TypeOf((*App)(nil).User), arg0, arg1, arg2)
 }
 
 // UserByAuthToken mocks base method
@@ -529,20 +543,6 @@ func (m *App) UserByAuthToken(ctx context.Context, token app.AuthToken) (*app.Au
 func (mr *AppMockRecorder) UserByAuthToken(ctx, token interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserByAuthToken", reflect.TypeOf((*App)(nil).UserByAuthToken), ctx, token)
-}
-
-// DeleteUser mocks base method
-func (m *App) DeleteUser(arg0 context.Context, arg1 app.AuthUser) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteUser", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteUser indicates an expected call of DeleteUser
-func (mr *AppMockRecorder) DeleteUser(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*App)(nil).DeleteUser), arg0, arg1)
 }
 
 // UpdateUsername mocks base method

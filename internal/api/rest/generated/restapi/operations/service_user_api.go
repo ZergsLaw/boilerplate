@@ -46,7 +46,7 @@ func NewServiceUserAPI(spec *loads.Document) *ServiceUserAPI {
 			// return middleware.NotImplemented("operation DeleteUser has not yet been implemented")
 			return DeleteUserNotImplemented()
 		}),
-		GetUserHandler: GetUserHandlerFunc(func(params GetUserParams) GetUserResponder {
+		GetUserHandler: GetUserHandlerFunc(func(params GetUserParams, principal *app.AuthUser) GetUserResponder {
 			// return middleware.NotImplemented("operation GetUser has not yet been implemented")
 			return GetUserNotImplemented()
 		}),

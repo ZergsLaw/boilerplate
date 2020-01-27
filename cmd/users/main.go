@@ -19,9 +19,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/zergslaw/users/internal/api/grpc"
 	"github.com/zergslaw/users/internal/api/rest"
 	"github.com/zergslaw/users/internal/api/rest/generated/restapi"
+	"github.com/zergslaw/users/internal/api/rpc"
 	"github.com/zergslaw/users/internal/app"
 	"github.com/zergslaw/users/internal/auth"
 	"github.com/zergslaw/users/internal/config"
@@ -175,8 +175,8 @@ func setFlagsServe(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&cfg.metric.host, "metric-host", config.EnvOrDef("METRIC_HOST", host), "serve prometheus metrics on host")
 	cmd.Flags().IntVar(&cfg.metric.port, "metric-port", config.IntEnvOrDef("METRIC_PORT", MetricServerPort), "serve prometheus metrics on port")
 
-	cmd.Flags().StringVar(&cfg.grpc.host, "grpc-host", config.EnvOrDef("GRPC_HOST", host), "serve internal gRPC API on host")
-	cmd.Flags().IntVar(&cfg.grpc.port, "grpc-port", config.IntEnvOrDef("GRPC_PORT", GRPCServerPort), "serve internal gRPC API on port")
+	cmd.Flags().StringVar(&cfg.grpc.host, "gRPC-host", config.EnvOrDef("GRPC_HOST", host), "serve internal gRPC API on host")
+	cmd.Flags().IntVar(&cfg.grpc.port, "gRPC-port", config.IntEnvOrDef("GRPC_PORT", GRPCServerPort), "serve internal gRPC API on port")
 
 	err := cmd.MarkFlagRequired("jwt-key")
 	if err != nil {
@@ -288,7 +288,7 @@ func swaggerAPI(ctx context.Context, application app.App) error {
 		rest.SetPort(cfg.rest.port),
 	)
 	if err != nil {
-		return fmt.Errorf("NewServer: %w", err)
+		return fmt.Errorf("rest new: %w", err)
 	}
 
 	logger.WithFields(logrus.Fields{
@@ -313,7 +313,7 @@ func swaggerAPI(ctx context.Context, application app.App) error {
 }
 
 func grpcAPI(ctx context.Context, application app.App) error {
-	api := grpc.NewServer(application)
+	api := rpc.New(application)
 	ln, err := net.Listen("tcp", net.JoinHostPort(cfg.grpc.host, strconv.Itoa(cfg.grpc.port)))
 	if err != nil {
 		return fmt.Errorf("listen: %w", err)

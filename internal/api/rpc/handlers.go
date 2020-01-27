@@ -1,36 +1,21 @@
-package grpc
+package rpc
 
 import (
 	"context"
 	"errors"
+
 	"github.com/zergslaw/users/internal/app"
-	"github.com/zergslaw/users/internal/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func (s *service) GetUserByAuthToken(ctx context.Context, auth *AuthInfo) (*User, error) {
-	logger := log.FromContext(ctx)
-	logger.Infof("get user profile by: %s", auth.Token)
-
-	info, err := s.app.UserByAuthToken(ctx, app.AuthToken(auth.Token))
+func (s *service) GetUserByAuthToken(ctx context.Context, in *AuthInfo) (*User, error) {
+	info, err := s.app.UserByAuthToken(ctx, app.AuthToken(in.Token))
 	if err != nil {
 		return nil, apiError(err)
 	}
 
 	return apiUser(&info.User), nil
-}
-
-func (s *service) GetUserByID(ctx context.Context, userID *UserID) (*User, error) {
-	logger := log.FromContext(ctx)
-	logger.Infof("get user profile by: %d", userID.Id)
-
-	user, err := s.app.User(ctx, app.UserID(userID.Id))
-	if err != nil {
-		return nil, apiError(err)
-	}
-
-	return apiUser(user), nil
 }
 
 func apiUser(user *app.User) *User {

@@ -108,7 +108,6 @@ func init() {
     },
     "/user": {
       "get": {
-        "security": [],
         "description": "Open user profile.",
         "operationId": "getUser",
         "parameters": [
@@ -578,7 +577,6 @@ func init() {
     },
     "/user": {
       "get": {
-        "security": [],
         "description": "Open user profile.",
         "operationId": "getUser",
         "parameters": [

@@ -9,19 +9,20 @@ import (
 	"net/http"
 
 	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/zergslaw/users/internal/app"
 )
 
 // GetUserHandlerFunc turns a function with the right signature into a get user handler
-type GetUserHandlerFunc func(GetUserParams) GetUserResponder
+type GetUserHandlerFunc func(GetUserParams, *app.AuthUser) GetUserResponder
 
 // Handle executing the request and returning a response
-func (fn GetUserHandlerFunc) Handle(params GetUserParams) GetUserResponder {
-	return fn(params)
+func (fn GetUserHandlerFunc) Handle(params GetUserParams, principal *app.AuthUser) GetUserResponder {
+	return fn(params, principal)
 }
 
 // GetUserHandler interface for that can handle valid get user params
 type GetUserHandler interface {
-	Handle(GetUserParams) GetUserResponder
+	Handle(GetUserParams, *app.AuthUser) GetUserResponder
 }
 
 // NewGetUser creates a new http.Handler for the get user operation
@@ -46,12 +47,25 @@ func (o *GetUser) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 	var Params = NewGetUserParams()
 
+	uprinc, aCtx, err := o.Context.Authorize(r, route)
+	if err != nil {
+		o.Context.Respond(rw, r, route.Produces, route, err)
+		return
+	}
+	if aCtx != nil {
+		r = aCtx
+	}
+	var principal *app.AuthUser
+	if uprinc != nil {
+		principal = uprinc.(*app.AuthUser) // this is really a app.AuthUser, I promise
+	}
+
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
-	res := o.Handler.Handle(Params) // actually handle the request
+	res := o.Handler.Handle(Params, principal) // actually handle the request
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 

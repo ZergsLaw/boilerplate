@@ -1,7 +1,9 @@
-package grpc
+package rpc
 
 import (
 	"context"
+	"path"
+
 	"github.com/sirupsen/logrus"
 	"github.com/zergslaw/users/internal/log"
 	"github.com/zergslaw/users/internal/metrics"
@@ -9,7 +11,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/peer"
 	"google.golang.org/grpc/status"
-	"path"
 )
 
 // MakeUnaryServerLogger returns a new unary server interceptor that contains request logger.
@@ -55,7 +56,7 @@ func newLogger(ctx context.Context, fullMethod string) logrus.FieldLogger {
 	logger := logrus.New().WithFields(logrus.Fields{
 		log.Remote:   remoteAddr,
 		log.Func:     path.Base(fullMethod),
-		log.API:      "grpc",
+		log.API:      "gRPC",
 		log.GRPCCode: "",
 	})
 

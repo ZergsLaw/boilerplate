@@ -1,4 +1,4 @@
-// Package rest contains all methods and middleware for working server.
+// Package rest contains all methods and middleware for working web server.
 package rest
 
 import (
@@ -7,7 +7,6 @@ import (
 	"net"
 	"net/http"
 	"path"
-	"time"
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime/middleware"
@@ -120,20 +119,6 @@ func New(application app.App, options ...Option) (*restapi.Server, error) {
 	server.SetHandler(globalMiddlewares(api.Serve(nil)))
 
 	return server, nil
-}
-
-const authTimeout = 250 * time.Millisecond
-
-func (svc *service) cookieKeyAuth(authToken string) (*app.AuthUser, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), authTimeout)
-	defer cancel()
-	profile, err := svc.app.UserByAuthToken(ctx, app.AuthToken(authToken))
-	switch {
-	case err != nil:
-		return nil, fmt.Errorf("userByAuthToken: %w", err)
-	default:
-		return profile, nil
-	}
 }
 
 func fromRequest(r *http.Request, authUser *app.AuthUser) (context.Context, logrus.FieldLogger, string) {

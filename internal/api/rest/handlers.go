@@ -53,10 +53,10 @@ func (svc *service) createUser(params operations.CreateUserParams) operations.Cr
 		string(params.Args.Password),
 		origin,
 	)
-
 	switch {
 	case err == nil:
-		return operations.NewCreateUserOK().WithPayload(User(u)).WithSetCookie(string(token))
+		cookie := generateCookie(token)
+		return operations.NewCreateUserOK().WithPayload(User(u)).WithSetCookie(cookie.String())
 	case errors.Is(err, app.ErrEmailExist):
 		return errCreateUser(log, err, http.StatusConflict)
 	case errors.Is(err, app.ErrUsernameExist):
@@ -77,7 +77,8 @@ func (svc *service) Login(params operations.LoginParams) operations.LoginRespond
 	u, token, err := svc.app.Login(ctx, string(params.Args.Email), string(params.Args.Password), origin)
 	switch {
 	case err == nil:
-		return operations.NewLoginOK().WithPayload(User(u)).WithSetCookie(string(token))
+		cookie := generateCookie(token)
+		return operations.NewLoginOK().WithPayload(User(u)).WithSetCookie(cookie.String())
 	case errors.Is(err, app.ErrNotFound):
 		return errLogin(log, err, http.StatusNotFound)
 	case errors.Is(err, app.ErrNotValidPassword):
@@ -99,10 +100,10 @@ func (svc *service) logout(params operations.LogoutParams, authUser *app.AuthUse
 	}
 }
 
-func (svc *service) getUser(params operations.GetUserParams) operations.GetUserResponder {
+func (svc *service) getUser(params operations.GetUserParams, authUser *app.AuthUser) operations.GetUserResponder {
 	ctx, log, _ := fromRequest(params.HTTPRequest, nil)
 
-	u, err := svc.app.User(ctx, app.UserID(params.ID))
+	u, err := svc.app.User(ctx, *authUser, app.UserID(params.ID))
 	switch {
 	case err == nil:
 		return operations.NewGetUserOK().WithPayload(User(u))

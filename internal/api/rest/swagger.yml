@@ -227,7 +227,6 @@ paths:
     get:
       operationId: getUser
       description: Open user profile.
-      security: []
       parameters:
         - name: id
           in: query

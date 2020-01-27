@@ -28,7 +28,7 @@ func BuildAPI(
 
 	CreateUser func(params operations.CreateUserParams) operations.CreateUserResponder,
 	DeleteUser func(params operations.DeleteUserParams, principal *app.AuthUser) operations.DeleteUserResponder,
-	GetUser func(params operations.GetUserParams) operations.GetUserResponder,
+	GetUser func(params operations.GetUserParams, principal *app.AuthUser) operations.GetUserResponder,
 	GetUsers func(params operations.GetUsersParams, principal *app.AuthUser) operations.GetUsersResponder,
 	Login func(params operations.LoginParams) operations.LoginResponder,
 	Logout func(params operations.LogoutParams, principal *app.AuthUser) operations.LogoutResponder,

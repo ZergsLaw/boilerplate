@@ -262,10 +262,10 @@ func TestApp_UserByAuthToken(t *testing.T) {
 	application, mockRepo, _, mockToken, shutdown := initTest(t)
 	defer shutdown()
 
-	const invalidToken app.AuthToken = "notValidToken"
+	const expiredToken app.AuthToken = "notValidToken"
 
 	mockToken.EXPECT().Parse(token1).Return(tokenID1, nil).Times(3)
-	mockToken.EXPECT().Parse(invalidToken).Return(app.TokenID(""), app.ErrInvalidToken)
+	mockToken.EXPECT().Parse(expiredToken).Return(app.TokenID(""), app.ErrExpiredToken)
 	mockRepo.EXPECT().UserByTokenID(ctx, tokenID1).Return(&user1, nil).Times(2)
 	mockRepo.EXPECT().UserByTokenID(ctx, tokenID1).Return(nil, app.ErrNotFound)
 	mockRepo.EXPECT().SessionByTokenID(ctx, tokenID1).Return(&session1, nil)
@@ -278,9 +278,10 @@ func TestApp_UserByAuthToken(t *testing.T) {
 		wantErr error
 	}{
 		{"success", token1, &authUser, nil},
+		{"success", "", nil, app.ErrInvalidToken},
 		{"err session by auth", token1, nil, errAny},
 		{"not found user by auth", token1, nil, app.ErrNotFound},
-		{"not valid auth", invalidToken, nil, app.ErrInvalidToken},
+		{"not valid auth", expiredToken, nil, app.ErrExpiredToken},
 	}
 
 	for _, tc := range testCases {

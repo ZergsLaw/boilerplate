@@ -84,7 +84,7 @@ func (a *Client) DeleteUser(params *DeleteUserParams, authInfo runtime.ClientAut
 /*
 GetUser Open user profile.
 */
-func (a *Client) GetUser(params *GetUserParams) (*GetUserOK, error) {
+func (a *Client) GetUser(params *GetUserParams, authInfo runtime.ClientAuthInfoWriter) (*GetUserOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetUserParams()
@@ -99,6 +99,7 @@ func (a *Client) GetUser(params *GetUserParams) (*GetUserOK, error) {
 		Schemes:            []string{"http"},
 		Params:             params,
 		Reader:             &GetUserReader{formats: a.formats},
+		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	})

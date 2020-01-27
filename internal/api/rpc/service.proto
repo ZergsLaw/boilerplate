@@ -3,11 +3,6 @@ package grpc;
 
 service Users {
     rpc GetUserByAuthToken (AuthInfo) returns (User);
-    rpc GetUserByID (UserID) returns (User);
-}
-
-message UserID {
-    int32 id = 1;
 }
 
 message AuthInfo {
