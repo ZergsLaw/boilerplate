@@ -4,15 +4,13 @@ The Skeleton is intended for the Golang-based services. It is written using the 
 
 == Modules
 
-repo = is an adapter for the Postgres database. It implements several application interfaces, such as a repository of the user information and a repository for WAL tasks.
-notification = is an adapter for working with the RabbitMQ. It sends the contact (an email) as well as the message type (the Welcome Email or the Email change notification) through the queue service for notifying.
-auth = is a module for working with JWT tokens (generation and parsing of values).
-api = it contains two modules. The gRPC and Swagger module for interacting with the client.
-
-password = is a module for working with passwords and the passwords hashing as well as their comparison.
-app = the core of the project which contains all the business logic of this project as well as all the interfaces for handling modules.
-
-The rest of packages contain supporting functions and objects.
+* repo = is an adapter for the Postgres database. It implements several application interfaces, such as a repository of the user information and a repository for WAL tasks.
+* notification = is an adapter for working with the RabbitMQ. It sends the contact (an email) as well as the message type (the Welcome Email or the Email change notification) through the queue service for notifying.
+* auth = is a module for working with JWT tokens (generation and parsing of values).
+* api = it contains two modules. The gRPC and Swagger module for interacting with the client.
+* password = is a module for working with passwords and the passwords hashing as well as their comparison.
+* app = the core of the project which contains all the business logic of this project as well as all the interfaces for handling modules.
+* The rest of packages contain supporting functions and objects.
 
 === Quick start.
 The command only is required for starting.
