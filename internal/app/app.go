@@ -49,6 +49,7 @@ type (
 		// Errors: ErrNotFound, unknown.
 		UserByTokenID(context.Context, TokenID) (*User, error)
 		// UserByEmail returning user info by email.
+		// This method is also required to create a notifying hoard.
 		// Errors: ErrNotFound, unknown.
 		UserByEmail(context.Context, string) (*User, error)
 		// UserByUsername returning user info by id.
@@ -70,10 +71,10 @@ type (
 	// WAL module returning tasks and also closing them.
 	WAL interface {
 		// NotificationTask returns the earliest task that has not been completed.
-		// Errors: ErrNoTasks, unknown.
+		// Errors: ErrNotFound, unknown.
 		NotificationTask(ctx context.Context) (task *TaskNotification, err error)
 		// DeleteTaskNotification removes the task performed.
-		// Errors: ErrNotFound, unknown.
+		// Errors: unknown.
 		DeleteTaskNotification(ctx context.Context, id int) error
 	}
 	// Notification module for working with alerts for registered users.
