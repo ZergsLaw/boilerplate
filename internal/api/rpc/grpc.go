@@ -7,7 +7,8 @@ import (
 
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
-	"github.com/zergslaw/users/internal/app"
+	"github.com/zergslaw/boilerplate/internal/app"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 )
@@ -22,7 +23,7 @@ type service struct {
 }
 
 // New returns gRPC server configured to listen on the TCP network.
-func New(application users) *grpc.Server {
+func New(application users, logger *zap.Logger) *grpc.Server {
 	server := grpc.NewServer(
 		grpc.KeepaliveParams(keepalive.ServerParameters{
 			Time:    50 * time.Second,
@@ -34,7 +35,7 @@ func New(application users) *grpc.Server {
 		}),
 		grpc.UnaryInterceptor(middleware.ChainUnaryServer(
 			prometheus.UnaryServerInterceptor,
-			MakeUnaryServerLogger,
+			MakeUnaryServerLogger(logger),
 			UnaryServerRecover,
 			UnaryServerAccessLog,
 		)),

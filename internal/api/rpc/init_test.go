@@ -9,10 +9,11 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"github.com/zergslaw/users/internal/api/rpc"
-	"github.com/zergslaw/users/internal/app"
-	"github.com/zergslaw/users/internal/metrics"
-	"github.com/zergslaw/users/internal/mock"
+	"github.com/zergslaw/boilerplate/internal/api/rpc"
+	"github.com/zergslaw/boilerplate/internal/app"
+	"github.com/zergslaw/boilerplate/internal/metrics"
+	"github.com/zergslaw/boilerplate/internal/mock"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
@@ -43,9 +44,12 @@ var (
 func testNew(t *testing.T) (rpc.UsersClient, *mock.App, func()) {
 	t.Helper()
 
+	logger, err := zap.NewDevelopment()
+	assert.Nil(t, err)
+
 	ctrl := gomock.NewController(t)
 	mockApp := mock.NewApp(ctrl)
-	server := rpc.New(mockApp)
+	server := rpc.New(mockApp, logger)
 
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	assert.Nil(t, err)

@@ -13,10 +13,9 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
+	"github.com/go-openapi/strfmt"
 
-	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
 )
 
 // NewUpdatePasswordParams creates a new UpdatePasswordParams object

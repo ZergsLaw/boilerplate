@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-openapi/loads"
 	"github.com/stretchr/testify/assert"
-	"github.com/zergslaw/users/internal/api/rest/generated/restapi"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/restapi"
 )
 
 func TestServeSwagger(t *testing.T) {

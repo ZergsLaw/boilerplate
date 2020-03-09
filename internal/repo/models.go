@@ -1,11 +1,11 @@
-package db
+package repo
 
 import (
 	"net"
 	"time"
 
 	"github.com/jackc/pgtype"
-	"github.com/zergslaw/users/internal/app"
+	"github.com/zergslaw/boilerplate/internal/app"
 )
 
 type (
@@ -16,9 +16,6 @@ type (
 		PassHash  pgtype.Bytea `db:"pass_hash"`
 		CreatedAt time.Time    `db:"created_at"`
 		UpdatedAt time.Time    `db:"updated_at"`
-
-		// Need to get the number of tracks conveniently found.
-		Total int `db:"total"`
 	}
 
 	sessionDBFormat struct {

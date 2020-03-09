@@ -8,21 +8,21 @@ package operations
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
-	"github.com/zergslaw/users/internal/app"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/zergslaw/boilerplate/internal/app"
 )
 
 // GetUserHandlerFunc turns a function with the right signature into a get user handler
-type GetUserHandlerFunc func(GetUserParams, *app.AuthUser) GetUserResponder
+type GetUserHandlerFunc func(GetUserParams, *app.AuthUser) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn GetUserHandlerFunc) Handle(params GetUserParams, principal *app.AuthUser) GetUserResponder {
+func (fn GetUserHandlerFunc) Handle(params GetUserParams, principal *app.AuthUser) middleware.Responder {
 	return fn(params, principal)
 }
 
 // GetUserHandler interface for that can handle valid get user params
 type GetUserHandler interface {
-	Handle(GetUserParams, *app.AuthUser) GetUserResponder
+	Handle(GetUserParams, *app.AuthUser) middleware.Responder
 }
 
 // NewGetUser creates a new http.Handler for the get user operation

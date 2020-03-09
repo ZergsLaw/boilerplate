@@ -9,9 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
 
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
 )
 
 // LoginOKCode is the HTTP code returned for type LoginOK
@@ -80,8 +79,6 @@ func (o *LoginOK) WriteResponse(rw http.ResponseWriter, producer runtime.Produce
 	}
 }
 
-func (o *LoginOK) LoginResponder() {}
-
 /*LoginDefault Generic error response.
 
 swagger:response loginDefault
@@ -138,25 +135,4 @@ func (o *LoginDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Pr
 			panic(err) // let the recovery middleware deal with this
 		}
 	}
-}
-
-func (o *LoginDefault) LoginResponder() {}
-
-type LoginNotImplementedResponder struct {
-	middleware.Responder
-}
-
-func (*LoginNotImplementedResponder) LoginResponder() {}
-
-func LoginNotImplemented() LoginResponder {
-	return &LoginNotImplementedResponder{
-		middleware.NotImplemented(
-			"operation authentication.Login has not yet been implemented",
-		),
-	}
-}
-
-type LoginResponder interface {
-	middleware.Responder
-	LoginResponder()
 }

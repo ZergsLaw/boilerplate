@@ -2,7 +2,7 @@ swagger: '2.0'
 
 info:
   version: 0.1.0
-  title: "Service user"
+  title: "Service boilerplate."
   description: ""
   license:
     name: MIT
@@ -127,6 +127,7 @@ definitions:
     required:
       - id
       - username
+      - email
     properties:
       id:
         $ref: '#/definitions/UserID'
@@ -152,11 +153,16 @@ paths:
       operationId: verificationEmail
       security: []
       parameters:
-        - name: email
+        - name: args
           in: body
           required: true
           schema:
-            $ref: '#/definitions/Email'
+            type: object
+            required:
+              - email
+            properties:
+              email:
+                $ref: '#/definitions/Email'
       responses:
         204: {$ref: '#/responses/NoContent'}
         default: {$ref: '#/responses/GenericError'}
@@ -166,11 +172,16 @@ paths:
       operationId: verificationUsername
       security: []
       parameters:
-        - name: username
+        - name: args
           in: body
           required: true
           schema:
-            $ref: '#/definitions/Username'
+            type: object
+            required:
+              - username
+            properties:
+              username:
+                $ref: '#/definitions/Username'
       responses:
         204: {$ref: '#/responses/NoContent'}
         default: {$ref: '#/responses/GenericError'}
@@ -230,7 +241,7 @@ paths:
       parameters:
         - name: id
           in: query
-          required: true
+          required: false
           type: integer
           format: int32
       responses:
@@ -266,11 +277,16 @@ paths:
       operationId: updateUsername
       description: Change username.
       parameters:
-        - name: username
+        - name: args
           in: body
           required: true
           schema:
-            $ref: '#/definitions/Username'
+            type: object
+            required:
+              - username
+            properties:
+              username:
+                $ref: '#/definitions/Username'
       responses:
         204: {$ref: '#/responses/NoContent'}
         default: {$ref: '#/responses/GenericError'}
@@ -280,11 +296,16 @@ paths:
       operationId: updateEmail
       description: Change email.
       parameters:
-        - name: email
+        - name: args
           in: body
           required: true
           schema:
-            $ref: '#/definitions/Email'
+            type: object
+            required:
+              - email
+            properties:
+              email:
+                $ref: '#/definitions/Email'
       responses:
         204: {$ref: '#/responses/NoContent'}
         default: {$ref: '#/responses/GenericError'}
@@ -294,11 +315,22 @@ paths:
       operationId: getUsers
       description: User search.
       parameters:
-        - name: args
-          in: body
+        - name: username
+          in: query
           required: true
-          schema:
-            $ref: '#/definitions/ListUsersParams'
+          type: string
+        - name: offset
+          in: query
+          required: false
+          type: integer
+          format: int32
+          default: 0
+        - name: limit
+          in: query
+          required: true
+          type: integer
+          format: int32
+          default: 100
       responses:
         200:
           description: OK

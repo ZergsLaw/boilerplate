@@ -6,21 +6,32 @@ package operations
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"io"
 	"net/http"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
-
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // NewGetUsersParams creates a new GetUsersParams object
-// no default values defined in spec.
+// with the default values initialized.
 func NewGetUsersParams() GetUsersParams {
 
-	return GetUsersParams{}
+	var (
+		// initialize parameters with default values
+
+		limitDefault  = int32(100)
+		offsetDefault = int32(0)
+	)
+
+	return GetUsersParams{
+		Limit: limitDefault,
+
+		Offset: &offsetDefault,
+	}
 }
 
 // GetUsersParams contains all the bound params for the get users operation
@@ -34,9 +45,20 @@ type GetUsersParams struct {
 
 	/*
 	  Required: true
-	  In: body
+	  In: query
+	  Default: 100
 	*/
-	Args *models.ListUsersParams
+	Limit int32
+	/*
+	  In: query
+	  Default: 0
+	*/
+	Offset *int32
+	/*
+	  Required: true
+	  In: query
+	*/
+	Username string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -48,30 +70,94 @@ func (o *GetUsersParams) BindRequest(r *http.Request, route *middleware.MatchedR
 
 	o.HTTPRequest = r
 
-	if runtime.HasBody(r) {
-		defer r.Body.Close()
-		var body models.ListUsersParams
-		if err := route.Consumer.Consume(r.Body, &body); err != nil {
-			if err == io.EOF {
-				res = append(res, errors.Required("args", "body"))
-			} else {
-				res = append(res, errors.NewParseError("args", "body", "", err))
-			}
-		} else {
-			// validate body object
-			if err := body.Validate(route.Formats); err != nil {
-				res = append(res, err)
-			}
+	qs := runtime.Values(r.URL.Query())
 
-			if len(res) == 0 {
-				o.Args = &body
-			}
-		}
-	} else {
-		res = append(res, errors.Required("args", "body"))
+	qLimit, qhkLimit, _ := qs.GetOK("limit")
+	if err := o.bindLimit(qLimit, qhkLimit, route.Formats); err != nil {
+		res = append(res, err)
 	}
+
+	qOffset, qhkOffset, _ := qs.GetOK("offset")
+	if err := o.bindOffset(qOffset, qhkOffset, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	qUsername, qhkUsername, _ := qs.GetOK("username")
+	if err := o.bindUsername(qUsername, qhkUsername, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// bindLimit binds and validates parameter Limit from query.
+func (o *GetUsersParams) bindLimit(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	if !hasKey {
+		return errors.Required("limit", "query")
+	}
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: true
+	// AllowEmptyValue: false
+	if err := validate.RequiredString("limit", "query", raw); err != nil {
+		return err
+	}
+
+	value, err := swag.ConvertInt32(raw)
+	if err != nil {
+		return errors.InvalidType("limit", "query", "int32", raw)
+	}
+	o.Limit = value
+
+	return nil
+}
+
+// bindOffset binds and validates parameter Offset from query.
+func (o *GetUsersParams) bindOffset(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewGetUsersParams()
+		return nil
+	}
+
+	value, err := swag.ConvertInt32(raw)
+	if err != nil {
+		return errors.InvalidType("offset", "query", "int32", raw)
+	}
+	o.Offset = &value
+
+	return nil
+}
+
+// bindUsername binds and validates parameter Username from query.
+func (o *GetUsersParams) bindUsername(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	if !hasKey {
+		return errors.Required("username", "query")
+	}
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: true
+	// AllowEmptyValue: false
+	if err := validate.RequiredString("username", "query", raw); err != nil {
+		return err
+	}
+
+	o.Username = raw
+
 	return nil
 }

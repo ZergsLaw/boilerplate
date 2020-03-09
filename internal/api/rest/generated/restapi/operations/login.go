@@ -8,20 +8,20 @@ package operations
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 // LoginHandlerFunc turns a function with the right signature into a login handler
-type LoginHandlerFunc func(LoginParams) LoginResponder
+type LoginHandlerFunc func(LoginParams) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn LoginHandlerFunc) Handle(params LoginParams) LoginResponder {
+func (fn LoginHandlerFunc) Handle(params LoginParams) middleware.Responder {
 	return fn(params)
 }
 
 // LoginHandler interface for that can handle valid login params
 type LoginHandler interface {
-	Handle(LoginParams) LoginResponder
+	Handle(LoginParams) middleware.Responder
 }
 
 // NewLogin creates a new http.Handler for the login operation

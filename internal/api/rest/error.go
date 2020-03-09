@@ -3,26 +3,26 @@ package rest
 import (
 	"net/http"
 
+	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	"github.com/sirupsen/logrus"
-	"github.com/zergslaw/users/internal/api/rest/generated/models"
-	"github.com/zergslaw/users/internal/api/rest/generated/restapi/operations"
-	"github.com/zergslaw/users/internal/log"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/restapi/operations"
+	"github.com/zergslaw/boilerplate/internal/log"
+	"go.uber.org/zap"
 )
 
 //go:generate genny -in=$GOFILE -out=gen-$GOFILE gen "CreateUser=Login,Logout,VerificationEmail,VerificationUsername,GetUser,DeleteUser,UpdatePassword,UpdateUsername,UpdateEmail,GetUsers"
 
-//nolint:dupl,goconst
-func errCreateUser(logger logrus.FieldLogger, err error, code int) operations.CreateUserResponder { //nolint:deadcode,unused
+func errCreateUser(logger *zap.Logger, err error, code int) middleware.Responder {
 	if code < http.StatusInternalServerError {
-		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "client"}).Info(err)
+		logger.With(zap.String(log.Error, "client"), zap.Int(log.HTTPStatus, code)).Info(err.Error())
 	} else {
-		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "server"}).Warn(err)
+		logger.With(zap.String(log.Error, "server"), zap.Int(log.HTTPStatus, code)).Warn(err.Error())
 	}
 
 	msg := err.Error()
 	if code == http.StatusInternalServerError { // Do no expose details about internal errors.
-		msg = "internal error"
+		msg = http.StatusText(http.StatusInternalServerError)
 	}
 
 	return operations.NewCreateUserDefault(code).WithPayload(&models.Error{Message: swag.String(msg)})

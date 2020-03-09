@@ -2,7 +2,7 @@
 package password
 
 import (
-	"github.com/zergslaw/users/internal/app"
+	"github.com/zergslaw/boilerplate/internal/app"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -36,21 +36,11 @@ func New(options ...Option) app.Password {
 
 // Hashing need for implements app.Password.
 func (p *Password) Hashing(password string) ([]byte, error) {
-	return Hashing(password, p.cost)
+	return bcrypt.GenerateFromPassword([]byte(password), p.cost)
 }
 
 // Compare need for implements app.Password.
 func (p *Password) Compare(hashedPassword []byte, password []byte) bool {
-	err := Compare(hashedPassword, password)
+	err := bcrypt.CompareHashAndPassword(hashedPassword, password)
 	return err == nil
-}
-
-// Hashing hashes the password according to the specified cost.
-func Hashing(password string, cost int) ([]byte, error) {
-	return bcrypt.GenerateFromPassword([]byte(password), cost)
-}
-
-// Compare matched passwords.
-func Compare(hashedPassword, password []byte) error {
-	return bcrypt.CompareHashAndPassword(hashedPassword, password)
 }

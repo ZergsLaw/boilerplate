@@ -12,14 +12,15 @@ import (
 	"github.com/go-openapi/swag"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"github.com/zergslaw/users/internal/api/rest"
-	"github.com/zergslaw/users/internal/api/rest/generated/client"
-	"github.com/zergslaw/users/internal/api/rest/generated/client/operations"
-	"github.com/zergslaw/users/internal/api/rest/generated/models"
-	"github.com/zergslaw/users/internal/api/rest/generated/restapi"
-	"github.com/zergslaw/users/internal/app"
-	"github.com/zergslaw/users/internal/metrics"
-	"github.com/zergslaw/users/internal/mock"
+	"github.com/zergslaw/boilerplate/internal/api/rest"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/client"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/client/operations"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/restapi"
+	"github.com/zergslaw/boilerplate/internal/app"
+	"github.com/zergslaw/boilerplate/internal/metrics"
+	"github.com/zergslaw/boilerplate/internal/mock"
+	"go.uber.org/zap"
 )
 
 func TestMain(m *testing.M) {
@@ -67,7 +68,7 @@ var (
 	restUser   = rest.User(&user)
 )
 
-func testNewServer(t *testing.T) (string, func(), *mock.App, *client.ServiceUser) {
+func testNewServer(t *testing.T) (string, func(), *mock.App, *client.ServiceBoilerplate) {
 	t.Helper()
 
 	ctrl := gomock.NewController(t)
@@ -75,8 +76,11 @@ func testNewServer(t *testing.T) (string, func(), *mock.App, *client.ServiceUser
 	mockApp.EXPECT().UserByAuthToken(gomock.Any(), app.AuthToken(sessUser)).
 		Return(&authUser, nil).AnyTimes()
 
+	log, err := zap.NewDevelopment()
+	assert.NoError(t, err)
+
 	randomPort := rest.SetPort(0)
-	server, err := rest.New(mockApp, randomPort)
+	server, err := rest.New(mockApp, log, randomPort)
 	assert.NoError(t, err, "NewServer")
 	assert.NoError(t, server.Listen(), "server.Listen")
 

@@ -7,168 +7,159 @@ package rest
 import (
 	"net/http"
 
+	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	"github.com/sirupsen/logrus"
-	"github.com/zergslaw/users/internal/api/rest/generated/models"
-	"github.com/zergslaw/users/internal/api/rest/generated/restapi/operations"
-	"github.com/zergslaw/users/internal/log"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/restapi/operations"
+	"github.com/zergslaw/boilerplate/internal/log"
+	"go.uber.org/zap"
 )
 
-//nolint:dupl,goconst
-func errLogin(logger logrus.FieldLogger, err error, code int) operations.LoginResponder { //nolint:deadcode,unused
+func errLogin(logger *zap.Logger, err error, code int) middleware.Responder {
 	if code < http.StatusInternalServerError {
-		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "client"}).Info(err)
+		logger.With(zap.String(log.Error, "client"), zap.Int(log.HTTPStatus, code)).Info(err.Error())
 	} else {
-		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "server"}).Warn(err)
+		logger.With(zap.String(log.Error, "server"), zap.Int(log.HTTPStatus, code)).Warn(err.Error())
 	}
 
 	msg := err.Error()
 	if code == http.StatusInternalServerError { // Do no expose details about internal errors.
-		msg = "internal error"
+		msg = http.StatusText(http.StatusInternalServerError)
 	}
 
 	return operations.NewLoginDefault(code).WithPayload(&models.Error{Message: swag.String(msg)})
 }
 
-//nolint:dupl,goconst
-func errLogout(logger logrus.FieldLogger, err error, code int) operations.LogoutResponder { //nolint:deadcode,unused
+func errLogout(logger *zap.Logger, err error, code int) middleware.Responder {
 	if code < http.StatusInternalServerError {
-		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "client"}).Info(err)
+		logger.With(zap.String(log.Error, "client"), zap.Int(log.HTTPStatus, code)).Info(err.Error())
 	} else {
-		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "server"}).Warn(err)
+		logger.With(zap.String(log.Error, "server"), zap.Int(log.HTTPStatus, code)).Warn(err.Error())
 	}
 
 	msg := err.Error()
 	if code == http.StatusInternalServerError { // Do no expose details about internal errors.
-		msg = "internal error"
+		msg = http.StatusText(http.StatusInternalServerError)
 	}
 
 	return operations.NewLogoutDefault(code).WithPayload(&models.Error{Message: swag.String(msg)})
 }
 
-//nolint:dupl,goconst
-func errVerificationEmail(logger logrus.FieldLogger, err error, code int) operations.VerificationEmailResponder { //nolint:deadcode,unused
+func errVerificationEmail(logger *zap.Logger, err error, code int) middleware.Responder {
 	if code < http.StatusInternalServerError {
-		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "client"}).Info(err)
+		logger.With(zap.String(log.Error, "client"), zap.Int(log.HTTPStatus, code)).Info(err.Error())
 	} else {
-		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "server"}).Warn(err)
+		logger.With(zap.String(log.Error, "server"), zap.Int(log.HTTPStatus, code)).Warn(err.Error())
 	}
 
 	msg := err.Error()
 	if code == http.StatusInternalServerError { // Do no expose details about internal errors.
-		msg = "internal error"
+		msg = http.StatusText(http.StatusInternalServerError)
 	}
 
 	return operations.NewVerificationEmailDefault(code).WithPayload(&models.Error{Message: swag.String(msg)})
 }
 
-//nolint:dupl,goconst
-func errVerificationUsername(logger logrus.FieldLogger, err error, code int) operations.VerificationUsernameResponder { //nolint:deadcode,unused
+func errVerificationUsername(logger *zap.Logger, err error, code int) middleware.Responder {
 	if code < http.StatusInternalServerError {
-		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "client"}).Info(err)
+		logger.With(zap.String(log.Error, "client"), zap.Int(log.HTTPStatus, code)).Info(err.Error())
 	} else {
-		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "server"}).Warn(err)
+		logger.With(zap.String(log.Error, "server"), zap.Int(log.HTTPStatus, code)).Warn(err.Error())
 	}
 
 	msg := err.Error()
 	if code == http.StatusInternalServerError { // Do no expose details about internal errors.
-		msg = "internal error"
+		msg = http.StatusText(http.StatusInternalServerError)
 	}
 
 	return operations.NewVerificationUsernameDefault(code).WithPayload(&models.Error{Message: swag.String(msg)})
 }
 
-//nolint:dupl,goconst
-func errGetUser(logger logrus.FieldLogger, err error, code int) operations.GetUserResponder { //nolint:deadcode,unused
+func errGetUser(logger *zap.Logger, err error, code int) middleware.Responder {
 	if code < http.StatusInternalServerError {
-		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "client"}).Info(err)
+		logger.With(zap.String(log.Error, "client"), zap.Int(log.HTTPStatus, code)).Info(err.Error())
 	} else {
-		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "server"}).Warn(err)
+		logger.With(zap.String(log.Error, "server"), zap.Int(log.HTTPStatus, code)).Warn(err.Error())
 	}
 
 	msg := err.Error()
 	if code == http.StatusInternalServerError { // Do no expose details about internal errors.
-		msg = "internal error"
+		msg = http.StatusText(http.StatusInternalServerError)
 	}
 
 	return operations.NewGetUserDefault(code).WithPayload(&models.Error{Message: swag.String(msg)})
 }
 
-//nolint:dupl,goconst
-func errDeleteUser(logger logrus.FieldLogger, err error, code int) operations.DeleteUserResponder { //nolint:deadcode,unused
+func errDeleteUser(logger *zap.Logger, err error, code int) middleware.Responder {
 	if code < http.StatusInternalServerError {
-		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "client"}).Info(err)
+		logger.With(zap.String(log.Error, "client"), zap.Int(log.HTTPStatus, code)).Info(err.Error())
 	} else {
-		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "server"}).Warn(err)
+		logger.With(zap.String(log.Error, "server"), zap.Int(log.HTTPStatus, code)).Warn(err.Error())
 	}
 
 	msg := err.Error()
 	if code == http.StatusInternalServerError { // Do no expose details about internal errors.
-		msg = "internal error"
+		msg = http.StatusText(http.StatusInternalServerError)
 	}
 
 	return operations.NewDeleteUserDefault(code).WithPayload(&models.Error{Message: swag.String(msg)})
 }
 
-//nolint:dupl,goconst
-func errUpdatePassword(logger logrus.FieldLogger, err error, code int) operations.UpdatePasswordResponder { //nolint:deadcode,unused
+func errUpdatePassword(logger *zap.Logger, err error, code int) middleware.Responder {
 	if code < http.StatusInternalServerError {
-		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "client"}).Info(err)
+		logger.With(zap.String(log.Error, "client"), zap.Int(log.HTTPStatus, code)).Info(err.Error())
 	} else {
-		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "server"}).Warn(err)
+		logger.With(zap.String(log.Error, "server"), zap.Int(log.HTTPStatus, code)).Warn(err.Error())
 	}
 
 	msg := err.Error()
 	if code == http.StatusInternalServerError { // Do no expose details about internal errors.
-		msg = "internal error"
+		msg = http.StatusText(http.StatusInternalServerError)
 	}
 
 	return operations.NewUpdatePasswordDefault(code).WithPayload(&models.Error{Message: swag.String(msg)})
 }
 
-//nolint:dupl,goconst
-func errUpdateUsername(logger logrus.FieldLogger, err error, code int) operations.UpdateUsernameResponder { //nolint:deadcode,unused
+func errUpdateUsername(logger *zap.Logger, err error, code int) middleware.Responder {
 	if code < http.StatusInternalServerError {
-		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "client"}).Info(err)
+		logger.With(zap.String(log.Error, "client"), zap.Int(log.HTTPStatus, code)).Info(err.Error())
 	} else {
-		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "server"}).Warn(err)
+		logger.With(zap.String(log.Error, "server"), zap.Int(log.HTTPStatus, code)).Warn(err.Error())
 	}
 
 	msg := err.Error()
 	if code == http.StatusInternalServerError { // Do no expose details about internal errors.
-		msg = "internal error"
+		msg = http.StatusText(http.StatusInternalServerError)
 	}
 
 	return operations.NewUpdateUsernameDefault(code).WithPayload(&models.Error{Message: swag.String(msg)})
 }
 
-//nolint:dupl,goconst
-func errUpdateEmail(logger logrus.FieldLogger, err error, code int) operations.UpdateEmailResponder { //nolint:deadcode,unused
+func errUpdateEmail(logger *zap.Logger, err error, code int) middleware.Responder {
 	if code < http.StatusInternalServerError {
-		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "client"}).Info(err)
+		logger.With(zap.String(log.Error, "client"), zap.Int(log.HTTPStatus, code)).Info(err.Error())
 	} else {
-		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "server"}).Warn(err)
+		logger.With(zap.String(log.Error, "server"), zap.Int(log.HTTPStatus, code)).Warn(err.Error())
 	}
 
 	msg := err.Error()
 	if code == http.StatusInternalServerError { // Do no expose details about internal errors.
-		msg = "internal error"
+		msg = http.StatusText(http.StatusInternalServerError)
 	}
 
 	return operations.NewUpdateEmailDefault(code).WithPayload(&models.Error{Message: swag.String(msg)})
 }
 
-//nolint:dupl,goconst
-func errGetUsers(logger logrus.FieldLogger, err error, code int) operations.GetUsersResponder { //nolint:deadcode,unused
+func errGetUsers(logger *zap.Logger, err error, code int) middleware.Responder {
 	if code < http.StatusInternalServerError {
-		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "client"}).Info(err)
+		logger.With(zap.String(log.Error, "client"), zap.Int(log.HTTPStatus, code)).Info(err.Error())
 	} else {
-		logger.WithFields(logrus.Fields{log.HTTPStatus: code, log.Error: "server"}).Warn(err)
+		logger.With(zap.String(log.Error, "server"), zap.Int(log.HTTPStatus, code)).Warn(err.Error())
 	}
 
 	msg := err.Error()
 	if code == http.StatusInternalServerError { // Do no expose details about internal errors.
-		msg = "internal error"
+		msg = http.StatusText(http.StatusInternalServerError)
 	}
 
 	return operations.NewGetUsersDefault(code).WithPayload(&models.Error{Message: swag.String(msg)})

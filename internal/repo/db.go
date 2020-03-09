@@ -1,20 +1,19 @@
-// Package db is an implements app.Repo.
-package db
+// Package repo is an implements app.UserRepo.
+package repo
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 
-	_ "github.com/jackc/pgx/v4/stdlib" // driver fot postgres.
-	"github.com/jmoiron/sqlx"
-	"github.com/zergslaw/users/internal/app"
+	_ "github.com/lib/pq" // db driver.
 )
 
-// Repo is an implements app.Repo.
+// Repo is an implements app.UserRepo.
 // Responsible for working with database.
 type Repo struct {
-	db *sqlx.DB
+	db *sql.DB
 }
 
 // Close closes database connections.
@@ -22,8 +21,8 @@ func (repo *Repo) Close() error {
 	return repo.db.Close()
 }
 
-// New creates and returns new app.Repo.
-func New(conn *sqlx.DB) app.Repo {
+// New creates and returns new app.UserRepo.
+func New(conn *sql.DB) *Repo {
 	return &Repo{db: conn}
 }
 
@@ -33,14 +32,14 @@ const (
 )
 
 // Connect to database by options.
-func Connect(ctx context.Context, options ...Option) (*sqlx.DB, error) {
+func Connect(ctx context.Context, options ...Option) (*sql.DB, error) {
 	opt := defaultConfig()
 
 	for i := range options {
 		options[i](opt)
 	}
 
-	dbConn, err := sqlx.Open("pgx", opt.FormatDSN())
+	dbConn, err := sql.Open("postgres", opt.FormatDSN())
 	if err != nil {
 		return nil, fmt.Errorf("sqlx open: %w", err)
 	}
@@ -52,9 +51,9 @@ func Connect(ctx context.Context, options ...Option) (*sqlx.DB, error) {
 		nextErr := dbConn.PingContext(ctx)
 		if errors.Is(nextErr, context.DeadlineExceeded) || errors.Is(nextErr, context.Canceled) {
 			if errClose := dbConn.Close(); errClose != nil {
-				return nil, fmt.Errorf("db ping: %w, db close: %s", err, errClose)
+				return nil, fmt.Errorf("repo ping: %w, repo close: %s", err, errClose)
 			}
-			return nil, fmt.Errorf("db ping: %w", err)
+			return nil, fmt.Errorf("repo ping: %w", err)
 		}
 		err = nextErr
 	}
@@ -62,7 +61,7 @@ func Connect(ctx context.Context, options ...Option) (*sqlx.DB, error) {
 	return dbConn, nil
 }
 
-func (repo *Repo) execFunc(f func(db *sqlx.DB) error) (err error) {
+func (repo *Repo) execFunc(f func(db *sql.DB) error) (err error) {
 	methodName, methodDone := methodMetrics(1)
 	defer methodDone(&err)
 

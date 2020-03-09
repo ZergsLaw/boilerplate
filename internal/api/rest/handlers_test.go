@@ -6,10 +6,10 @@ import (
 	"github.com/go-openapi/swag"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"github.com/zergslaw/users/internal/api/rest"
-	"github.com/zergslaw/users/internal/api/rest/generated/client/operations"
-	"github.com/zergslaw/users/internal/api/rest/generated/models"
-	"github.com/zergslaw/users/internal/app"
+	"github.com/zergslaw/boilerplate/internal/api/rest"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/client/operations"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
+	"github.com/zergslaw/boilerplate/internal/app"
 )
 
 func TestServiceVerificationEmail(t *testing.T) {
@@ -26,7 +26,7 @@ func TestServiceVerificationEmail(t *testing.T) {
 	}{
 		{"success", notExistEmail, nil, nil},
 		{"exist", email, app.ErrEmailExist, APIError("email exist")},
-		{"any error", email, errAny, APIError("internal error")},
+		{"any error", email, errAny, APIError("Internal Server Error")},
 	}
 
 	for _, tc := range testCases {
@@ -34,7 +34,8 @@ func TestServiceVerificationEmail(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockApp.EXPECT().VerificationEmail(gomock.Any(), tc.email).Return(tc.appErr)
 
-			params := operations.NewVerificationEmailParams().WithEmail(models.Email(tc.email))
+			params := operations.NewVerificationEmailParams().
+				WithArgs(operations.VerificationEmailBody{Email: models.Email(tc.email)})
 			_, err := client.Operations.VerificationEmail(params)
 			assert.Equal(t, tc.want, errPayload(err))
 		})
@@ -55,7 +56,7 @@ func TestServiceVerificationUsername(t *testing.T) {
 	}{
 		{"success", notExistUsername, nil, nil},
 		{"exist", username, app.ErrUsernameExist, APIError("username exist")},
-		{"any error", username, errAny, APIError("internal error")},
+		{"any error", username, errAny, APIError("Internal Server Error")},
 	}
 
 	for _, tc := range testCases {
@@ -63,7 +64,8 @@ func TestServiceVerificationUsername(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockApp.EXPECT().VerificationUsername(gomock.Any(), tc.username).Return(tc.appErr)
 
-			params := operations.NewVerificationUsernameParams().WithUsername(models.Username(tc.username))
+			params := operations.NewVerificationUsernameParams().
+				WithArgs(operations.VerificationUsernameBody{Username: models.Username(tc.username)})
 			_, err := client.Operations.VerificationUsername(params)
 			assert.Equal(t, tc.want, errPayload(err))
 		})
@@ -94,7 +96,7 @@ func TestServiceCreateUser(t *testing.T) {
 		{"username exist", email, username, password,
 			nil, "", app.ErrUsernameExist, nil, APIError("username exist")},
 		{"internal error", email, username, password,
-			nil, "", errAny, nil, APIError("internal error")},
+			nil, "", errAny, nil, APIError("Internal Server Error")},
 	}
 
 	for _, tc := range testCases {
@@ -145,7 +147,7 @@ func TestServiceLogin(t *testing.T) {
 		{"not valid password", email, password,
 			nil, "", app.ErrNotValidPassword, nil, APIError("not valid password")},
 		{"internal error", email, password,
-			nil, "", errAny, nil, APIError("internal error")},
+			nil, "", errAny, nil, APIError("Internal Server Error")},
 	}
 
 	for _, tc := range testCases {
@@ -184,7 +186,7 @@ func TestServiceLogout(t *testing.T) {
 		want   *models.Error
 	}{
 		{"success", nil, nil},
-		{"any error", errAny, APIError("internal error")},
+		{"any error", errAny, APIError("Internal Server Error")},
 	}
 
 	for _, tc := range testCases {
@@ -214,7 +216,7 @@ func TestServiceGetUser(t *testing.T) {
 	}{
 		{"success", &user, nil, restUser, nil},
 		{"not found", nil, app.ErrNotFound, nil, APIError("not found")},
-		{"any error", nil, errAny, nil, APIError("internal error")},
+		{"any error", nil, errAny, nil, APIError("Internal Server Error")},
 	}
 
 	for _, tc := range testCases {
@@ -222,7 +224,7 @@ func TestServiceGetUser(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockApp.EXPECT().User(gomock.Any(), authUser, authUser.ID).Return(tc.user, tc.appErr)
 
-			params := operations.NewGetUserParams().WithID(int32(user.ID))
+			params := operations.NewGetUserParams().WithID(swag.Int32(int32(user.ID)))
 			res, err := client.Operations.GetUser(params, apiKeyAuth)
 			if tc.wantErr == nil {
 				assert.Nil(t, err)
@@ -247,7 +249,7 @@ func TestServiceDeleteUser(t *testing.T) {
 		want   *models.Error
 	}{
 		{"success", nil, nil},
-		{"any error", errAny, APIError("internal error")},
+		{"any error", errAny, APIError("Internal Server Error")},
 	}
 
 	for _, tc := range testCases {
@@ -276,7 +278,7 @@ func TestServiceUpdatePassword(t *testing.T) {
 	}{
 		{"success", password, "NewPassword", nil, nil},
 		{"not valid password", "notCorrectPass", "NewPassword", app.ErrNotValidPassword, APIError("not valid password")},
-		{"any error", password, "NewPassword", errAny, APIError("internal error")},
+		{"any error", password, "NewPassword", errAny, APIError("Internal Server Error")},
 	}
 
 	for _, tc := range testCases {
@@ -309,7 +311,7 @@ func TestServiceUpdateUsername(t *testing.T) {
 		{"success", username, nil, nil},
 		{"username exist", username, app.ErrUsernameExist, APIError("username exist")},
 		{"username not different", username, app.ErrUsernameNeedDifferentiate, APIError("username need to differentiate")},
-		{"any error", username, errAny, APIError("internal error")},
+		{"any error", username, errAny, APIError("Internal Server Error")},
 	}
 
 	for _, tc := range testCases {
@@ -317,7 +319,8 @@ func TestServiceUpdateUsername(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockApp.EXPECT().UpdateUsername(gomock.Any(), authUser, tc.username).Return(tc.appErr)
 
-			params := operations.NewUpdateUsernameParams().WithUsername(models.Username(tc.username))
+			params := operations.NewUpdateUsernameParams().
+				WithArgs(operations.UpdateUsernameBody{Username: models.Username(tc.username)})
 
 			_, err := client.Operations.UpdateUsername(params, apiKeyAuth)
 			assert.Equal(t, tc.want, errPayload(err))
@@ -340,7 +343,7 @@ func TestServiceUpdateEmail(t *testing.T) {
 		{"success", email, nil, nil},
 		{"email exist", email, app.ErrEmailExist, APIError("email exist")},
 		{"email not different", email, app.ErrEmailNeedDifferentiate, APIError("email need to differentiate")},
-		{"any error", email, errAny, APIError("internal error")},
+		{"any error", email, errAny, APIError("Internal Server Error")},
 	}
 
 	for _, tc := range testCases {
@@ -348,7 +351,8 @@ func TestServiceUpdateEmail(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockApp.EXPECT().UpdateEmail(gomock.Any(), authUser, tc.email).Return(tc.appErr)
 
-			params := operations.NewUpdateEmailParams().WithEmail(models.Email(tc.email))
+			params := operations.NewUpdateEmailParams().
+				WithArgs(operations.UpdateEmailBody{Email: models.Email(tc.email)})
 
 			_, err := client.Operations.UpdateEmail(params, apiKeyAuth)
 			assert.Equal(t, tc.want, errPayload(err))
@@ -374,7 +378,7 @@ func TestServiceGetUsers(t *testing.T) {
 		{"success", username, []app.User{user}, nil,
 			rest.Users([]app.User{user}), 1, nil},
 		{"any error", username, nil, errAny,
-			nil, 0, APIError("internal error")},
+			nil, 0, APIError("Internal Server Error")},
 	}
 
 	for _, tc := range testCases {
@@ -384,13 +388,10 @@ func TestServiceGetUsers(t *testing.T) {
 				ListUserByUsername(gomock.Any(), authUser, tc.username, app.Page{Limit: 10}).
 				Return(tc.users, len(tc.users), tc.appErr)
 
-			params := operations.NewGetUsersParams().WithArgs(&models.ListUsersParams{
-				Pagination: &models.Pagination{
-					Limit:  swag.Int32(10),
-					Offset: swag.Int32(0),
-				},
-				Username: models.Username(tc.username),
-			})
+			params := operations.NewGetUsersParams().
+				WithLimit(10).
+				WithOffset(swag.Int32(0)).
+				WithUsername(tc.username)
 
 			res, err := client.Operations.GetUsers(params, apiKeyAuth)
 			if tc.wantErr == nil {

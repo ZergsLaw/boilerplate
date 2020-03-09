@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/zergslaw/users/internal/app"
-	"github.com/zergslaw/users/internal/auth"
+	"github.com/zergslaw/boilerplate/internal/app"
+	"github.com/zergslaw/boilerplate/internal/auth"
 )
 
 var (

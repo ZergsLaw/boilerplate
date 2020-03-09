@@ -13,10 +13,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-
-	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
+	"github.com/go-openapi/strfmt"
 )
 
 // NewVerificationUsernameParams creates a new VerificationUsernameParams object
@@ -63,8 +60,8 @@ for the verification username operation typically these are written to a http.Re
 */
 type VerificationUsernameParams struct {
 
-	/*Username*/
-	Username models.Username
+	/*Args*/
+	Args VerificationUsernameBody
 
 	timeout    time.Duration
 	Context    context.Context
@@ -104,15 +101,15 @@ func (o *VerificationUsernameParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithUsername adds the username to the verification username params
-func (o *VerificationUsernameParams) WithUsername(username models.Username) *VerificationUsernameParams {
-	o.SetUsername(username)
+// WithArgs adds the args to the verification username params
+func (o *VerificationUsernameParams) WithArgs(args VerificationUsernameBody) *VerificationUsernameParams {
+	o.SetArgs(args)
 	return o
 }
 
-// SetUsername adds the username to the verification username params
-func (o *VerificationUsernameParams) SetUsername(username models.Username) {
-	o.Username = username
+// SetArgs adds the args to the verification username params
+func (o *VerificationUsernameParams) SetArgs(args VerificationUsernameBody) {
+	o.Args = args
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -123,7 +120,7 @@ func (o *VerificationUsernameParams) WriteToRequest(r runtime.ClientRequest, reg
 	}
 	var res []error
 
-	if err := r.SetBodyParam(o.Username); err != nil {
+	if err := r.SetBodyParam(o.Args); err != nil {
 		return err
 	}
 

@@ -8,21 +8,21 @@ package operations
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
-	"github.com/zergslaw/users/internal/app"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/zergslaw/boilerplate/internal/app"
 )
 
 // UpdatePasswordHandlerFunc turns a function with the right signature into a update password handler
-type UpdatePasswordHandlerFunc func(UpdatePasswordParams, *app.AuthUser) UpdatePasswordResponder
+type UpdatePasswordHandlerFunc func(UpdatePasswordParams, *app.AuthUser) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn UpdatePasswordHandlerFunc) Handle(params UpdatePasswordParams, principal *app.AuthUser) UpdatePasswordResponder {
+func (fn UpdatePasswordHandlerFunc) Handle(params UpdatePasswordParams, principal *app.AuthUser) middleware.Responder {
 	return fn(params, principal)
 }
 
 // UpdatePasswordHandler interface for that can handle valid update password params
 type UpdatePasswordHandler interface {
-	Handle(UpdatePasswordParams, *app.AuthUser) UpdatePasswordResponder
+	Handle(UpdatePasswordParams, *app.AuthUser) middleware.Responder
 }
 
 // NewUpdatePassword creates a new http.Handler for the update password operation

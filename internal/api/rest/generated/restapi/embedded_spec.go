@@ -26,7 +26,7 @@ func init() {
   ],
   "swagger": "2.0",
   "info": {
-    "title": "Service user",
+    "title": "Service boilerplate.",
     "license": {
       "name": "MIT"
     },
@@ -40,11 +40,19 @@ func init() {
         "operationId": "verificationEmail",
         "parameters": [
           {
-            "name": "email",
+            "name": "args",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/Email"
+              "type": "object",
+              "required": [
+                "email"
+              ],
+              "properties": {
+                "email": {
+                  "$ref": "#/definitions/Email"
+                }
+              }
             }
           }
         ],
@@ -115,8 +123,7 @@ func init() {
             "type": "integer",
             "format": "int32",
             "name": "id",
-            "in": "query",
-            "required": true
+            "in": "query"
           }
         ],
         "responses": {
@@ -182,11 +189,19 @@ func init() {
         "operationId": "updateEmail",
         "parameters": [
           {
-            "name": "email",
+            "name": "args",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/Email"
+              "type": "object",
+              "required": [
+                "email"
+              ],
+              "properties": {
+                "email": {
+                  "$ref": "#/definitions/Email"
+                }
+              }
             }
           }
         ],
@@ -230,11 +245,19 @@ func init() {
         "operationId": "updateUsername",
         "parameters": [
           {
-            "name": "username",
+            "name": "args",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/Username"
+              "type": "object",
+              "required": [
+                "username"
+              ],
+              "properties": {
+                "username": {
+                  "$ref": "#/definitions/Username"
+                }
+              }
             }
           }
         ],
@@ -254,11 +277,19 @@ func init() {
         "operationId": "verificationUsername",
         "parameters": [
           {
-            "name": "username",
+            "name": "args",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/Username"
+              "type": "object",
+              "required": [
+                "username"
+              ],
+              "properties": {
+                "username": {
+                  "$ref": "#/definitions/Username"
+                }
+              }
             }
           }
         ],
@@ -278,12 +309,25 @@ func init() {
         "operationId": "getUsers",
         "parameters": [
           {
-            "name": "args",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/ListUsersParams"
-            }
+            "type": "string",
+            "name": "username",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int32",
+            "default": 0,
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "format": "int32",
+            "default": 100,
+            "name": "limit",
+            "in": "query",
+            "required": true
           }
         ],
         "responses": {
@@ -486,7 +530,7 @@ func init() {
   ],
   "swagger": "2.0",
   "info": {
-    "title": "Service user",
+    "title": "Service boilerplate.",
     "license": {
       "name": "MIT"
     },
@@ -500,11 +544,19 @@ func init() {
         "operationId": "verificationEmail",
         "parameters": [
           {
-            "name": "email",
+            "name": "args",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/Email"
+              "type": "object",
+              "required": [
+                "email"
+              ],
+              "properties": {
+                "email": {
+                  "$ref": "#/definitions/Email"
+                }
+              }
             }
           }
         ],
@@ -584,8 +636,7 @@ func init() {
             "type": "integer",
             "format": "int32",
             "name": "id",
-            "in": "query",
-            "required": true
+            "in": "query"
           }
         ],
         "responses": {
@@ -660,11 +711,19 @@ func init() {
         "operationId": "updateEmail",
         "parameters": [
           {
-            "name": "email",
+            "name": "args",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/Email"
+              "type": "object",
+              "required": [
+                "email"
+              ],
+              "properties": {
+                "email": {
+                  "$ref": "#/definitions/Email"
+                }
+              }
             }
           }
         ],
@@ -714,11 +773,19 @@ func init() {
         "operationId": "updateUsername",
         "parameters": [
           {
-            "name": "username",
+            "name": "args",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/Username"
+              "type": "object",
+              "required": [
+                "username"
+              ],
+              "properties": {
+                "username": {
+                  "$ref": "#/definitions/Username"
+                }
+              }
             }
           }
         ],
@@ -741,11 +808,19 @@ func init() {
         "operationId": "verificationUsername",
         "parameters": [
           {
-            "name": "username",
+            "name": "args",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/Username"
+              "type": "object",
+              "required": [
+                "username"
+              ],
+              "properties": {
+                "username": {
+                  "$ref": "#/definitions/Username"
+                }
+              }
             }
           }
         ],
@@ -768,12 +843,25 @@ func init() {
         "operationId": "getUsers",
         "parameters": [
           {
-            "name": "args",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/ListUsersParams"
-            }
+            "type": "string",
+            "name": "username",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int32",
+            "default": 0,
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "format": "int32",
+            "default": 100,
+            "name": "limit",
+            "in": "query",
+            "required": true
           }
         ],
         "responses": {

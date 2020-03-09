@@ -9,27 +9,27 @@ import (
 	"net/http"
 	"strconv"
 
-	errors "github.com/go-openapi/errors"
-	middleware "github.com/go-openapi/runtime/middleware"
-	strfmt "github.com/go-openapi/strfmt"
-	swag "github.com/go-openapi/swag"
-	validate "github.com/go-openapi/validate"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
-	"github.com/zergslaw/users/internal/app"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
+	"github.com/zergslaw/boilerplate/internal/app"
 )
 
 // GetUsersHandlerFunc turns a function with the right signature into a get users handler
-type GetUsersHandlerFunc func(GetUsersParams, *app.AuthUser) GetUsersResponder
+type GetUsersHandlerFunc func(GetUsersParams, *app.AuthUser) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn GetUsersHandlerFunc) Handle(params GetUsersParams, principal *app.AuthUser) GetUsersResponder {
+func (fn GetUsersHandlerFunc) Handle(params GetUsersParams, principal *app.AuthUser) middleware.Responder {
 	return fn(params, principal)
 }
 
 // GetUsersHandler interface for that can handle valid get users params
 type GetUsersHandler interface {
-	Handle(GetUsersParams, *app.AuthUser) GetUsersResponder
+	Handle(GetUsersParams, *app.AuthUser) middleware.Responder
 }
 
 // NewGetUsers creates a new http.Handler for the get users operation
@@ -79,6 +79,7 @@ func (o *GetUsers) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 }
 
 // GetUsersOKBody get users o k body
+//
 // swagger:model GetUsersOKBody
 type GetUsersOKBody struct {
 

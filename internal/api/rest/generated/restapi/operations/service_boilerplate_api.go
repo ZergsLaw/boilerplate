@@ -10,91 +10,83 @@ import (
 	"net/http"
 	"strings"
 
-	errors "github.com/go-openapi/errors"
-	loads "github.com/go-openapi/loads"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
-	security "github.com/go-openapi/runtime/security"
-	spec "github.com/go-openapi/spec"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/security"
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	"github.com/zergslaw/users/internal/app"
+	"github.com/zergslaw/boilerplate/internal/app"
 )
 
-// NewServiceUserAPI creates a new ServiceUser instance
-func NewServiceUserAPI(spec *loads.Document) *ServiceUserAPI {
-	return &ServiceUserAPI{
+// NewServiceBoilerplateAPI creates a new ServiceBoilerplate instance
+func NewServiceBoilerplateAPI(spec *loads.Document) *ServiceBoilerplateAPI {
+	return &ServiceBoilerplateAPI{
 		handlers:            make(map[string]map[string]http.Handler),
 		formats:             strfmt.Default,
 		defaultConsumes:     "application/json",
 		defaultProduces:     "application/json",
 		customConsumers:     make(map[string]runtime.Consumer),
 		customProducers:     make(map[string]runtime.Producer),
+		PreServerShutdown:   func() {},
 		ServerShutdown:      func() {},
 		spec:                spec,
 		ServeError:          errors.ServeError,
 		BasicAuthenticator:  security.BasicAuth,
 		APIKeyAuthenticator: security.APIKeyAuth,
 		BearerAuthenticator: security.BearerAuth,
-		JSONConsumer:        runtime.JSONConsumer(),
-		JSONProducer:        runtime.JSONProducer(),
-		CreateUserHandler: CreateUserHandlerFunc(func(params CreateUserParams) CreateUserResponder {
-			// return middleware.NotImplemented("operation CreateUser has not yet been implemented")
-			return CreateUserNotImplemented()
+
+		JSONConsumer: runtime.JSONConsumer(),
+
+		JSONProducer: runtime.JSONProducer(),
+
+		CreateUserHandler: CreateUserHandlerFunc(func(params CreateUserParams) middleware.Responder {
+			return middleware.NotImplemented("operation CreateUser has not yet been implemented")
 		}),
-		DeleteUserHandler: DeleteUserHandlerFunc(func(params DeleteUserParams, principal *app.AuthUser) DeleteUserResponder {
-			// return middleware.NotImplemented("operation DeleteUser has not yet been implemented")
-			return DeleteUserNotImplemented()
+		DeleteUserHandler: DeleteUserHandlerFunc(func(params DeleteUserParams, principal *app.AuthUser) middleware.Responder {
+			return middleware.NotImplemented("operation DeleteUser has not yet been implemented")
 		}),
-		GetUserHandler: GetUserHandlerFunc(func(params GetUserParams, principal *app.AuthUser) GetUserResponder {
-			// return middleware.NotImplemented("operation GetUser has not yet been implemented")
-			return GetUserNotImplemented()
+		GetUserHandler: GetUserHandlerFunc(func(params GetUserParams, principal *app.AuthUser) middleware.Responder {
+			return middleware.NotImplemented("operation GetUser has not yet been implemented")
 		}),
-		GetUsersHandler: GetUsersHandlerFunc(func(params GetUsersParams, principal *app.AuthUser) GetUsersResponder {
-			// return middleware.NotImplemented("operation GetUsers has not yet been implemented")
-			return GetUsersNotImplemented()
+		GetUsersHandler: GetUsersHandlerFunc(func(params GetUsersParams, principal *app.AuthUser) middleware.Responder {
+			return middleware.NotImplemented("operation GetUsers has not yet been implemented")
 		}),
-		LoginHandler: LoginHandlerFunc(func(params LoginParams) LoginResponder {
-			// return middleware.NotImplemented("operation Login has not yet been implemented")
-			return LoginNotImplemented()
+		LoginHandler: LoginHandlerFunc(func(params LoginParams) middleware.Responder {
+			return middleware.NotImplemented("operation Login has not yet been implemented")
 		}),
-		LogoutHandler: LogoutHandlerFunc(func(params LogoutParams, principal *app.AuthUser) LogoutResponder {
-			// return middleware.NotImplemented("operation Logout has not yet been implemented")
-			return LogoutNotImplemented()
+		LogoutHandler: LogoutHandlerFunc(func(params LogoutParams, principal *app.AuthUser) middleware.Responder {
+			return middleware.NotImplemented("operation Logout has not yet been implemented")
 		}),
-		UpdateEmailHandler: UpdateEmailHandlerFunc(func(params UpdateEmailParams, principal *app.AuthUser) UpdateEmailResponder {
-			// return middleware.NotImplemented("operation UpdateEmail has not yet been implemented")
-			return UpdateEmailNotImplemented()
+		UpdateEmailHandler: UpdateEmailHandlerFunc(func(params UpdateEmailParams, principal *app.AuthUser) middleware.Responder {
+			return middleware.NotImplemented("operation UpdateEmail has not yet been implemented")
 		}),
-		UpdatePasswordHandler: UpdatePasswordHandlerFunc(func(params UpdatePasswordParams, principal *app.AuthUser) UpdatePasswordResponder {
-			// return middleware.NotImplemented("operation UpdatePassword has not yet been implemented")
-			return UpdatePasswordNotImplemented()
+		UpdatePasswordHandler: UpdatePasswordHandlerFunc(func(params UpdatePasswordParams, principal *app.AuthUser) middleware.Responder {
+			return middleware.NotImplemented("operation UpdatePassword has not yet been implemented")
 		}),
-		UpdateUsernameHandler: UpdateUsernameHandlerFunc(func(params UpdateUsernameParams, principal *app.AuthUser) UpdateUsernameResponder {
-			// return middleware.NotImplemented("operation UpdateUsername has not yet been implemented")
-			return UpdateUsernameNotImplemented()
+		UpdateUsernameHandler: UpdateUsernameHandlerFunc(func(params UpdateUsernameParams, principal *app.AuthUser) middleware.Responder {
+			return middleware.NotImplemented("operation UpdateUsername has not yet been implemented")
 		}),
-		VerificationEmailHandler: VerificationEmailHandlerFunc(func(params VerificationEmailParams) VerificationEmailResponder {
-			// return middleware.NotImplemented("operation VerificationEmail has not yet been implemented")
-			return VerificationEmailNotImplemented()
+		VerificationEmailHandler: VerificationEmailHandlerFunc(func(params VerificationEmailParams) middleware.Responder {
+			return middleware.NotImplemented("operation VerificationEmail has not yet been implemented")
 		}),
-		VerificationUsernameHandler: VerificationUsernameHandlerFunc(func(params VerificationUsernameParams) VerificationUsernameResponder {
-			// return middleware.NotImplemented("operation VerificationUsername has not yet been implemented")
-			return VerificationUsernameNotImplemented()
+		VerificationUsernameHandler: VerificationUsernameHandlerFunc(func(params VerificationUsernameParams) middleware.Responder {
+			return middleware.NotImplemented("operation VerificationUsername has not yet been implemented")
 		}),
 
 		// Applies when the "Cookie" header is set
 		CookieKeyAuth: func(token string) (*app.AuthUser, error) {
 			return nil, errors.NotImplemented("api key auth (cookieKey) Cookie from header param [Cookie] has not yet been implemented")
 		},
-
 		// default authorizer is authorized meaning no requests are blocked
 		APIAuthorizer: security.Authorized(),
 	}
 }
 
-/*ServiceUserAPI the service user API */
-type ServiceUserAPI struct {
+/*ServiceBoilerplateAPI the service boilerplate API */
+type ServiceBoilerplateAPI struct {
 	spec            *loads.Document
 	context         *middleware.Context
 	handlers        map[string]map[string]http.Handler
@@ -115,10 +107,12 @@ type ServiceUserAPI struct {
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
 
-	// JSONConsumer registers a consumer for a "application/json" mime type
+	// JSONConsumer registers a consumer for the following mime types:
+	//   - application/json
 	JSONConsumer runtime.Consumer
 
-	// JSONProducer registers a producer for a "application/json" mime type
+	// JSONProducer registers a producer for the following mime types:
+	//   - application/json
 	JSONProducer runtime.Producer
 
 	// CookieKeyAuth registers a function that takes a token and returns a principal
@@ -150,10 +144,13 @@ type ServiceUserAPI struct {
 	VerificationEmailHandler VerificationEmailHandler
 	// VerificationUsernameHandler sets the operation handler for the verification username operation
 	VerificationUsernameHandler VerificationUsernameHandler
-
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
+
+	// PreServerShutdown is called before the HTTP(S) server is shutdown
+	// This allows for custom functions to get executed before the HTTP(S) server stops accepting traffic
+	PreServerShutdown func()
 
 	// ServerShutdown is called when the HTTP(S) server is shut down and done
 	// handling all active connections and does not accept connections any more
@@ -167,42 +164,42 @@ type ServiceUserAPI struct {
 }
 
 // SetDefaultProduces sets the default produces media type
-func (o *ServiceUserAPI) SetDefaultProduces(mediaType string) {
+func (o *ServiceBoilerplateAPI) SetDefaultProduces(mediaType string) {
 	o.defaultProduces = mediaType
 }
 
 // SetDefaultConsumes returns the default consumes media type
-func (o *ServiceUserAPI) SetDefaultConsumes(mediaType string) {
+func (o *ServiceBoilerplateAPI) SetDefaultConsumes(mediaType string) {
 	o.defaultConsumes = mediaType
 }
 
 // SetSpec sets a spec that will be served for the clients.
-func (o *ServiceUserAPI) SetSpec(spec *loads.Document) {
+func (o *ServiceBoilerplateAPI) SetSpec(spec *loads.Document) {
 	o.spec = spec
 }
 
 // DefaultProduces returns the default produces media type
-func (o *ServiceUserAPI) DefaultProduces() string {
+func (o *ServiceBoilerplateAPI) DefaultProduces() string {
 	return o.defaultProduces
 }
 
 // DefaultConsumes returns the default consumes media type
-func (o *ServiceUserAPI) DefaultConsumes() string {
+func (o *ServiceBoilerplateAPI) DefaultConsumes() string {
 	return o.defaultConsumes
 }
 
 // Formats returns the registered string formats
-func (o *ServiceUserAPI) Formats() strfmt.Registry {
+func (o *ServiceBoilerplateAPI) Formats() strfmt.Registry {
 	return o.formats
 }
 
 // RegisterFormat registers a custom format validator
-func (o *ServiceUserAPI) RegisterFormat(name string, format strfmt.Format, validator strfmt.Validator) {
+func (o *ServiceBoilerplateAPI) RegisterFormat(name string, format strfmt.Format, validator strfmt.Validator) {
 	o.formats.Add(name, format, validator)
 }
 
-// Validate validates the registrations in the ServiceUserAPI
-func (o *ServiceUserAPI) Validate() error {
+// Validate validates the registrations in the ServiceBoilerplateAPI
+func (o *ServiceBoilerplateAPI) Validate() error {
 	var unregistered []string
 
 	if o.JSONConsumer == nil {
@@ -220,43 +217,33 @@ func (o *ServiceUserAPI) Validate() error {
 	if o.CreateUserHandler == nil {
 		unregistered = append(unregistered, "CreateUserHandler")
 	}
-
 	if o.DeleteUserHandler == nil {
 		unregistered = append(unregistered, "DeleteUserHandler")
 	}
-
 	if o.GetUserHandler == nil {
 		unregistered = append(unregistered, "GetUserHandler")
 	}
-
 	if o.GetUsersHandler == nil {
 		unregistered = append(unregistered, "GetUsersHandler")
 	}
-
 	if o.LoginHandler == nil {
 		unregistered = append(unregistered, "LoginHandler")
 	}
-
 	if o.LogoutHandler == nil {
 		unregistered = append(unregistered, "LogoutHandler")
 	}
-
 	if o.UpdateEmailHandler == nil {
 		unregistered = append(unregistered, "UpdateEmailHandler")
 	}
-
 	if o.UpdatePasswordHandler == nil {
 		unregistered = append(unregistered, "UpdatePasswordHandler")
 	}
-
 	if o.UpdateUsernameHandler == nil {
 		unregistered = append(unregistered, "UpdateUsernameHandler")
 	}
-
 	if o.VerificationEmailHandler == nil {
 		unregistered = append(unregistered, "VerificationEmailHandler")
 	}
-
 	if o.VerificationUsernameHandler == nil {
 		unregistered = append(unregistered, "VerificationUsernameHandler")
 	}
@@ -269,19 +256,17 @@ func (o *ServiceUserAPI) Validate() error {
 }
 
 // ServeErrorFor gets a error handler for a given operation id
-func (o *ServiceUserAPI) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
+func (o *ServiceBoilerplateAPI) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
 	return o.ServeError
 }
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
-func (o *ServiceUserAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
-
+func (o *ServiceBoilerplateAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
 	result := make(map[string]runtime.Authenticator)
-	for name, scheme := range schemes {
+	for name := range schemes {
 		switch name {
-
 		case "cookieKey":
-
+			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, func(token string) (interface{}, error) {
 				return o.CookieKeyAuth(token)
 			})
@@ -289,26 +274,21 @@ func (o *ServiceUserAPI) AuthenticatorsFor(schemes map[string]spec.SecuritySchem
 		}
 	}
 	return result
-
 }
 
 // Authorizer returns the registered authorizer
-func (o *ServiceUserAPI) Authorizer() runtime.Authorizer {
-
+func (o *ServiceBoilerplateAPI) Authorizer() runtime.Authorizer {
 	return o.APIAuthorizer
-
 }
 
-// ConsumersFor gets the consumers for the specified media types
-func (o *ServiceUserAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
-
-	result := make(map[string]runtime.Consumer)
+// ConsumersFor gets the consumers for the specified media types.
+// MIME type parameters are ignored here.
+func (o *ServiceBoilerplateAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
+	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/json":
 			result["application/json"] = o.JSONConsumer
-
 		}
 
 		if c, ok := o.customConsumers[mt]; ok {
@@ -316,19 +296,16 @@ func (o *ServiceUserAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Co
 		}
 	}
 	return result
-
 }
 
-// ProducersFor gets the producers for the specified media types
-func (o *ServiceUserAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
-
-	result := make(map[string]runtime.Producer)
+// ProducersFor gets the producers for the specified media types.
+// MIME type parameters are ignored here.
+func (o *ServiceBoilerplateAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
+	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/json":
 			result["application/json"] = o.JSONProducer
-
 		}
 
 		if p, ok := o.customProducers[mt]; ok {
@@ -336,11 +313,10 @@ func (o *ServiceUserAPI) ProducersFor(mediaTypes []string) map[string]runtime.Pr
 		}
 	}
 	return result
-
 }
 
 // HandlerFor gets a http.Handler for the provided operation method and path
-func (o *ServiceUserAPI) HandlerFor(method, path string) (http.Handler, bool) {
+func (o *ServiceBoilerplateAPI) HandlerFor(method, path string) (http.Handler, bool) {
 	if o.handlers == nil {
 		return nil, false
 	}
@@ -355,8 +331,8 @@ func (o *ServiceUserAPI) HandlerFor(method, path string) (http.Handler, bool) {
 	return h, ok
 }
 
-// Context returns the middleware context for the service user API
-func (o *ServiceUserAPI) Context() *middleware.Context {
+// Context returns the middleware context for the service boilerplate API
+func (o *ServiceBoilerplateAPI) Context() *middleware.Context {
 	if o.context == nil {
 		o.context = middleware.NewRoutableContext(o.spec, o, nil)
 	}
@@ -364,9 +340,8 @@ func (o *ServiceUserAPI) Context() *middleware.Context {
 	return o.context
 }
 
-func (o *ServiceUserAPI) initHandlerCache() {
+func (o *ServiceBoilerplateAPI) initHandlerCache() {
 	o.Context() // don't care about the result, just that the initialization happened
-
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
@@ -375,62 +350,51 @@ func (o *ServiceUserAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/user"] = NewCreateUser(o.context, o.CreateUserHandler)
-
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/user"] = NewDeleteUser(o.context, o.DeleteUserHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/user"] = NewGetUser(o.context, o.GetUserHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/users"] = NewGetUsers(o.context, o.GetUsersHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/login"] = NewLogin(o.context, o.LoginHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/logout"] = NewLogout(o.context, o.LogoutHandler)
-
 	if o.handlers["PATCH"] == nil {
 		o.handlers["PATCH"] = make(map[string]http.Handler)
 	}
 	o.handlers["PATCH"]["/user/email"] = NewUpdateEmail(o.context, o.UpdateEmailHandler)
-
 	if o.handlers["PATCH"] == nil {
 		o.handlers["PATCH"] = make(map[string]http.Handler)
 	}
 	o.handlers["PATCH"]["/user/password"] = NewUpdatePassword(o.context, o.UpdatePasswordHandler)
-
 	if o.handlers["PATCH"] == nil {
 		o.handlers["PATCH"] = make(map[string]http.Handler)
 	}
 	o.handlers["PATCH"]["/user/username"] = NewUpdateUsername(o.context, o.UpdateUsernameHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/email/verification"] = NewVerificationEmail(o.context, o.VerificationEmailHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/username/verification"] = NewVerificationUsername(o.context, o.VerificationUsernameHandler)
-
 }
 
 // Serve creates a http handler to serve the API over HTTP
 // can be used directly in http.ListenAndServe(":8000", api.Serve(nil))
-func (o *ServiceUserAPI) Serve(builder middleware.Builder) http.Handler {
+func (o *ServiceBoilerplateAPI) Serve(builder middleware.Builder) http.Handler {
 	o.Init()
 
 	if o.Middleware != nil {
@@ -440,18 +404,30 @@ func (o *ServiceUserAPI) Serve(builder middleware.Builder) http.Handler {
 }
 
 // Init allows you to just initialize the handler cache, you can then recompose the middleware as you see fit
-func (o *ServiceUserAPI) Init() {
+func (o *ServiceBoilerplateAPI) Init() {
 	if len(o.handlers) == 0 {
 		o.initHandlerCache()
 	}
 }
 
 // RegisterConsumer allows you to add (or override) a consumer for a media type.
-func (o *ServiceUserAPI) RegisterConsumer(mediaType string, consumer runtime.Consumer) {
+func (o *ServiceBoilerplateAPI) RegisterConsumer(mediaType string, consumer runtime.Consumer) {
 	o.customConsumers[mediaType] = consumer
 }
 
 // RegisterProducer allows you to add (or override) a producer for a media type.
-func (o *ServiceUserAPI) RegisterProducer(mediaType string, producer runtime.Producer) {
+func (o *ServiceBoilerplateAPI) RegisterProducer(mediaType string, producer runtime.Producer) {
 	o.customProducers[mediaType] = producer
+}
+
+// AddMiddlewareFor adds a http middleware to existing handler
+func (o *ServiceBoilerplateAPI) AddMiddlewareFor(method, path string, builder middleware.Builder) {
+	um := strings.ToUpper(method)
+	if path == "/" {
+		path = ""
+	}
+	o.Init()
+	if h, ok := o.handlers[um][path]; ok {
+		o.handlers[method][path] = builder(h)
+	}
 }

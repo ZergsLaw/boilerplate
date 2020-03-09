@@ -9,9 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
 
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
 )
 
 // UpdateUsernameNoContentCode is the HTTP code returned for type UpdateUsernameNoContent
@@ -37,8 +36,6 @@ func (o *UpdateUsernameNoContent) WriteResponse(rw http.ResponseWriter, producer
 
 	rw.WriteHeader(204)
 }
-
-func (o *UpdateUsernameNoContent) UpdateUsernameResponder() {}
 
 /*UpdateUsernameDefault Generic error response.
 
@@ -96,25 +93,4 @@ func (o *UpdateUsernameDefault) WriteResponse(rw http.ResponseWriter, producer r
 			panic(err) // let the recovery middleware deal with this
 		}
 	}
-}
-
-func (o *UpdateUsernameDefault) UpdateUsernameResponder() {}
-
-type UpdateUsernameNotImplementedResponder struct {
-	middleware.Responder
-}
-
-func (*UpdateUsernameNotImplementedResponder) UpdateUsernameResponder() {}
-
-func UpdateUsernameNotImplemented() UpdateUsernameResponder {
-	return &UpdateUsernameNotImplementedResponder{
-		middleware.NotImplemented(
-			"operation authentication.UpdateUsername has not yet been implemented",
-		),
-	}
-}
-
-type UpdateUsernameResponder interface {
-	middleware.Responder
-	UpdateUsernameResponder()
 }

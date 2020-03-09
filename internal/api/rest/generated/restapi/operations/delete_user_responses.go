@@ -9,9 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
 
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
 )
 
 // DeleteUserNoContentCode is the HTTP code returned for type DeleteUserNoContent
@@ -37,8 +36,6 @@ func (o *DeleteUserNoContent) WriteResponse(rw http.ResponseWriter, producer run
 
 	rw.WriteHeader(204)
 }
-
-func (o *DeleteUserNoContent) DeleteUserResponder() {}
 
 /*DeleteUserDefault Generic error response.
 
@@ -96,25 +93,4 @@ func (o *DeleteUserDefault) WriteResponse(rw http.ResponseWriter, producer runti
 			panic(err) // let the recovery middleware deal with this
 		}
 	}
-}
-
-func (o *DeleteUserDefault) DeleteUserResponder() {}
-
-type DeleteUserNotImplementedResponder struct {
-	middleware.Responder
-}
-
-func (*DeleteUserNotImplementedResponder) DeleteUserResponder() {}
-
-func DeleteUserNotImplemented() DeleteUserResponder {
-	return &DeleteUserNotImplementedResponder{
-		middleware.NotImplemented(
-			"operation authentication.DeleteUser has not yet been implemented",
-		),
-	}
-}
-
-type DeleteUserResponder interface {
-	middleware.Responder
-	DeleteUserResponder()
 }

@@ -9,9 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
 
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
 )
 
 // UpdateEmailNoContentCode is the HTTP code returned for type UpdateEmailNoContent
@@ -37,8 +36,6 @@ func (o *UpdateEmailNoContent) WriteResponse(rw http.ResponseWriter, producer ru
 
 	rw.WriteHeader(204)
 }
-
-func (o *UpdateEmailNoContent) UpdateEmailResponder() {}
 
 /*UpdateEmailDefault Generic error response.
 
@@ -96,25 +93,4 @@ func (o *UpdateEmailDefault) WriteResponse(rw http.ResponseWriter, producer runt
 			panic(err) // let the recovery middleware deal with this
 		}
 	}
-}
-
-func (o *UpdateEmailDefault) UpdateEmailResponder() {}
-
-type UpdateEmailNotImplementedResponder struct {
-	middleware.Responder
-}
-
-func (*UpdateEmailNotImplementedResponder) UpdateEmailResponder() {}
-
-func UpdateEmailNotImplemented() UpdateEmailResponder {
-	return &UpdateEmailNotImplementedResponder{
-		middleware.NotImplemented(
-			"operation authentication.UpdateEmail has not yet been implemented",
-		),
-	}
-}
-
-type UpdateEmailResponder interface {
-	middleware.Responder
-	UpdateEmailResponder()
 }

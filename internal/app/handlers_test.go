@@ -6,13 +6,13 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/zergslaw/users/internal/app"
+	"github.com/zergslaw/boilerplate/internal/app"
 )
 
 func TestApp_VerificationEmail(t *testing.T) {
 	t.Parallel()
 
-	application, mockRepo, _, _, shutdown := initTest(t)
+	application, mockRepo, _, _, _, _, shutdown := initTest(t)
 	defer shutdown()
 
 	mockRepo.EXPECT().UserByEmail(ctx, notExistEmail).Return(nil, app.ErrNotFound)
@@ -41,7 +41,7 @@ func TestApp_VerificationEmail(t *testing.T) {
 func TestApp_VerificationUsername(t *testing.T) {
 	t.Parallel()
 
-	application, mockRepo, _, _, shutdown := initTest(t)
+	application, mockRepo, _, _, _, _, shutdown := initTest(t)
 	defer shutdown()
 
 	mockRepo.EXPECT().UserByUsername(ctx, notExistUsername).Return(nil, app.ErrNotFound)
@@ -72,7 +72,7 @@ const tokenExpire = 24 * 7 * time.Hour
 func TestApp_Login(t *testing.T) {
 	t.Parallel()
 
-	application, mockRepo, mockPassword, mockToken, shutdown := initTest(t)
+	application, mockRepo, mockPassword, mockToken, _, _, shutdown := initTest(t)
 	defer shutdown()
 
 	mockRepo.EXPECT().UserByEmail(ctx, strings.ToLower(email1)).Return(&user1, nil).Times(4)
@@ -120,7 +120,7 @@ func TestApp_Login(t *testing.T) {
 func TestApp_CreateUser(t *testing.T) {
 	t.Parallel()
 
-	application, mockRepo, mockPassword, mockToken, shutdown := initTest(t)
+	application, mockRepo, mockPassword, mockToken, _, _, shutdown := initTest(t)
 	defer shutdown()
 
 	mockPassword.EXPECT().Hashing(password1).Return([]byte(password1), nil).Times(2)
@@ -176,7 +176,7 @@ func TestApp_CreateUser(t *testing.T) {
 func TestApp_UpdateUsername(t *testing.T) {
 	t.Parallel()
 
-	application, mockRepo, _, _, shutdown := initTest(t)
+	application, mockRepo, _, _, _, _, shutdown := initTest(t)
 	defer shutdown()
 
 	mockRepo.EXPECT().UpdateUsername(ctx, user1.ID, notExistUsername).Return(nil)
@@ -202,7 +202,7 @@ func TestApp_UpdateUsername(t *testing.T) {
 func TestApp_UpdateEmail(t *testing.T) {
 	t.Parallel()
 
-	application, mockRepo, _, _, shutdown := initTest(t)
+	application, mockRepo, _, _, _, _, shutdown := initTest(t)
 	defer shutdown()
 
 	mockRepo.EXPECT().UpdateEmail(ctx, user1.ID, strings.ToLower(notExistEmail)).Return(nil)
@@ -228,7 +228,7 @@ func TestApp_UpdateEmail(t *testing.T) {
 func TestApp_UpdatePassword(t *testing.T) {
 	t.Parallel()
 
-	application, mockRepo, mockPassword, _, shutdown := initTest(t)
+	application, mockRepo, mockPassword, _, _, _, shutdown := initTest(t)
 	defer shutdown()
 
 	mockRepo.EXPECT().UpdatePassword(ctx, user1.ID, []byte(password2)).Return(nil)
@@ -259,7 +259,7 @@ func TestApp_UpdatePassword(t *testing.T) {
 func TestApp_UserByAuthToken(t *testing.T) {
 	t.Parallel()
 
-	application, mockRepo, _, mockToken, shutdown := initTest(t)
+	application, mockRepo, _, mockToken, _, _, shutdown := initTest(t)
 	defer shutdown()
 
 	const expiredToken app.AuthToken = "notValidToken"

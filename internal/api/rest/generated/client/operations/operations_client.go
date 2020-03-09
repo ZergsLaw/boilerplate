@@ -7,12 +7,11 @@ package operations
 
 import (
 	"github.com/go-openapi/runtime"
-
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 )
 
 // New creates a new operations API client.
-func New(transport runtime.ClientTransport, formats strfmt.Registry) *Client {
+func New(transport runtime.ClientTransport, formats strfmt.Registry) ClientService {
 	return &Client{transport: transport, formats: formats}
 }
 
@@ -24,8 +23,35 @@ type Client struct {
 	formats   strfmt.Registry
 }
 
+// ClientService is the interface for Client methods
+type ClientService interface {
+	CreateUser(params *CreateUserParams) (*CreateUserOK, error)
+
+	DeleteUser(params *DeleteUserParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteUserNoContent, error)
+
+	GetUser(params *GetUserParams, authInfo runtime.ClientAuthInfoWriter) (*GetUserOK, error)
+
+	GetUsers(params *GetUsersParams, authInfo runtime.ClientAuthInfoWriter) (*GetUsersOK, error)
+
+	Login(params *LoginParams) (*LoginOK, error)
+
+	Logout(params *LogoutParams, authInfo runtime.ClientAuthInfoWriter) (*LogoutNoContent, error)
+
+	UpdateEmail(params *UpdateEmailParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateEmailNoContent, error)
+
+	UpdatePassword(params *UpdatePasswordParams, authInfo runtime.ClientAuthInfoWriter) (*UpdatePasswordNoContent, error)
+
+	UpdateUsername(params *UpdateUsernameParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateUsernameNoContent, error)
+
+	VerificationEmail(params *VerificationEmailParams) (*VerificationEmailNoContent, error)
+
+	VerificationUsername(params *VerificationUsernameParams) (*VerificationUsernameNoContent, error)
+
+	SetTransport(transport runtime.ClientTransport)
+}
+
 /*
-CreateUser New user registration. If it is not sent to username, it will be the userID
+  CreateUser New user registration. If it is not sent to username, it will be the userID
 */
 func (a *Client) CreateUser(params *CreateUserParams) (*CreateUserOK, error) {
 	// TODO: Validate the params before sending
@@ -48,12 +74,17 @@ func (a *Client) CreateUser(params *CreateUserParams) (*CreateUserOK, error) {
 	if err != nil {
 		return nil, err
 	}
-	return result.(*CreateUserOK), nil
-
+	success, ok := result.(*CreateUserOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CreateUserDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-DeleteUser Deletion of your account.
+  DeleteUser Deletion of your account.
 */
 func (a *Client) DeleteUser(params *DeleteUserParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteUserNoContent, error) {
 	// TODO: Validate the params before sending
@@ -77,12 +108,17 @@ func (a *Client) DeleteUser(params *DeleteUserParams, authInfo runtime.ClientAut
 	if err != nil {
 		return nil, err
 	}
-	return result.(*DeleteUserNoContent), nil
-
+	success, ok := result.(*DeleteUserNoContent)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*DeleteUserDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-GetUser Open user profile.
+  GetUser Open user profile.
 */
 func (a *Client) GetUser(params *GetUserParams, authInfo runtime.ClientAuthInfoWriter) (*GetUserOK, error) {
 	// TODO: Validate the params before sending
@@ -106,12 +142,17 @@ func (a *Client) GetUser(params *GetUserParams, authInfo runtime.ClientAuthInfoW
 	if err != nil {
 		return nil, err
 	}
-	return result.(*GetUserOK), nil
-
+	success, ok := result.(*GetUserOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GetUserDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-GetUsers User search.
+  GetUsers User search.
 */
 func (a *Client) GetUsers(params *GetUsersParams, authInfo runtime.ClientAuthInfoWriter) (*GetUsersOK, error) {
 	// TODO: Validate the params before sending
@@ -135,12 +176,17 @@ func (a *Client) GetUsers(params *GetUsersParams, authInfo runtime.ClientAuthInf
 	if err != nil {
 		return nil, err
 	}
-	return result.(*GetUsersOK), nil
-
+	success, ok := result.(*GetUsersOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GetUsersDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-Login Login for user.
+  Login Login for user.
 */
 func (a *Client) Login(params *LoginParams) (*LoginOK, error) {
 	// TODO: Validate the params before sending
@@ -163,12 +209,17 @@ func (a *Client) Login(params *LoginParams) (*LoginOK, error) {
 	if err != nil {
 		return nil, err
 	}
-	return result.(*LoginOK), nil
-
+	success, ok := result.(*LoginOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LoginDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-Logout Logout for user
+  Logout Logout for user
 */
 func (a *Client) Logout(params *LogoutParams, authInfo runtime.ClientAuthInfoWriter) (*LogoutNoContent, error) {
 	// TODO: Validate the params before sending
@@ -192,12 +243,17 @@ func (a *Client) Logout(params *LogoutParams, authInfo runtime.ClientAuthInfoWri
 	if err != nil {
 		return nil, err
 	}
-	return result.(*LogoutNoContent), nil
-
+	success, ok := result.(*LogoutNoContent)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*LogoutDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-UpdateEmail Change email.
+  UpdateEmail Change email.
 */
 func (a *Client) UpdateEmail(params *UpdateEmailParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateEmailNoContent, error) {
 	// TODO: Validate the params before sending
@@ -221,12 +277,17 @@ func (a *Client) UpdateEmail(params *UpdateEmailParams, authInfo runtime.ClientA
 	if err != nil {
 		return nil, err
 	}
-	return result.(*UpdateEmailNoContent), nil
-
+	success, ok := result.(*UpdateEmailNoContent)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UpdateEmailDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-UpdatePassword Change password.
+  UpdatePassword Change password.
 */
 func (a *Client) UpdatePassword(params *UpdatePasswordParams, authInfo runtime.ClientAuthInfoWriter) (*UpdatePasswordNoContent, error) {
 	// TODO: Validate the params before sending
@@ -250,12 +311,17 @@ func (a *Client) UpdatePassword(params *UpdatePasswordParams, authInfo runtime.C
 	if err != nil {
 		return nil, err
 	}
-	return result.(*UpdatePasswordNoContent), nil
-
+	success, ok := result.(*UpdatePasswordNoContent)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UpdatePasswordDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-UpdateUsername Change username.
+  UpdateUsername Change username.
 */
 func (a *Client) UpdateUsername(params *UpdateUsernameParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateUsernameNoContent, error) {
 	// TODO: Validate the params before sending
@@ -279,12 +345,17 @@ func (a *Client) UpdateUsername(params *UpdateUsernameParams, authInfo runtime.C
 	if err != nil {
 		return nil, err
 	}
-	return result.(*UpdateUsernameNoContent), nil
-
+	success, ok := result.(*UpdateUsernameNoContent)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UpdateUsernameDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-VerificationEmail verification email API
+  VerificationEmail verification email API
 */
 func (a *Client) VerificationEmail(params *VerificationEmailParams) (*VerificationEmailNoContent, error) {
 	// TODO: Validate the params before sending
@@ -307,12 +378,17 @@ func (a *Client) VerificationEmail(params *VerificationEmailParams) (*Verificati
 	if err != nil {
 		return nil, err
 	}
-	return result.(*VerificationEmailNoContent), nil
-
+	success, ok := result.(*VerificationEmailNoContent)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*VerificationEmailDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
-VerificationUsername verification username API
+  VerificationUsername verification username API
 */
 func (a *Client) VerificationUsername(params *VerificationUsernameParams) (*VerificationUsernameNoContent, error) {
 	// TODO: Validate the params before sending
@@ -335,8 +411,13 @@ func (a *Client) VerificationUsername(params *VerificationUsernameParams) (*Veri
 	if err != nil {
 		return nil, err
 	}
-	return result.(*VerificationUsernameNoContent), nil
-
+	success, ok := result.(*VerificationUsernameNoContent)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*VerificationUsernameDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 // SetTransport changes the transport on the client

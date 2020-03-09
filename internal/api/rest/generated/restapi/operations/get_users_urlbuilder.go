@@ -9,11 +9,19 @@ import (
 	"errors"
 	"net/url"
 	golangswaggerpaths "path"
+
+	"github.com/go-openapi/swag"
 )
 
 // GetUsersURL generates an URL for the get users operation
 type GetUsersURL struct {
+	Limit    int32
+	Offset   *int32
+	Username string
+
 	_basePath string
+	// avoid unkeyed usage
+	_ struct{}
 }
 
 // WithBasePath sets the base path for this url builder, only required when it's different from the
@@ -42,6 +50,28 @@ func (o *GetUsersURL) Build() (*url.URL, error) {
 		_basePath = "/api/v1"
 	}
 	_result.Path = golangswaggerpaths.Join(_basePath, _path)
+
+	qs := make(url.Values)
+
+	limitQ := swag.FormatInt32(o.Limit)
+	if limitQ != "" {
+		qs.Set("limit", limitQ)
+	}
+
+	var offsetQ string
+	if o.Offset != nil {
+		offsetQ = swag.FormatInt32(*o.Offset)
+	}
+	if offsetQ != "" {
+		qs.Set("offset", offsetQ)
+	}
+
+	usernameQ := o.Username
+	if usernameQ != "" {
+		qs.Set("username", usernameQ)
+	}
+
+	_result.RawQuery = qs.Encode()
 
 	return &_result, nil
 }

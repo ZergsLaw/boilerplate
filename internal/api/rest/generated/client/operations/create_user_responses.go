@@ -10,10 +10,9 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/strfmt"
 
-	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
 )
 
 // CreateUserReader is a Reader for the CreateUser structure.
@@ -24,14 +23,12 @@ type CreateUserReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *CreateUserReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 200:
 		result := NewCreateUserOK()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
 	default:
 		result := NewCreateUserDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -63,6 +60,10 @@ type CreateUserOK struct {
 
 func (o *CreateUserOK) Error() string {
 	return fmt.Sprintf("[POST /user][%d] createUserOK  %+v", 200, o.Payload)
+}
+
+func (o *CreateUserOK) GetPayload() *models.User {
+	return o.Payload
 }
 
 func (o *CreateUserOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -104,6 +105,10 @@ func (o *CreateUserDefault) Code() int {
 
 func (o *CreateUserDefault) Error() string {
 	return fmt.Sprintf("[POST /user][%d] createUser default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *CreateUserDefault) GetPayload() *models.Error {
+	return o.Payload
 }
 
 func (o *CreateUserDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

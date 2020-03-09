@@ -5,6 +5,7 @@ package app
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net"
 	"time"
 )
@@ -19,12 +20,14 @@ var (
 	ErrExpiredToken              = errors.New("auth is expired")
 	ErrUsernameNeedDifferentiate = errors.New("username need to differentiate")
 	ErrEmailNeedDifferentiate    = errors.New("email need to differentiate")
+	ErrNotUnknownKindTask        = errors.New("unknown task kind")
 )
 
 type (
-	// Repo interface for data repository.
-	Repo interface {
+	// UserRepo interface for data repository.
+	UserRepo interface {
 		// CreateUser adds to the new user in repository.
+		// This method is also required to create a notifying hoard.
 		// Errors: ErrEmailExist, ErrUsernameExist, unknown.
 		CreateUser(context.Context, User) (UserID, error)
 		// DeleteUser removes user from repository.
@@ -64,13 +67,21 @@ type (
 		// Errors: unknown.
 		DeleteSession(context.Context, TokenID) error
 	}
+	// WAL module returning tasks and also closing them.
+	WAL interface {
+		// NotificationTask returns the earliest task that has not been completed.
+		// Errors: ErrNoTasks, unknown.
+		NotificationTask(ctx context.Context) (task *TaskNotification, err error)
+		// DeleteTaskNotification removes the task performed.
+		// Errors: ErrNotFound, unknown.
+		DeleteTaskNotification(ctx context.Context, id int) error
+	}
 	// Notification module for working with alerts for registered users.
-	// TODO implements.
 	Notification interface {
-		// Notification must accept the parameter contact to whom the notification will be sent.
+		// NotificationTask must accept the parameter contact to whom the notification will be sent.
 		// At the moment, the guarantee of message delivery lies on this module, it is possible to
 		// transfer it to the app.
-		Notification(contact string, msg Message)
+		Notification(contact string, msg Message) error
 	}
 	// Password module responsible for working with passwords.
 	Password interface {
@@ -135,8 +146,8 @@ type (
 		// ListUserByUsername returns list user by username.
 		// Errors: unknown.
 		ListUserByUsername(context.Context, AuthUser, string, Page) ([]User, int, error)
+		StartWALNotification(ctx context.Context) error
 	}
-
 	// UserID contains user id.
 	UserID int
 	// SessionID contains Session id.
@@ -147,11 +158,14 @@ type (
 	AuthToken string
 	// TokenID contains auth id.
 	TokenID string
-
-	// Message contains message for notification user.
-	Message struct {
-		Text string
+	// TaskNotification contains information to perform the task of notifying the user.
+	TaskNotification struct {
+		ID    int
+		Email string
+		Kind  Message
 	}
+	// Message selects the type of message to be sent..
+	Message int
 	// Page for search users in repo.
 	Page struct {
 		Limit  int // > 0
@@ -191,17 +205,38 @@ type (
 	}
 	// app implements interface App.
 	app struct {
-		repo     Repo
-		password Password
-		token    Auth
+		repo         UserRepo
+		password     Password
+		auth         Auth
+		wal          WAL
+		notification Notification
 	}
 )
 
+// Message enums.
+const (
+	Welcome Message = iota + 1
+	ChangeEmail
+)
+
+func (m Message) String() string {
+	switch m {
+	case Welcome:
+		return "welcome"
+	case ChangeEmail:
+		return "change email"
+	default:
+		panic(fmt.Sprintf("unknown kind: %d", m))
+	}
+}
+
 // New creates and returns new App.
-func New(repo Repo, password Password, token Auth) App {
+func New(repo UserRepo, password Password, auth Auth, wal WAL, notification Notification) App {
 	return &app{
-		repo:     repo,
-		password: password,
-		token:    token,
+		repo:         repo,
+		password:     password,
+		auth:         auth,
+		wal:          wal,
+		notification: notification,
 	}
 }

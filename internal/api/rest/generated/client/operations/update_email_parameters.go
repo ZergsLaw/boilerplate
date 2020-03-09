@@ -13,10 +13,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-
-	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
+	"github.com/go-openapi/strfmt"
 )
 
 // NewUpdateEmailParams creates a new UpdateEmailParams object
@@ -63,8 +60,8 @@ for the update email operation typically these are written to a http.Request
 */
 type UpdateEmailParams struct {
 
-	/*Email*/
-	Email models.Email
+	/*Args*/
+	Args UpdateEmailBody
 
 	timeout    time.Duration
 	Context    context.Context
@@ -104,15 +101,15 @@ func (o *UpdateEmailParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithEmail adds the email to the update email params
-func (o *UpdateEmailParams) WithEmail(email models.Email) *UpdateEmailParams {
-	o.SetEmail(email)
+// WithArgs adds the args to the update email params
+func (o *UpdateEmailParams) WithArgs(args UpdateEmailBody) *UpdateEmailParams {
+	o.SetArgs(args)
 	return o
 }
 
-// SetEmail adds the email to the update email params
-func (o *UpdateEmailParams) SetEmail(email models.Email) {
-	o.Email = email
+// SetArgs adds the args to the update email params
+func (o *UpdateEmailParams) SetArgs(args UpdateEmailBody) {
+	o.Args = args
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -123,7 +120,7 @@ func (o *UpdateEmailParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 	}
 	var res []error
 
-	if err := r.SetBodyParam(o.Email); err != nil {
+	if err := r.SetBodyParam(o.Args); err != nil {
 		return err
 	}
 

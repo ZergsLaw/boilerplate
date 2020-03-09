@@ -12,12 +12,11 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 
-	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
 )
 
 // GetUsersReader is a Reader for the GetUsers structure.
@@ -28,14 +27,12 @@ type GetUsersReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *GetUsersReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 200:
 		result := NewGetUsersOK()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
 	default:
 		result := NewGetUsersDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -63,6 +60,10 @@ type GetUsersOK struct {
 
 func (o *GetUsersOK) Error() string {
 	return fmt.Sprintf("[GET /users][%d] getUsersOK  %+v", 200, o.Payload)
+}
+
+func (o *GetUsersOK) GetPayload() *GetUsersOKBody {
+	return o.Payload
 }
 
 func (o *GetUsersOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -101,6 +102,10 @@ func (o *GetUsersDefault) Code() int {
 
 func (o *GetUsersDefault) Error() string {
 	return fmt.Sprintf("[GET /users][%d] getUsers default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetUsersDefault) GetPayload() *models.Error {
+	return o.Payload
 }
 
 func (o *GetUsersDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

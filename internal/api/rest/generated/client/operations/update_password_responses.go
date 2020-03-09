@@ -10,10 +10,9 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/strfmt"
 
-	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
 )
 
 // UpdatePasswordReader is a Reader for the UpdatePassword structure.
@@ -24,14 +23,12 @@ type UpdatePasswordReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *UpdatePasswordReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 204:
 		result := NewUpdatePasswordNoContent()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
 	default:
 		result := NewUpdatePasswordDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -89,6 +86,10 @@ func (o *UpdatePasswordDefault) Code() int {
 
 func (o *UpdatePasswordDefault) Error() string {
 	return fmt.Sprintf("[PATCH /user/password][%d] updatePassword default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *UpdatePasswordDefault) GetPayload() *models.Error {
+	return o.Payload
 }
 
 func (o *UpdatePasswordDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

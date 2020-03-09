@@ -10,7 +10,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-//nolint:gochecknoglobals
+//nolint:gochecknoglobals,gocritic
 var metric struct {
 	reqInFlight prometheus.Gauge
 	reqTotal    *prometheus.CounterVec
@@ -23,11 +23,11 @@ const (
 	codeLabel     = "code"
 )
 
-//nolint:gochecknoglobals
+//nolint:gochecknoglobals,gocritic
 var (
 	// Initialized with codes returned by swagger and middlewareFunc
 	// after metrics middlewareFunc (accessLog).
-	codeLabels = []int{
+	codeLabels = [4]int{
 		http.StatusBadRequest,
 		http.StatusUnauthorized,
 		http.StatusForbidden,
@@ -73,7 +73,7 @@ func InitMetrics(namespace string, flatSwaggerJSON json.RawMessage) {
 	}
 	for method, resources := range ss.Analyzer.Operations() {
 		for resource, op := range resources {
-			codes := append([]int{}, codeLabels...)
+			codes := append([]int{}, codeLabels[:]...)
 			for code := range op.Responses.StatusCodeResponses {
 				codes = append(codes, code)
 			}

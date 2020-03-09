@@ -9,9 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
 
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
 )
 
 // LogoutNoContentCode is the HTTP code returned for type LogoutNoContent
@@ -37,8 +36,6 @@ func (o *LogoutNoContent) WriteResponse(rw http.ResponseWriter, producer runtime
 
 	rw.WriteHeader(204)
 }
-
-func (o *LogoutNoContent) LogoutResponder() {}
 
 /*LogoutDefault Generic error response.
 
@@ -96,25 +93,4 @@ func (o *LogoutDefault) WriteResponse(rw http.ResponseWriter, producer runtime.P
 			panic(err) // let the recovery middleware deal with this
 		}
 	}
-}
-
-func (o *LogoutDefault) LogoutResponder() {}
-
-type LogoutNotImplementedResponder struct {
-	middleware.Responder
-}
-
-func (*LogoutNotImplementedResponder) LogoutResponder() {}
-
-func LogoutNotImplemented() LogoutResponder {
-	return &LogoutNotImplementedResponder{
-		middleware.NotImplemented(
-			"operation authentication.Logout has not yet been implemented",
-		),
-	}
-}
-
-type LogoutResponder interface {
-	middleware.Responder
-	LogoutResponder()
 }

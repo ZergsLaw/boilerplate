@@ -9,9 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
 
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
 )
 
 // UpdatePasswordNoContentCode is the HTTP code returned for type UpdatePasswordNoContent
@@ -37,8 +36,6 @@ func (o *UpdatePasswordNoContent) WriteResponse(rw http.ResponseWriter, producer
 
 	rw.WriteHeader(204)
 }
-
-func (o *UpdatePasswordNoContent) UpdatePasswordResponder() {}
 
 /*UpdatePasswordDefault Generic error response.
 
@@ -96,25 +93,4 @@ func (o *UpdatePasswordDefault) WriteResponse(rw http.ResponseWriter, producer r
 			panic(err) // let the recovery middleware deal with this
 		}
 	}
-}
-
-func (o *UpdatePasswordDefault) UpdatePasswordResponder() {}
-
-type UpdatePasswordNotImplementedResponder struct {
-	middleware.Responder
-}
-
-func (*UpdatePasswordNotImplementedResponder) UpdatePasswordResponder() {}
-
-func UpdatePasswordNotImplemented() UpdatePasswordResponder {
-	return &UpdatePasswordNotImplementedResponder{
-		middleware.NotImplemented(
-			"operation authentication.UpdatePassword has not yet been implemented",
-		),
-	}
-}
-
-type UpdatePasswordResponder interface {
-	middleware.Responder
-	UpdatePasswordResponder()
 }

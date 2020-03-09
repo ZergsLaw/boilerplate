@@ -1,8 +1,8 @@
 package rest
 
 import (
-	"github.com/zergslaw/users/internal/api/rest/generated/models"
-	"github.com/zergslaw/users/internal/app"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
+	"github.com/zergslaw/boilerplate/internal/app"
 )
 
 // Users conversion []app.User => []*models.User.

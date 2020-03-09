@@ -8,21 +8,26 @@ package operations
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
-	"github.com/zergslaw/users/internal/app"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
+	"github.com/zergslaw/boilerplate/internal/app"
 )
 
 // UpdateUsernameHandlerFunc turns a function with the right signature into a update username handler
-type UpdateUsernameHandlerFunc func(UpdateUsernameParams, *app.AuthUser) UpdateUsernameResponder
+type UpdateUsernameHandlerFunc func(UpdateUsernameParams, *app.AuthUser) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn UpdateUsernameHandlerFunc) Handle(params UpdateUsernameParams, principal *app.AuthUser) UpdateUsernameResponder {
+func (fn UpdateUsernameHandlerFunc) Handle(params UpdateUsernameParams, principal *app.AuthUser) middleware.Responder {
 	return fn(params, principal)
 }
 
 // UpdateUsernameHandler interface for that can handle valid update username params
 type UpdateUsernameHandler interface {
-	Handle(UpdateUsernameParams, *app.AuthUser) UpdateUsernameResponder
+	Handle(UpdateUsernameParams, *app.AuthUser) middleware.Responder
 }
 
 // NewUpdateUsername creates a new http.Handler for the update username operation
@@ -69,4 +74,58 @@ func (o *UpdateUsername) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
+}
+
+// UpdateUsernameBody update username body
+//
+// swagger:model UpdateUsernameBody
+type UpdateUsernameBody struct {
+
+	// username
+	// Required: true
+	Username models.Username `json:"username"`
+}
+
+// Validate validates this update username body
+func (o *UpdateUsernameBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateUsername(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *UpdateUsernameBody) validateUsername(formats strfmt.Registry) error {
+
+	if err := o.Username.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("args" + "." + "username")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *UpdateUsernameBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *UpdateUsernameBody) UnmarshalBinary(b []byte) error {
+	var res UpdateUsernameBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
 }

@@ -10,10 +10,9 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/strfmt"
 
-	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
 )
 
 // LogoutReader is a Reader for the Logout structure.
@@ -24,14 +23,12 @@ type LogoutReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *LogoutReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 204:
 		result := NewLogoutNoContent()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
 	default:
 		result := NewLogoutDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -89,6 +86,10 @@ func (o *LogoutDefault) Code() int {
 
 func (o *LogoutDefault) Error() string {
 	return fmt.Sprintf("[POST /logout][%d] logout default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *LogoutDefault) GetPayload() *models.Error {
+	return o.Payload
 }
 
 func (o *LogoutDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

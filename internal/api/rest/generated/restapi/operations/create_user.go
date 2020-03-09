@@ -8,20 +8,20 @@ package operations
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 // CreateUserHandlerFunc turns a function with the right signature into a create user handler
-type CreateUserHandlerFunc func(CreateUserParams) CreateUserResponder
+type CreateUserHandlerFunc func(CreateUserParams) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn CreateUserHandlerFunc) Handle(params CreateUserParams) CreateUserResponder {
+func (fn CreateUserHandlerFunc) Handle(params CreateUserParams) middleware.Responder {
 	return fn(params)
 }
 
 // CreateUserHandler interface for that can handle valid create user params
 type CreateUserHandler interface {
-	Handle(CreateUserParams) CreateUserResponder
+	Handle(CreateUserParams) middleware.Responder
 }
 
 // NewCreateUser creates a new http.Handler for the create user operation

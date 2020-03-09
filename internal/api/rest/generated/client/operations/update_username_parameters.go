@@ -13,10 +13,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-
-	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
+	"github.com/go-openapi/strfmt"
 )
 
 // NewUpdateUsernameParams creates a new UpdateUsernameParams object
@@ -63,8 +60,8 @@ for the update username operation typically these are written to a http.Request
 */
 type UpdateUsernameParams struct {
 
-	/*Username*/
-	Username models.Username
+	/*Args*/
+	Args UpdateUsernameBody
 
 	timeout    time.Duration
 	Context    context.Context
@@ -104,15 +101,15 @@ func (o *UpdateUsernameParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithUsername adds the username to the update username params
-func (o *UpdateUsernameParams) WithUsername(username models.Username) *UpdateUsernameParams {
-	o.SetUsername(username)
+// WithArgs adds the args to the update username params
+func (o *UpdateUsernameParams) WithArgs(args UpdateUsernameBody) *UpdateUsernameParams {
+	o.SetArgs(args)
 	return o
 }
 
-// SetUsername adds the username to the update username params
-func (o *UpdateUsernameParams) SetUsername(username models.Username) {
-	o.Username = username
+// SetArgs adds the args to the update username params
+func (o *UpdateUsernameParams) SetArgs(args UpdateUsernameBody) {
+	o.Args = args
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -123,7 +120,7 @@ func (o *UpdateUsernameParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	}
 	var res []error
 
-	if err := r.SetBodyParam(o.Username); err != nil {
+	if err := r.SetBodyParam(o.Args); err != nil {
 		return err
 	}
 

@@ -13,10 +13,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-
-	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
+	"github.com/go-openapi/strfmt"
 )
 
 // NewVerificationEmailParams creates a new VerificationEmailParams object
@@ -63,8 +60,8 @@ for the verification email operation typically these are written to a http.Reque
 */
 type VerificationEmailParams struct {
 
-	/*Email*/
-	Email models.Email
+	/*Args*/
+	Args VerificationEmailBody
 
 	timeout    time.Duration
 	Context    context.Context
@@ -104,15 +101,15 @@ func (o *VerificationEmailParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithEmail adds the email to the verification email params
-func (o *VerificationEmailParams) WithEmail(email models.Email) *VerificationEmailParams {
-	o.SetEmail(email)
+// WithArgs adds the args to the verification email params
+func (o *VerificationEmailParams) WithArgs(args VerificationEmailBody) *VerificationEmailParams {
+	o.SetArgs(args)
 	return o
 }
 
-// SetEmail adds the email to the verification email params
-func (o *VerificationEmailParams) SetEmail(email models.Email) {
-	o.Email = email
+// SetArgs adds the args to the verification email params
+func (o *VerificationEmailParams) SetArgs(args VerificationEmailBody) {
+	o.Args = args
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -123,7 +120,7 @@ func (o *VerificationEmailParams) WriteToRequest(r runtime.ClientRequest, reg st
 	}
 	var res []error
 
-	if err := r.SetBodyParam(o.Email); err != nil {
+	if err := r.SetBodyParam(o.Args); err != nil {
 		return err
 	}
 

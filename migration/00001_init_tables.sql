@@ -30,8 +30,12 @@ create table sessions
 
 create table notifications
 (
-    id      serial,
-    user_id integer references users (id) on delete cascade,
+    id         serial,
+    user_id    integer references users on delete cascade,
+    kind       text                    not null,
+    is_done    bool      default false not null,
+    created_at timestamp default now() not null,
+    exec_time  timestamp,
 
     primary key (id)
 );

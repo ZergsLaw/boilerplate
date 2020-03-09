@@ -9,11 +9,12 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 
-	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
 )
 
 // UpdateUsernameReader is a Reader for the UpdateUsername structure.
@@ -24,14 +25,12 @@ type UpdateUsernameReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *UpdateUsernameReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 204:
 		result := NewUpdateUsernameNoContent()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
 	default:
 		result := NewUpdateUsernameDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -91,6 +90,10 @@ func (o *UpdateUsernameDefault) Error() string {
 	return fmt.Sprintf("[PATCH /user/username][%d] updateUsername default  %+v", o._statusCode, o.Payload)
 }
 
+func (o *UpdateUsernameDefault) GetPayload() *models.Error {
+	return o.Payload
+}
+
 func (o *UpdateUsernameDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.Error)
@@ -100,5 +103,59 @@ func (o *UpdateUsernameDefault) readResponse(response runtime.ClientResponse, co
 		return err
 	}
 
+	return nil
+}
+
+/*UpdateUsernameBody update username body
+swagger:model UpdateUsernameBody
+*/
+type UpdateUsernameBody struct {
+
+	// username
+	// Required: true
+	Username models.Username `json:"username"`
+}
+
+// Validate validates this update username body
+func (o *UpdateUsernameBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateUsername(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *UpdateUsernameBody) validateUsername(formats strfmt.Registry) error {
+
+	if err := o.Username.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("args" + "." + "username")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *UpdateUsernameBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *UpdateUsernameBody) UnmarshalBinary(b []byte) error {
+	var res UpdateUsernameBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

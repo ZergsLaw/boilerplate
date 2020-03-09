@@ -9,11 +9,12 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 
-	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
 )
 
 // VerificationEmailReader is a Reader for the VerificationEmail structure.
@@ -24,14 +25,12 @@ type VerificationEmailReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *VerificationEmailReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 204:
 		result := NewVerificationEmailNoContent()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
 	default:
 		result := NewVerificationEmailDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -91,6 +90,10 @@ func (o *VerificationEmailDefault) Error() string {
 	return fmt.Sprintf("[POST /email/verification][%d] verificationEmail default  %+v", o._statusCode, o.Payload)
 }
 
+func (o *VerificationEmailDefault) GetPayload() *models.Error {
+	return o.Payload
+}
+
 func (o *VerificationEmailDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.Error)
@@ -100,5 +103,60 @@ func (o *VerificationEmailDefault) readResponse(response runtime.ClientResponse,
 		return err
 	}
 
+	return nil
+}
+
+/*VerificationEmailBody verification email body
+swagger:model VerificationEmailBody
+*/
+type VerificationEmailBody struct {
+
+	// email
+	// Required: true
+	// Format: email
+	Email models.Email `json:"email"`
+}
+
+// Validate validates this verification email body
+func (o *VerificationEmailBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateEmail(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *VerificationEmailBody) validateEmail(formats strfmt.Registry) error {
+
+	if err := o.Email.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("args" + "." + "email")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *VerificationEmailBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *VerificationEmailBody) UnmarshalBinary(b []byte) error {
+	var res VerificationEmailBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

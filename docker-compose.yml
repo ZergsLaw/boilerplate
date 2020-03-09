@@ -13,13 +13,24 @@ services:
       POSTGRES_DB: "postgres"
       POSTGRES_PASSWORD: postgres
 
-#  users:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#    image: users
-#    container_name: users
-#    restart: always
-#    command: "./users serve --jwt-key testKey --db-host postgres --migrate up"
-#    ports:
-#      - "8080:8080"
+  rabbit:
+    container_name: rabbit
+    image: "rabbitmq:3.7-management"
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: "rabbit"
+      RABBITMQ_DEFAULT_PASS: "rabbit"
+    ports:
+      - 15672:15672
+      - 5672:5672
+
+  boilerplate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: boilerplate
+    container_name: boilerplate
+    restart: always
+    command: "./boilerplate serve --jwt-key testKey --db-host postgres --rabbit-host rabbit --migrate up"
+    ports:
+      - "8080:8080"

@@ -12,8 +12,6 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
-
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
 )
 
 // NewUpdateUsernameParams creates a new UpdateUsernameParams object
@@ -36,7 +34,7 @@ type UpdateUsernameParams struct {
 	  Required: true
 	  In: body
 	*/
-	Username models.Username
+	Args UpdateUsernameBody
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -50,12 +48,12 @@ func (o *UpdateUsernameParams) BindRequest(r *http.Request, route *middleware.Ma
 
 	if runtime.HasBody(r) {
 		defer r.Body.Close()
-		var body models.Username
+		var body UpdateUsernameBody
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			if err == io.EOF {
-				res = append(res, errors.Required("username", "body"))
+				res = append(res, errors.Required("args", "body"))
 			} else {
-				res = append(res, errors.NewParseError("username", "body", "", err))
+				res = append(res, errors.NewParseError("args", "body", "", err))
 			}
 		} else {
 			// validate body object
@@ -64,11 +62,11 @@ func (o *UpdateUsernameParams) BindRequest(r *http.Request, route *middleware.Ma
 			}
 
 			if len(res) == 0 {
-				o.Username = body
+				o.Args = body
 			}
 		}
 	} else {
-		res = append(res, errors.Required("username", "body"))
+		res = append(res, errors.Required("args", "body"))
 	}
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)

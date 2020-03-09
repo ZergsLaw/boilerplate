@@ -1,4 +1,4 @@
-package db
+package repo
 
 import (
 	"reflect"
@@ -8,10 +8,11 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-	"github.com/zergslaw/users/internal/app"
+	"github.com/zergslaw/boilerplate/internal/app"
 )
 
-var metric struct { //nolint:gochecknoglobals
+//nolint:gochecknoglobals,gocritic
+var metric struct {
 	callTotal    *prometheus.CounterVec
 	callErrTotal *prometheus.CounterVec
 	callDuration *prometheus.HistogramVec
@@ -24,14 +25,14 @@ const (
 // InitMetrics must be called once before using this package.
 // It registers and initializes metrics used by this package.
 func InitMetrics(namespace string) {
-	const subsystem = "db"
+	const subsystem = "repo"
 
 	metric.callTotal = promauto.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: namespace,
 			Subsystem: subsystem,
 			Name:      "call_total",
-			Help:      "Amount of Repo calls.",
+			Help:      "Amount of UserRepo calls.",
 		},
 		[]string{methodLabel},
 	)
@@ -40,7 +41,7 @@ func InitMetrics(namespace string) {
 			Namespace: namespace,
 			Subsystem: subsystem,
 			Name:      "errors_total",
-			Help:      "Amount of Repo errors.",
+			Help:      "Amount of UserRepo errors.",
 		},
 		[]string{methodLabel},
 	)
@@ -49,12 +50,21 @@ func InitMetrics(namespace string) {
 			Namespace: namespace,
 			Subsystem: subsystem,
 			Name:      "call_duration_seconds",
-			Help:      "Repo call latency.",
+			Help:      "UserRepo call latency.",
 		},
 		[]string{methodLabel},
 	)
 
-	for _, method := range methodsOf(new(app.Repo)) {
+	for _, method := range methodsOf(new(app.UserRepo)) {
+		l := prometheus.Labels{
+			methodLabel: method,
+		}
+		metric.callTotal.With(l)
+		metric.callErrTotal.With(l)
+		metric.callDuration.With(l)
+	}
+
+	for _, method := range methodsOf(new(app.WAL)) {
 		l := prometheus.Labels{
 			methodLabel: method,
 		}

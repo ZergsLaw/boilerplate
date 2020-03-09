@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/zergslaw/users/internal/password"
+	"github.com/zergslaw/boilerplate/internal/password"
 )
 
 var (

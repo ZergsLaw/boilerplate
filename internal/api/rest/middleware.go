@@ -8,9 +8,9 @@ import (
 
 	"github.com/felixge/httpsnoop"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/sirupsen/logrus"
-	"github.com/zergslaw/users/internal/log"
-	"github.com/zergslaw/users/internal/metrics"
+	"github.com/zergslaw/boilerplate/internal/log"
+	"github.com/zergslaw/boilerplate/internal/metrics"
+	"go.uber.org/zap"
 )
 
 type middlewareFunc func(http.Handler) http.Handler
@@ -18,7 +18,7 @@ type middlewareFunc func(http.Handler) http.Handler
 // go-swagger responders panic on error while writing response to client,
 // this shouldn't result in crash - unlike a real, reasonable panic.
 //
-// Usually it should be second middlewareFunc (after logger).
+// Usually it should be second middlewareFunc (after createLogger).
 func recovery(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
@@ -27,18 +27,18 @@ func recovery(next http.Handler) http.Handler {
 			default:
 				metrics.PanicsTotal.Inc()
 				logger := log.FromContext(r.Context())
-				logger.WithFields(logrus.Fields{
-					log.HTTPStatus: code,
-					log.Error:      "panic",
-				}).Error(err)
+				logger.With(
+					zap.Any(log.Error, err),
+				).Error("panic")
+
 				w.WriteHeader(code)
 			case nil:
 			case net.Error:
 				logger := log.FromContext(r.Context())
-				logger.WithFields(logrus.Fields{
-					log.HTTPStatus: code,
-					log.Error:      "recovered",
-				}).Error(err)
+				logger.With(
+					zap.Error(err),
+				).Error("recovered")
+
 				w.WriteHeader(code)
 			}
 		}()
@@ -47,18 +47,16 @@ func recovery(next http.Handler) http.Handler {
 	})
 }
 
-func logger(basePath string) middlewareFunc {
+func createLogger(basePath string, logger *zap.Logger) middlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			logger := logrus.New().WithFields(logrus.Fields{
-				log.Remote:     r.RemoteAddr,
-				log.HTTPStatus: "",
-				log.HTTPMethod: r.Method,
-				log.Func:       strings.TrimPrefix(r.URL.Path, basePath),
-				log.API:        "rest",
-			})
+			newLogger := logger.With(
+				zap.String(log.Remote, r.RemoteAddr),
+				zap.String(log.HTTPMethod, r.Method),
+				zap.String(log.Func, strings.TrimPrefix(r.URL.Path, basePath)),
+			)
 
-			r = r.WithContext(log.SetContext(r.Context(), logger))
+			r = r.WithContext(log.SetContext(r.Context(), newLogger))
 
 			next.ServeHTTP(w, r)
 		})
@@ -82,9 +80,9 @@ func accessLog(basePath string) middlewareFunc {
 
 			logger := log.FromContext(r.Context())
 			if m.Code < 500 {
-				logger.WithField(log.HTTPStatus, m.Code).Info("handled")
+				logger.With(zap.Int(log.HTTPStatus, m.Code)).Info("handled")
 			} else {
-				logger.WithField(log.HTTPStatus, m.Code).Warn("failed to handle")
+				logger.With(zap.Int(log.HTTPStatus, m.Code)).Warn("failed to handle")
 			}
 		})
 	}

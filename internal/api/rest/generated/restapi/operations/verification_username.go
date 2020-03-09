@@ -8,20 +8,25 @@ package operations
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
 )
 
 // VerificationUsernameHandlerFunc turns a function with the right signature into a verification username handler
-type VerificationUsernameHandlerFunc func(VerificationUsernameParams) VerificationUsernameResponder
+type VerificationUsernameHandlerFunc func(VerificationUsernameParams) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn VerificationUsernameHandlerFunc) Handle(params VerificationUsernameParams) VerificationUsernameResponder {
+func (fn VerificationUsernameHandlerFunc) Handle(params VerificationUsernameParams) middleware.Responder {
 	return fn(params)
 }
 
 // VerificationUsernameHandler interface for that can handle valid verification username params
 type VerificationUsernameHandler interface {
-	Handle(VerificationUsernameParams) VerificationUsernameResponder
+	Handle(VerificationUsernameParams) middleware.Responder
 }
 
 // NewVerificationUsername creates a new http.Handler for the verification username operation
@@ -55,4 +60,58 @@ func (o *VerificationUsername) ServeHTTP(rw http.ResponseWriter, r *http.Request
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
+}
+
+// VerificationUsernameBody verification username body
+//
+// swagger:model VerificationUsernameBody
+type VerificationUsernameBody struct {
+
+	// username
+	// Required: true
+	Username models.Username `json:"username"`
+}
+
+// Validate validates this verification username body
+func (o *VerificationUsernameBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateUsername(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *VerificationUsernameBody) validateUsername(formats strfmt.Registry) error {
+
+	if err := o.Username.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("args" + "." + "username")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *VerificationUsernameBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *VerificationUsernameBody) UnmarshalBinary(b []byte) error {
+	var res VerificationUsernameBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
 }

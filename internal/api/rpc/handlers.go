@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/zergslaw/users/internal/app"
+	"github.com/zergslaw/boilerplate/internal/app"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

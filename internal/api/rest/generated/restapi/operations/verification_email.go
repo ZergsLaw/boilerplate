@@ -8,20 +8,25 @@ package operations
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
 )
 
 // VerificationEmailHandlerFunc turns a function with the right signature into a verification email handler
-type VerificationEmailHandlerFunc func(VerificationEmailParams) VerificationEmailResponder
+type VerificationEmailHandlerFunc func(VerificationEmailParams) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn VerificationEmailHandlerFunc) Handle(params VerificationEmailParams) VerificationEmailResponder {
+func (fn VerificationEmailHandlerFunc) Handle(params VerificationEmailParams) middleware.Responder {
 	return fn(params)
 }
 
 // VerificationEmailHandler interface for that can handle valid verification email params
 type VerificationEmailHandler interface {
-	Handle(VerificationEmailParams) VerificationEmailResponder
+	Handle(VerificationEmailParams) middleware.Responder
 }
 
 // NewVerificationEmail creates a new http.Handler for the verification email operation
@@ -55,4 +60,59 @@ func (o *VerificationEmail) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
+}
+
+// VerificationEmailBody verification email body
+//
+// swagger:model VerificationEmailBody
+type VerificationEmailBody struct {
+
+	// email
+	// Required: true
+	// Format: email
+	Email models.Email `json:"email"`
+}
+
+// Validate validates this verification email body
+func (o *VerificationEmailBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateEmail(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *VerificationEmailBody) validateEmail(formats strfmt.Registry) error {
+
+	if err := o.Email.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("args" + "." + "email")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *VerificationEmailBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *VerificationEmailBody) UnmarshalBinary(b []byte) error {
+	var res VerificationEmailBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
 }

@@ -13,17 +13,20 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
-
-	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 )
 
 // NewGetUsersParams creates a new GetUsersParams object
 // with the default values initialized.
 func NewGetUsersParams() *GetUsersParams {
-	var ()
+	var (
+		limitDefault  = int32(100)
+		offsetDefault = int32(0)
+	)
 	return &GetUsersParams{
+		Limit:  limitDefault,
+		Offset: &offsetDefault,
 
 		timeout: cr.DefaultTimeout,
 	}
@@ -32,8 +35,13 @@ func NewGetUsersParams() *GetUsersParams {
 // NewGetUsersParamsWithTimeout creates a new GetUsersParams object
 // with the default values initialized, and the ability to set a timeout on a request
 func NewGetUsersParamsWithTimeout(timeout time.Duration) *GetUsersParams {
-	var ()
+	var (
+		limitDefault  = int32(100)
+		offsetDefault = int32(0)
+	)
 	return &GetUsersParams{
+		Limit:  limitDefault,
+		Offset: &offsetDefault,
 
 		timeout: timeout,
 	}
@@ -42,8 +50,13 @@ func NewGetUsersParamsWithTimeout(timeout time.Duration) *GetUsersParams {
 // NewGetUsersParamsWithContext creates a new GetUsersParams object
 // with the default values initialized, and the ability to set a context for a request
 func NewGetUsersParamsWithContext(ctx context.Context) *GetUsersParams {
-	var ()
+	var (
+		limitDefault  = int32(100)
+		offsetDefault = int32(0)
+	)
 	return &GetUsersParams{
+		Limit:  limitDefault,
+		Offset: &offsetDefault,
 
 		Context: ctx,
 	}
@@ -52,8 +65,13 @@ func NewGetUsersParamsWithContext(ctx context.Context) *GetUsersParams {
 // NewGetUsersParamsWithHTTPClient creates a new GetUsersParams object
 // with the default values initialized, and the ability to set a custom HTTPClient for a request
 func NewGetUsersParamsWithHTTPClient(client *http.Client) *GetUsersParams {
-	var ()
+	var (
+		limitDefault  = int32(100)
+		offsetDefault = int32(0)
+	)
 	return &GetUsersParams{
+		Limit:      limitDefault,
+		Offset:     &offsetDefault,
 		HTTPClient: client,
 	}
 }
@@ -63,8 +81,12 @@ for the get users operation typically these are written to a http.Request
 */
 type GetUsersParams struct {
 
-	/*Args*/
-	Args *models.ListUsersParams
+	/*Limit*/
+	Limit int32
+	/*Offset*/
+	Offset *int32
+	/*Username*/
+	Username string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -104,15 +126,37 @@ func (o *GetUsersParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
-// WithArgs adds the args to the get users params
-func (o *GetUsersParams) WithArgs(args *models.ListUsersParams) *GetUsersParams {
-	o.SetArgs(args)
+// WithLimit adds the limit to the get users params
+func (o *GetUsersParams) WithLimit(limit int32) *GetUsersParams {
+	o.SetLimit(limit)
 	return o
 }
 
-// SetArgs adds the args to the get users params
-func (o *GetUsersParams) SetArgs(args *models.ListUsersParams) {
-	o.Args = args
+// SetLimit adds the limit to the get users params
+func (o *GetUsersParams) SetLimit(limit int32) {
+	o.Limit = limit
+}
+
+// WithOffset adds the offset to the get users params
+func (o *GetUsersParams) WithOffset(offset *int32) *GetUsersParams {
+	o.SetOffset(offset)
+	return o
+}
+
+// SetOffset adds the offset to the get users params
+func (o *GetUsersParams) SetOffset(offset *int32) {
+	o.Offset = offset
+}
+
+// WithUsername adds the username to the get users params
+func (o *GetUsersParams) WithUsername(username string) *GetUsersParams {
+	o.SetUsername(username)
+	return o
+}
+
+// SetUsername adds the username to the get users params
+func (o *GetUsersParams) SetUsername(username string) {
+	o.Username = username
 }
 
 // WriteToRequest writes these params to a swagger request
@@ -123,8 +167,36 @@ func (o *GetUsersParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regi
 	}
 	var res []error
 
-	if o.Args != nil {
-		if err := r.SetBodyParam(o.Args); err != nil {
+	// query param limit
+	qrLimit := o.Limit
+	qLimit := swag.FormatInt32(qrLimit)
+	if qLimit != "" {
+		if err := r.SetQueryParam("limit", qLimit); err != nil {
+			return err
+		}
+	}
+
+	if o.Offset != nil {
+
+		// query param offset
+		var qrOffset int32
+		if o.Offset != nil {
+			qrOffset = *o.Offset
+		}
+		qOffset := swag.FormatInt32(qrOffset)
+		if qOffset != "" {
+			if err := r.SetQueryParam("offset", qOffset); err != nil {
+				return err
+			}
+		}
+
+	}
+
+	// query param username
+	qrUsername := o.Username
+	qUsername := qrUsername
+	if qUsername != "" {
+		if err := r.SetQueryParam("username", qUsername); err != nil {
 			return err
 		}
 	}

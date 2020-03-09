@@ -2,15 +2,17 @@ package rest
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
-	"github.com/zergslaw/users/internal/app"
+	unautnError "github.com/go-openapi/errors"
+	"github.com/zergslaw/boilerplate/internal/app"
 )
 
 const (
-	cookieTokenName = "__Secure-authKey" // nolint:gosec
+	cookieTokenName = "__Secure-authKey" // nolint:gosec,gocritic
 	authTimeout     = 250 * time.Millisecond
 )
 
@@ -19,6 +21,8 @@ func (svc *service) cookieKeyAuth(raw string) (*app.AuthUser, error) {
 	defer cancel()
 	profile, err := svc.app.UserByAuthToken(ctx, parseToken(raw))
 	switch {
+	case errors.Is(err, app.ErrNotFound):
+		return nil, unautnError.Unauthenticated("service")
 	case err != nil:
 		return nil, fmt.Errorf("userByAuthToken: %w", err)
 	default:

@@ -9,9 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
 
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
 )
 
 // GetUserOKCode is the HTTP code returned for type GetUserOK
@@ -57,8 +56,6 @@ func (o *GetUserOK) WriteResponse(rw http.ResponseWriter, producer runtime.Produ
 		}
 	}
 }
-
-func (o *GetUserOK) GetUserResponder() {}
 
 /*GetUserDefault Generic error response.
 
@@ -116,25 +113,4 @@ func (o *GetUserDefault) WriteResponse(rw http.ResponseWriter, producer runtime.
 			panic(err) // let the recovery middleware deal with this
 		}
 	}
-}
-
-func (o *GetUserDefault) GetUserResponder() {}
-
-type GetUserNotImplementedResponder struct {
-	middleware.Responder
-}
-
-func (*GetUserNotImplementedResponder) GetUserResponder() {}
-
-func GetUserNotImplemented() GetUserResponder {
-	return &GetUserNotImplementedResponder{
-		middleware.NotImplemented(
-			"operation authentication.GetUser has not yet been implemented",
-		),
-	}
-}
-
-type GetUserResponder interface {
-	middleware.Responder
-	GetUserResponder()
 }

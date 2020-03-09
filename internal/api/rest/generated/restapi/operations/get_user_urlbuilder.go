@@ -15,7 +15,7 @@ import (
 
 // GetUserURL generates an URL for the get user operation
 type GetUserURL struct {
-	ID int32
+	ID *int32
 
 	_basePath string
 	// avoid unkeyed usage
@@ -51,9 +51,12 @@ func (o *GetUserURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	id := swag.FormatInt32(o.ID)
-	if id != "" {
-		qs.Set("id", id)
+	var idQ string
+	if o.ID != nil {
+		idQ = swag.FormatInt32(*o.ID)
+	}
+	if idQ != "" {
+		qs.Set("id", idQ)
 	}
 
 	_result.RawQuery = qs.Encode()

@@ -8,21 +8,21 @@ package operations
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
-	"github.com/zergslaw/users/internal/app"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/zergslaw/boilerplate/internal/app"
 )
 
 // DeleteUserHandlerFunc turns a function with the right signature into a delete user handler
-type DeleteUserHandlerFunc func(DeleteUserParams, *app.AuthUser) DeleteUserResponder
+type DeleteUserHandlerFunc func(DeleteUserParams, *app.AuthUser) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn DeleteUserHandlerFunc) Handle(params DeleteUserParams, principal *app.AuthUser) DeleteUserResponder {
+func (fn DeleteUserHandlerFunc) Handle(params DeleteUserParams, principal *app.AuthUser) middleware.Responder {
 	return fn(params, principal)
 }
 
 // DeleteUserHandler interface for that can handle valid delete user params
 type DeleteUserHandler interface {
-	Handle(DeleteUserParams, *app.AuthUser) DeleteUserResponder
+	Handle(DeleteUserParams, *app.AuthUser) middleware.Responder
 }
 
 // NewDeleteUser creates a new http.Handler for the delete user operation

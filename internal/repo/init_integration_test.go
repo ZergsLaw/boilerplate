@@ -1,6 +1,6 @@
 // +build integration
 
-package db_test
+package repo_test
 
 import (
 	"context"
@@ -9,19 +9,18 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zergslaw/users/internal/app"
-	"github.com/zergslaw/users/internal/db"
-	"github.com/zergslaw/users/migration"
+	"github.com/zergslaw/boilerplate/internal/repo"
+	"github.com/zergslaw/boilerplate/migration"
 )
 
 var (
-	Repo app.Repo
+	Repo *repo.Repo
 
-	timeoutConnect = time.Second * 5
+	timeoutConnect = time.Second * 1000
 )
 
 func TestMain(m *testing.M) {
-	db.InitMetrics("test")
+	repo.InitMetrics("test")
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeoutConnect)
 	defer cancel()
@@ -42,12 +41,12 @@ func TestMain(m *testing.M) {
 
 	defer resetDB()
 
-	dbConn, err := db.Connect(ctx)
+	dbConn, err := repo.Connect(ctx)
 	if err != nil {
-		panic(fmt.Errorf("connect Repo: %w", err))
+		panic(fmt.Errorf("connect UserRepo: %w", err))
 	}
 
-	Repo = db.New(dbConn)
+	Repo = repo.New(dbConn)
 
 	os.Exit(m.Run())
 }

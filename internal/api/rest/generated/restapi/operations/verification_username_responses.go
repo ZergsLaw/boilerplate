@@ -9,9 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
 
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
 )
 
 // VerificationUsernameNoContentCode is the HTTP code returned for type VerificationUsernameNoContent
@@ -37,8 +36,6 @@ func (o *VerificationUsernameNoContent) WriteResponse(rw http.ResponseWriter, pr
 
 	rw.WriteHeader(204)
 }
-
-func (o *VerificationUsernameNoContent) VerificationUsernameResponder() {}
 
 /*VerificationUsernameDefault Generic error response.
 
@@ -96,25 +93,4 @@ func (o *VerificationUsernameDefault) WriteResponse(rw http.ResponseWriter, prod
 			panic(err) // let the recovery middleware deal with this
 		}
 	}
-}
-
-func (o *VerificationUsernameDefault) VerificationUsernameResponder() {}
-
-type VerificationUsernameNotImplementedResponder struct {
-	middleware.Responder
-}
-
-func (*VerificationUsernameNotImplementedResponder) VerificationUsernameResponder() {}
-
-func VerificationUsernameNotImplemented() VerificationUsernameResponder {
-	return &VerificationUsernameNotImplementedResponder{
-		middleware.NotImplemented(
-			"operation authentication.VerificationUsername has not yet been implemented",
-		),
-	}
-}
-
-type VerificationUsernameResponder interface {
-	middleware.Responder
-	VerificationUsernameResponder()
 }

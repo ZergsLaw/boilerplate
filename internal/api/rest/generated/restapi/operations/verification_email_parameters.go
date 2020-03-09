@@ -12,8 +12,6 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
-
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
 )
 
 // NewVerificationEmailParams creates a new VerificationEmailParams object
@@ -36,7 +34,7 @@ type VerificationEmailParams struct {
 	  Required: true
 	  In: body
 	*/
-	Email models.Email
+	Args VerificationEmailBody
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -50,12 +48,12 @@ func (o *VerificationEmailParams) BindRequest(r *http.Request, route *middleware
 
 	if runtime.HasBody(r) {
 		defer r.Body.Close()
-		var body models.Email
+		var body VerificationEmailBody
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			if err == io.EOF {
-				res = append(res, errors.Required("email", "body"))
+				res = append(res, errors.Required("args", "body"))
 			} else {
-				res = append(res, errors.NewParseError("email", "body", "", err))
+				res = append(res, errors.NewParseError("args", "body", "", err))
 			}
 		} else {
 			// validate body object
@@ -64,11 +62,11 @@ func (o *VerificationEmailParams) BindRequest(r *http.Request, route *middleware
 			}
 
 			if len(res) == 0 {
-				o.Email = body
+				o.Args = body
 			}
 		}
 	} else {
-		res = append(res, errors.Required("email", "body"))
+		res = append(res, errors.Required("args", "body"))
 	}
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)

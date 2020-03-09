@@ -1,6 +1,6 @@
 // +build integration
 
-package db_test
+package repo_test
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/zergslaw/users/internal/app"
+	"github.com/zergslaw/boilerplate/internal/app"
 )
 
 var (
@@ -27,10 +27,25 @@ var (
 func TestRepoSmoke(t *testing.T) {
 	user := userGenerator()
 
-	var err error
+	task, err := Repo.NotificationTask(ctx)
+	assert.Equal(t, app.ErrNotFound, errors.Unwrap(err))
+	assert.Nil(t, task)
+
 	user.ID, err = Repo.CreateUser(ctx, user)
 	assert.Nil(t, err)
 	assert.NotZero(t, user.ID)
+
+	task, err = Repo.NotificationTask(ctx)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, task.ID)
+	assert.Equal(t, app.Welcome, task.Kind)
+
+	err = Repo.DeleteTaskNotification(ctx, task.ID)
+	assert.Nil(t, err)
+
+	task, err = Repo.NotificationTask(ctx)
+	assert.Equal(t, app.ErrNotFound, errors.Unwrap(err))
+	assert.Nil(t, task)
 
 	res, err := Repo.UserByID(ctx, user.ID)
 	assert.Nil(t, err)
@@ -47,6 +62,11 @@ func TestRepoSmoke(t *testing.T) {
 	err = Repo.UpdateEmail(ctx, user.ID, newEmail)
 	assert.Nil(t, err)
 	user.Email = newEmail
+
+	task, err = Repo.NotificationTask(ctx)
+	assert.Nil(t, err)
+	assert.Equal(t, 2, task.ID)
+	assert.Equal(t, app.ChangeEmail, task.Kind)
 
 	res, err = Repo.UserByEmail(ctx, user.Email)
 	assert.Nil(t, err)

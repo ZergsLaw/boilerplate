@@ -11,11 +11,11 @@ import (
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sebest/xff"
-	"github.com/sirupsen/logrus"
-	"github.com/zergslaw/users/internal/api/rest/generated/restapi"
-	"github.com/zergslaw/users/internal/api/rest/generated/restapi/operations"
-	"github.com/zergslaw/users/internal/app"
-	"github.com/zergslaw/users/internal/log"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/restapi"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/restapi/operations"
+	"github.com/zergslaw/boilerplate/internal/app"
+	"github.com/zergslaw/boilerplate/internal/log"
+	"go.uber.org/zap"
 )
 
 type (
@@ -65,7 +65,7 @@ func defaultConfig() *config {
 }
 
 // New returns Swagger server configured to listen on the TCP network.
-func New(application app.App, options ...Option) (*restapi.Server, error) {
+func New(application app.App, logger *zap.Logger, options ...Option) (*restapi.Server, error) {
 	svc := &service{app: application}
 	cfg := defaultConfig()
 
@@ -81,14 +81,14 @@ func New(application app.App, options ...Option) (*restapi.Server, error) {
 		cfg.basePath = swaggerSpec.BasePath()
 	}
 	swaggerSpec.Spec().BasePath = cfg.basePath
-	api := operations.NewServiceUserAPI(swaggerSpec)
-	api.Logger = logrus.New().WithField(log.API, "swagger").Printf
+	api := operations.NewServiceBoilerplateAPI(swaggerSpec)
+	api.Logger = logger.Named("swagger").Sugar().Infof
 	api.CookieKeyAuth = svc.cookieKeyAuth
 
 	api.VerificationEmailHandler = operations.VerificationEmailHandlerFunc(svc.verificationEmail)
 	api.VerificationUsernameHandler = operations.VerificationUsernameHandlerFunc(svc.verificationUsername)
 	api.CreateUserHandler = operations.CreateUserHandlerFunc(svc.createUser)
-	api.LoginHandler = operations.LoginHandlerFunc(svc.Login)
+	api.LoginHandler = operations.LoginHandlerFunc(svc.login)
 	api.LogoutHandler = operations.LogoutHandlerFunc(svc.logout)
 	api.GetUserHandler = operations.GetUserHandlerFunc(svc.getUser)
 	api.DeleteUserHandler = operations.DeleteUserHandlerFunc(svc.deleteUser)
@@ -104,13 +104,14 @@ func New(application app.App, options ...Option) (*restapi.Server, error) {
 	// The middlewareFunc executes before anything.
 	globalMiddlewares := func(handler http.Handler) http.Handler {
 		xffmw, _ := xff.Default()
-		logger := logger(cfg.basePath)
+		createLog := createLogger(cfg.basePath, logger)
 		accesslog := accessLog(cfg.basePath)
 		redocOpts := middleware.RedocOpts{
 			BasePath: cfg.basePath,
 			SpecURL:  path.Join(cfg.basePath, "/swagger.json"),
 		}
-		return xffmw.Handler(logger(recovery(accesslog(
+
+		return xffmw.Handler(createLog(recovery(accesslog(
 			middleware.Spec(cfg.basePath, restapi.FlatSwaggerJSON,
 				middleware.Redoc(redocOpts,
 					handler))))))
@@ -121,14 +122,14 @@ func New(application app.App, options ...Option) (*restapi.Server, error) {
 	return server, nil
 }
 
-func fromRequest(r *http.Request, authUser *app.AuthUser) (context.Context, logrus.FieldLogger, string) {
+func fromRequest(r *http.Request, authUser *app.AuthUser) (context.Context, *zap.Logger, string) {
 	ctx := r.Context()
 	userID := app.UserID(0)
 	if authUser != nil {
 		userID = authUser.ID
 	}
 
-	logger := log.FromContext(ctx).WithField(log.User, userID)
+	logger := log.FromContext(ctx).With(zap.Int(log.User, int(userID)))
 	remoteIP, _, _ := net.SplitHostPort(r.RemoteAddr)
 	return ctx, logger, remoteIP
 }

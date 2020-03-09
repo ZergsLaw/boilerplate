@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	"github.com/zergslaw/users/internal/app"
-	"github.com/zergslaw/users/internal/mock"
+	"github.com/zergslaw/boilerplate/internal/app"
+	"github.com/zergslaw/boilerplate/internal/mock"
 )
 
 var (
@@ -53,16 +53,24 @@ var (
 		User:    user1,
 		Session: session1,
 	}
+
+	taskNotification = app.TaskNotification{
+		ID:    1,
+		Email: email1,
+		Kind:  app.Welcome,
+	}
 )
 
-func initTest(t testing.TB) (app.App, *mock.Repo, *mock.Password, *mock.Auth, func()) {
+func initTest(t testing.TB) (app.App, *mock.UserRepo, *mock.Password, *mock.Auth, *mock.WAL, *mock.Notification, func()) {
 	t.Helper()
 	ctrl := gomock.NewController(t)
 
-	mockRepo := mock.NewRepo(ctrl)
+	mockUserRepo := mock.NewUserRepo(ctrl)
 	mockPass := mock.NewPassword(ctrl)
 	mockToken := mock.NewAuth(ctrl)
+	mockWal := mock.NewWAL(ctrl)
+	mockNotification := mock.NewNotification(ctrl)
 
-	return app.New(mockRepo, mockPass, mockToken),
-		mockRepo, mockPass, mockToken, ctrl.Finish
+	return app.New(mockUserRepo, mockPass, mockToken, mockWal, mockNotification),
+		mockUserRepo, mockPass, mockToken, mockWal, mockNotification, ctrl.Finish
 }

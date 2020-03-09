@@ -13,9 +13,8 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-
-	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewGetUserParams creates a new GetUserParams object
@@ -63,7 +62,7 @@ for the get user operation typically these are written to a http.Request
 type GetUserParams struct {
 
 	/*ID*/
-	ID int32
+	ID *int32
 
 	timeout    time.Duration
 	Context    context.Context
@@ -104,13 +103,13 @@ func (o *GetUserParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithID adds the id to the get user params
-func (o *GetUserParams) WithID(id int32) *GetUserParams {
+func (o *GetUserParams) WithID(id *int32) *GetUserParams {
 	o.SetID(id)
 	return o
 }
 
 // SetID adds the id to the get user params
-func (o *GetUserParams) SetID(id int32) {
+func (o *GetUserParams) SetID(id *int32) {
 	o.ID = id
 }
 
@@ -122,13 +121,20 @@ func (o *GetUserParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regis
 	}
 	var res []error
 
-	// query param id
-	qrID := o.ID
-	qID := swag.FormatInt32(qrID)
-	if qID != "" {
-		if err := r.SetQueryParam("id", qID); err != nil {
-			return err
+	if o.ID != nil {
+
+		// query param id
+		var qrID int32
+		if o.ID != nil {
+			qrID = *o.ID
 		}
+		qID := swag.FormatInt32(qrID)
+		if qID != "" {
+			if err := r.SetQueryParam("id", qID); err != nil {
+				return err
+			}
+		}
+
 	}
 
 	if len(res) > 0 {

@@ -9,9 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
 
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
 )
 
 // CreateUserOKCode is the HTTP code returned for type CreateUserOK
@@ -80,8 +79,6 @@ func (o *CreateUserOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pr
 	}
 }
 
-func (o *CreateUserOK) CreateUserResponder() {}
-
 /*CreateUserDefault Generic error response.
 
 swagger:response createUserDefault
@@ -138,25 +135,4 @@ func (o *CreateUserDefault) WriteResponse(rw http.ResponseWriter, producer runti
 			panic(err) // let the recovery middleware deal with this
 		}
 	}
-}
-
-func (o *CreateUserDefault) CreateUserResponder() {}
-
-type CreateUserNotImplementedResponder struct {
-	middleware.Responder
-}
-
-func (*CreateUserNotImplementedResponder) CreateUserResponder() {}
-
-func CreateUserNotImplemented() CreateUserResponder {
-	return &CreateUserNotImplementedResponder{
-		middleware.NotImplemented(
-			"operation authentication.CreateUser has not yet been implemented",
-		),
-	}
-}
-
-type CreateUserResponder interface {
-	middleware.Responder
-	CreateUserResponder()
 }

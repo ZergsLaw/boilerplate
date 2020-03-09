@@ -2,16 +2,17 @@ package app
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"time"
 )
 
 func (a *app) VerificationEmail(ctx context.Context, email string) error {
 	_, err := a.repo.UserByEmail(ctx, email)
-	switch err {
-	case ErrNotFound:
+	switch {
+	case errors.Is(err, ErrNotFound):
 		return nil
-	case nil:
+	case err == nil:
 		return ErrEmailExist
 	default:
 		return err
@@ -20,10 +21,10 @@ func (a *app) VerificationEmail(ctx context.Context, email string) error {
 
 func (a *app) VerificationUsername(ctx context.Context, username string) error {
 	_, err := a.repo.UserByUsername(ctx, username)
-	switch err {
-	case ErrNotFound:
+	switch {
+	case errors.Is(err, ErrNotFound):
 		return nil
-	case nil:
+	case err == nil:
 		return ErrUsernameExist
 	default:
 		return err
@@ -46,7 +47,7 @@ func (a *app) Login(ctx context.Context, email, password string, origin Origin) 
 		return nil, "", ErrNotValidPassword
 	}
 
-	token, tokenID, err := a.token.Token(tokenExpire)
+	token, tokenID, err := a.auth.Token(tokenExpire)
 	if err != nil {
 		return nil, "", err
 	}
@@ -129,7 +130,7 @@ func (a *app) UserByAuthToken(ctx context.Context, token AuthToken) (*AuthUser, 
 		return nil, ErrInvalidToken
 	}
 
-	tokenID, err := a.token.Parse(token)
+	tokenID, err := a.auth.Parse(token)
 	if err != nil {
 		return nil, err
 	}

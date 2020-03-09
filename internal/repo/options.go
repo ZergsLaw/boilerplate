@@ -1,4 +1,4 @@
-package db
+package repo
 
 import (
 	"strconv"
@@ -6,17 +6,16 @@ import (
 )
 
 type (
-	// Option for building config.
+	// Option for building flag.
 	Option func(*config)
-	// SSLMode determines whether or with what priority a secure SSL TCP/IP.
-	SSLMode uint8
 	// For connect to database.
 	config struct {
-		dbName string
-		dbUser string
-		dbPass string
-		dbHost string
-		dbPort int
+		dbName  string
+		dbUser  string
+		dbPass  string
+		dbHost  string
+		dbPort  int
+		sslMode string
 	}
 )
 
@@ -38,17 +37,19 @@ func (o config) FormatDSN() string {
 	accrue("password", o.dbPass)
 	accrue("host", o.dbHost)
 	accrue("port", strconv.Itoa(o.dbPort))
+	accrue("sslmode", o.sslMode)
 
 	return strings.Join(kvs, " ")
 }
 
 func defaultConfig() *config {
 	return &config{
-		dbName: "postgres",
-		dbUser: "postgres",
-		dbPass: "postgres",
-		dbHost: "localhost",
-		dbPort: 5432,
+		dbName:  "postgres",
+		dbUser:  "postgres",
+		dbPass:  "postgres",
+		dbHost:  "localhost",
+		dbPort:  5432,
+		sslMode: "disable",
 	}
 }
 
@@ -77,6 +78,13 @@ func Pass(pass string) Option {
 func Host(host string) Option {
 	return func(config *config) {
 		config.dbHost = host
+	}
+}
+
+// SSLMode sets the connection parameters.
+func SSLMode(sslMode string) Option {
+	return func(config *config) {
+		config.sslMode = sslMode
 	}
 }
 

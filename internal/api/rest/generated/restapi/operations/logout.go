@@ -8,21 +8,21 @@ package operations
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
-	"github.com/zergslaw/users/internal/app"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/zergslaw/boilerplate/internal/app"
 )
 
 // LogoutHandlerFunc turns a function with the right signature into a logout handler
-type LogoutHandlerFunc func(LogoutParams, *app.AuthUser) LogoutResponder
+type LogoutHandlerFunc func(LogoutParams, *app.AuthUser) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn LogoutHandlerFunc) Handle(params LogoutParams, principal *app.AuthUser) LogoutResponder {
+func (fn LogoutHandlerFunc) Handle(params LogoutParams, principal *app.AuthUser) middleware.Responder {
 	return fn(params, principal)
 }
 
 // LogoutHandler interface for that can handle valid logout params
 type LogoutHandler interface {
-	Handle(LogoutParams, *app.AuthUser) LogoutResponder
+	Handle(LogoutParams, *app.AuthUser) middleware.Responder
 }
 
 // NewLogout creates a new http.Handler for the logout operation

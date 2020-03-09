@@ -1,4 +1,4 @@
-ARG GO_VERSION=1.13
+ARG GO_VERSION=1.14
 
 FROM golang:${GO_VERSION}-alpine AS builder
 
@@ -17,7 +17,7 @@ WORKDIR /src
 COPY ./ ./
 
 # Build the executable to `/app`. Mark the build as statically linked.
-RUN go build ./cmd/users
+RUN go build -mod vendor ./cmd/boilerplate
 
 # Final stage: the running container.
 FROM scratch AS final
@@ -26,10 +26,10 @@ FROM scratch AS final
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 # Import the compiled executable from the second stage.
-COPY --from=builder /src/users /users
+COPY --from=builder /src/boilerplate /boilerplate
 
 # Import migration files.
 COPY ./migration /migration
 
 # Run the compiled binary.
-CMD ./users
+CMD ./boilerplate

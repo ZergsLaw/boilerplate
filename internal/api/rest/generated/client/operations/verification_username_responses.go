@@ -9,11 +9,12 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 
-	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
 )
 
 // VerificationUsernameReader is a Reader for the VerificationUsername structure.
@@ -24,14 +25,12 @@ type VerificationUsernameReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *VerificationUsernameReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 204:
 		result := NewVerificationUsernameNoContent()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
 	default:
 		result := NewVerificationUsernameDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -91,6 +90,10 @@ func (o *VerificationUsernameDefault) Error() string {
 	return fmt.Sprintf("[POST /username/verification][%d] verificationUsername default  %+v", o._statusCode, o.Payload)
 }
 
+func (o *VerificationUsernameDefault) GetPayload() *models.Error {
+	return o.Payload
+}
+
 func (o *VerificationUsernameDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.Error)
@@ -100,5 +103,59 @@ func (o *VerificationUsernameDefault) readResponse(response runtime.ClientRespon
 		return err
 	}
 
+	return nil
+}
+
+/*VerificationUsernameBody verification username body
+swagger:model VerificationUsernameBody
+*/
+type VerificationUsernameBody struct {
+
+	// username
+	// Required: true
+	Username models.Username `json:"username"`
+}
+
+// Validate validates this verification username body
+func (o *VerificationUsernameBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateUsername(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *VerificationUsernameBody) validateUsername(formats strfmt.Registry) error {
+
+	if err := o.Username.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("args" + "." + "username")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *VerificationUsernameBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *VerificationUsernameBody) UnmarshalBinary(b []byte) error {
+	var res VerificationUsernameBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }

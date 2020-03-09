@@ -9,9 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
 
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
 )
 
 // VerificationEmailNoContentCode is the HTTP code returned for type VerificationEmailNoContent
@@ -37,8 +36,6 @@ func (o *VerificationEmailNoContent) WriteResponse(rw http.ResponseWriter, produ
 
 	rw.WriteHeader(204)
 }
-
-func (o *VerificationEmailNoContent) VerificationEmailResponder() {}
 
 /*VerificationEmailDefault Generic error response.
 
@@ -96,25 +93,4 @@ func (o *VerificationEmailDefault) WriteResponse(rw http.ResponseWriter, produce
 			panic(err) // let the recovery middleware deal with this
 		}
 	}
-}
-
-func (o *VerificationEmailDefault) VerificationEmailResponder() {}
-
-type VerificationEmailNotImplementedResponder struct {
-	middleware.Responder
-}
-
-func (*VerificationEmailNotImplementedResponder) VerificationEmailResponder() {}
-
-func VerificationEmailNotImplemented() VerificationEmailResponder {
-	return &VerificationEmailNotImplementedResponder{
-		middleware.NotImplemented(
-			"operation authentication.VerificationEmail has not yet been implemented",
-		),
-	}
-}
-
-type VerificationEmailResponder interface {
-	middleware.Responder
-	VerificationEmailResponder()
 }

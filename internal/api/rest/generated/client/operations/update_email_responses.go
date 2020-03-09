@@ -9,11 +9,12 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 
-	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.com/zergslaw/users/internal/api/rest/generated/models"
+	"github.com/zergslaw/boilerplate/internal/api/rest/generated/models"
 )
 
 // UpdateEmailReader is a Reader for the UpdateEmail structure.
@@ -24,14 +25,12 @@ type UpdateEmailReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *UpdateEmailReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 204:
 		result := NewUpdateEmailNoContent()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
 	default:
 		result := NewUpdateEmailDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -91,6 +90,10 @@ func (o *UpdateEmailDefault) Error() string {
 	return fmt.Sprintf("[PATCH /user/email][%d] updateEmail default  %+v", o._statusCode, o.Payload)
 }
 
+func (o *UpdateEmailDefault) GetPayload() *models.Error {
+	return o.Payload
+}
+
 func (o *UpdateEmailDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.Error)
@@ -100,5 +103,60 @@ func (o *UpdateEmailDefault) readResponse(response runtime.ClientResponse, consu
 		return err
 	}
 
+	return nil
+}
+
+/*UpdateEmailBody update email body
+swagger:model UpdateEmailBody
+*/
+type UpdateEmailBody struct {
+
+	// email
+	// Required: true
+	// Format: email
+	Email models.Email `json:"email"`
+}
+
+// Validate validates this update email body
+func (o *UpdateEmailBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateEmail(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *UpdateEmailBody) validateEmail(formats strfmt.Registry) error {
+
+	if err := o.Email.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("args" + "." + "email")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *UpdateEmailBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *UpdateEmailBody) UnmarshalBinary(b []byte) error {
+	var res UpdateEmailBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
 	return nil
 }
