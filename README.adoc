@@ -2,7 +2,7 @@
 
 The Skeleton is intended for the Golang-based services. It is written using the Postgres database and the RabbitMQ service.
 
-== Модули
+== Modules
 
 repo = is an adapter for the Postgres database. It implements several application interfaces, such as a repository of the user information and a repository for WAL tasks.
 notification = is an adapter for working with the RabbitMQ. It sends the contact (an email) as well as the message type (the Welcome Email or the Email change notification) through the queue service for notifying.
