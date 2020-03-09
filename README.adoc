@@ -1,29 +1,21 @@
 = boilerplate
 
-Скелет для сервисов на Golang.
-Написан с использованием базы данных Postgres и сервисом очередей RabbitMQ.
+The Skeleton is intended for the Golang-based services. It is written using the Postgres database and the RabbitMQ service.
 
 == Модули
 
-repo = адаптер для работы с базой Postgres.
-Реализует несколько интерфейсов приложения, как хранилище пользовательской информации, так хранилище для задач WAL.
+repo = is an adapter for the Postgres database. It implements several application interfaces, such as a repository of the user information and a repository for WAL tasks.
+notification = is an adapter for working with the RabbitMQ. It sends the contact (an email) as well as the message type (the Welcome Email or the Email change notification) through the queue service for notifying.
+auth = is a module for working with JWT tokens (generation and parsing of values).
+api = it contains two modules. The gRPC and Swagger module for interacting with the client.
 
-notification = адаптер для работы с очередью RabbitMQ.
-Отправляет через сервис очередей контакт (email) для нотификации, а также тип сообщения (Приветственное, или оповещение о смене email)
+password = is a module for working with passwords and the passwords hashing as well as their comparison.
+app = the core of the project which contains all the business logic of this project as well as all the interfaces for handling modules.
 
-auth = модуль для работы с токенами jwt (генерация и парсинг значений)
-
-api = содержит два модуля.
-Модуль gRPC и Swagger, для взаимодействия с клиентом.
-
-password = модуль для работы с паролями, их хеширование, а также сравнения.
-
-app = ядро проекта, содержит всю бизнес логику проекта, а также все интерфейсы, для оперирования модулями.
-
-Остальные пакеты содержат вспомогательные функции и объекты.
+The rest of packages contain supporting functions and objects.
 
 === Quick start.
-Для запуска необходимо лишь команда
+The command only is required for starting.
 [source,shell]
 ----
 docker-compose up
