@@ -25,7 +25,6 @@ require (
 	github.com/prometheus/client_golang v1.3.0
 	github.com/prometheus/common v0.9.1 // indirect
 	github.com/sebest/xff v0.0.0-20160910043805-6c115e0ffa35
-	github.com/sirupsen/logrus v1.4.2
 	github.com/streadway/amqp v0.0.0-20200108173154-1c71cc93ed71
 	github.com/stretchr/testify v1.4.0
 	github.com/urfave/cli/v2 v2.1.1
@@ -38,6 +37,6 @@ require (
 	golang.org/x/sys v0.0.0-20200121082415-34d275377bf9 // indirect
 	golang.org/x/tools v0.0.0-20200306191617-51e69f71924f // indirect
 	google.golang.org/genproto v0.0.0-20200117163144-32f20d992d24 // indirect
-	google.golang.org/grpc v1.26.0
+	google.golang.org/grpc v1.27.1
 	honnef.co/go/tools v0.0.1-2020.1.3 // indirect
 )
