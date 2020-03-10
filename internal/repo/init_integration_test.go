@@ -5,6 +5,7 @@ package repo_test
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"testing"
 	"time"
@@ -16,7 +17,7 @@ import (
 var (
 	Repo *repo.Repo
 
-	timeoutConnect = time.Second * 1000
+	timeoutConnect = time.Second * 5
 )
 
 func TestMain(m *testing.M) {
@@ -28,7 +29,7 @@ func TestMain(m *testing.M) {
 	resetDB := func() {
 		err := migration.Run(ctx, "../../migration", "reset")
 		if err != nil {
-			panic(fmt.Errorf("migration: %w", err))
+			log.Fatal(fmt.Errorf("migration: %w", err))
 		}
 	}
 	// For convenient cleaning DB.
@@ -36,14 +37,14 @@ func TestMain(m *testing.M) {
 
 	err := migration.Run(ctx, "../../migration", "up")
 	if err != nil {
-		panic(fmt.Errorf("migration: %w", err))
+		log.Fatal(fmt.Errorf("migration: %w", err))
 	}
 
 	defer resetDB()
 
 	dbConn, err := repo.Connect(ctx)
 	if err != nil {
-		panic(fmt.Errorf("connect UserRepo: %w", err))
+		log.Fatal(fmt.Errorf("connect UserRepo: %w", err))
 	}
 
 	Repo = repo.New(dbConn)

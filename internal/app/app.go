@@ -147,6 +147,7 @@ type (
 		// ListUserByUsername returns list user by username.
 		// Errors: unknown.
 		ListUserByUsername(context.Context, AuthUser, string, Page) ([]User, int, error)
+		// StartWALNotification starts the task of notifying users.
 		StartWALNotification(ctx context.Context) error
 	}
 	// UserID contains user id.

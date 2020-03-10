@@ -17,7 +17,7 @@ WORKDIR /src
 COPY ./ ./
 
 # Build the executable to `/app`. Mark the build as statically linked.
-RUN go build -mod vendor ./cmd/boilerplate
+RUN go build ./cmd/boilerplate
 
 # Final stage: the running container.
 FROM scratch AS final
