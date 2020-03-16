@@ -17,6 +17,7 @@ import (
 	"github.com/zergslaw/boilerplate/internal/log"
 	"github.com/zergslaw/boilerplate/internal/notification"
 	"github.com/zergslaw/boilerplate/internal/password"
+	"github.com/zergslaw/boilerplate/internal/recoverycode"
 	"github.com/zergslaw/boilerplate/internal/repo"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -133,13 +134,11 @@ func serverAction(c *cli.Context) error {
 		return fmt.Errorf("get rabbit channel: %w", err)
 	}
 
-	_, err = ch.QueueDeclare(
-		c.String(queueName.Name), // name
-		false,                    // durable
-		false,                    // delete when unused
-		false,                    // exclusive
-		false,                    // no-wait
-		nil,                      // arguments
+	_, err = ch.QueueDeclare(c.String(queueName.Name), false, // durable
+		false, // delete when unused
+		false, // exclusive
+		false, // no-wait
+		nil,   // arguments
 	)
 	if err != nil {
 		return fmt.Errorf("declare queue: %w", err)
@@ -149,7 +148,8 @@ func serverAction(c *cli.Context) error {
 	n := notification.New(ch)
 	pass := password.New()
 	tokenizer := auth.New(c.String(jwtKey.Name))
-	application := app.New(r, pass, tokenizer, r, n)
+	rc := recoverycode.New()
+	application := app.New(r, r, r, pass, tokenizer, r, n, rc)
 
 	group, ctx := errgroup.WithContext(c.Context)
 	services := []func() error{

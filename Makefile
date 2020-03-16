@@ -17,10 +17,12 @@ build:
 	mkdir "bin"
 	GOOS=linux go build -o "bin/" ./cmd/boilerplate
 
-test-integration: restart-dependencies
+test-integration:
 	time go test ./... -tags=integration
-	docker-compose down --volumes
 
 start: build
 	docker-compose down --volumes
 	docker-compose up --build
+
+migrate: build
+	./bin/boilerplate migrate up

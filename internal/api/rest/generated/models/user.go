@@ -17,8 +17,9 @@ import (
 type User struct {
 
 	// email
+	// Required: true
 	// Format: email
-	Email Email `json:"email,omitempty"`
+	Email Email `json:"email"`
 
 	// id
 	// Required: true
@@ -52,10 +53,6 @@ func (m *User) Validate(formats strfmt.Registry) error {
 }
 
 func (m *User) validateEmail(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Email) { // not required
-		return nil
-	}
 
 	if err := m.Email.Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {

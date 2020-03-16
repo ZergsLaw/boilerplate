@@ -21,10 +21,11 @@ var (
 	ErrUsernameNeedDifferentiate = errors.New("username need to differentiate")
 	ErrEmailNeedDifferentiate    = errors.New("email need to differentiate")
 	ErrNotUnknownKindTask        = errors.New("unknown task kind")
+	ErrCodeExpired               = errors.New("code is expired")
 )
 
 type (
-	// UserRepo interface for data repository.
+	// UserRepo interface for user data repository.
 	UserRepo interface {
 		// CreateUser adds to the new user in repository.
 		// This method is also required to create a notifying hoard.
@@ -40,6 +41,7 @@ type (
 		// Errors: ErrEmailExist, unknown.
 		UpdateEmail(context.Context, UserID, string) error
 		// UpdatePassword changes password.
+		// Resets all codes to reset the password.
 		// Errors: unknown.
 		UpdatePassword(context.Context, UserID, []byte) error
 		// UserByID returning user info by id.
@@ -58,6 +60,9 @@ type (
 		// ListUserByUsername returning list user info.
 		// Errors: unknown.
 		ListUserByUsername(context.Context, string, Page) ([]User, int, error)
+	}
+	// SessionRepo interface for session data repository.
+	SessionRepo interface {
 		// SaveSession saves the new user Session in a database.
 		// Errors: unknown.
 		SaveSession(context.Context, UserID, TokenID, Origin) error
@@ -67,6 +72,16 @@ type (
 		// DeleteSession removes user Session.
 		// Errors: unknown.
 		DeleteSession(context.Context, TokenID) error
+	}
+	// CodeRepo interface for recover code repository.
+	CodeRepo interface {
+		// SaveCode the code to restore the password to the repository.
+		// Removes all recovery codes from this email before adding a new one.
+		// Errors: unknown.
+		SaveCode(ctx context.Context, email, code string) error
+		// GetEmail returns the mail of the user who requested a password recovery by the received code.
+		// Errors: ErrNotFound, unknown.
+		GetEmail(ctx context.Context, code string) (email string, createAt time.Time, err error)
 	}
 	// WAL module returning tasks and also closing them.
 	WAL interface {
@@ -83,6 +98,11 @@ type (
 		// At the moment, the guarantee of message delivery lies on this module, it is possible to
 		// transfer it to the app.
 		Notification(contact string, msg Message) error
+	}
+	// Code module for generate random code.
+	Code interface {
+		// Generate random code of a specified length.
+		Generate(length int) string
 	}
 	// Password module responsible for working with passwords.
 	Password interface {
@@ -147,6 +167,12 @@ type (
 		// ListUserByUsername returns list user by username.
 		// Errors: unknown.
 		ListUserByUsername(context.Context, AuthUser, string, Page) ([]User, int, error)
+		// CreateRecoveryCode creates and sends a password recovery code to the user's email.
+		// Errors: ErrNotFound, unknown.
+		CreateRecoveryCode(ctx context.Context, email string) error
+		// RecoveryPassword replaces the password with a new one from the user who owns this recovery code.
+		// Errors: ErrCodeExpired, ErrNotFound, unknown.
+		RecoveryPassword(ctx context.Context, code, newPassword string) error
 		// StartWALNotification starts the task of notifying users.
 		StartWALNotification(ctx context.Context) error
 	}
@@ -164,10 +190,15 @@ type (
 	TaskNotification struct {
 		ID    int
 		Email string
-		Kind  Message
+		Kind  MessageKind
 	}
-	// Message selects the type of message to be sent..
-	Message int
+	// MessageKind selects the type of message to be sent.
+	MessageKind int
+	// Message contains sent info.
+	Message struct {
+		Kind    MessageKind
+		Content string
+	}
 	// Page for search users in repo.
 	Page struct {
 		Limit  int // > 0
@@ -207,38 +238,49 @@ type (
 	}
 	// app implements interface App.
 	app struct {
-		repo         UserRepo
+		userRepo     UserRepo
+		sessionRepo  SessionRepo
+		codeRepo     CodeRepo
 		password     Password
 		auth         Auth
 		wal          WAL
 		notification Notification
+		code         Code
 	}
 )
 
 // Message enums.
 const (
-	Welcome Message = iota + 1
+	Welcome MessageKind = iota + 1
 	ChangeEmail
+	PassRecovery
 )
 
-func (m Message) String() string {
+func (m MessageKind) String() string {
 	switch m {
 	case Welcome:
 		return "welcome"
 	case ChangeEmail:
 		return "change email"
+	case PassRecovery:
+		return "password recovery"
 	default:
 		panic(fmt.Sprintf("unknown kind: %d", m))
 	}
 }
 
 // New creates and returns new App.
-func New(repo UserRepo, password Password, auth Auth, wal WAL, notification Notification) App {
+func New(userRepo UserRepo, sessionRepo SessionRepo, codeRepo CodeRepo,
+	password Password, auth Auth, wal WAL, notification Notification,
+	code Code) App {
 	return &app{
-		repo:         repo,
+		userRepo:     userRepo,
+		sessionRepo:  sessionRepo,
+		codeRepo:     codeRepo,
 		password:     password,
 		auth:         auth,
 		wal:          wal,
+		code:         code,
 		notification: notification,
 	}
 }

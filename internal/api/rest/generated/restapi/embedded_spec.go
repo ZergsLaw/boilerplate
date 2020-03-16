@@ -114,6 +114,76 @@ func init() {
         }
       }
     },
+    "/recovery-code": {
+      "post": {
+        "security": [],
+        "description": "Creates a password recovery token and sends it to the email.",
+        "operationId": "createRecoveryCode",
+        "parameters": [
+          {
+            "name": "args",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "email"
+              ],
+              "properties": {
+                "email": {
+                  "$ref": "#/definitions/Email"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/responses/NoContent"
+          },
+          "default": {
+            "$ref": "#/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/recovery-password": {
+      "post": {
+        "security": [],
+        "description": "Updates the password of the user who owns this recovery code.",
+        "operationId": "recoveryPassword",
+        "parameters": [
+          {
+            "name": "args",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "recoveryCode",
+                "password"
+              ],
+              "properties": {
+                "password": {
+                  "$ref": "#/definitions/Password"
+                },
+                "recoveryCode": {
+                  "$ref": "#/definitions/RecoveryCode"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/responses/NoContent"
+          },
+          "default": {
+            "$ref": "#/responses/GenericError"
+          }
+        }
+      }
+    },
     "/user": {
       "get": {
         "description": "Open user profile.",
@@ -395,21 +465,6 @@ func init() {
         }
       }
     },
-    "ListUsersParams": {
-      "type": "object",
-      "required": [
-        "username",
-        "pagination"
-      ],
-      "properties": {
-        "pagination": {
-          "$ref": "#/definitions/Pagination"
-        },
-        "username": {
-          "$ref": "#/definitions/Username"
-        }
-      }
-    },
     "LoginParam": {
       "type": "object",
       "required": [
@@ -425,33 +480,16 @@ func init() {
         }
       }
     },
-    "Pagination": {
-      "type": "object",
-      "required": [
-        "limit",
-        "offset"
-      ],
-      "properties": {
-        "limit": {
-          "description": "Maximum amount of items to return.",
-          "type": "integer",
-          "format": "int32",
-          "maximum": 100,
-          "minimum": 1
-        },
-        "offset": {
-          "description": "Amount of items to skip.",
-          "type": "integer",
-          "format": "int32",
-          "maximum": 9900
-        }
-      }
-    },
     "Password": {
       "type": "string",
       "format": "password",
       "maxLength": 100,
       "minLength": 8
+    },
+    "RecoveryCode": {
+      "type": "string",
+      "maxLength": 6,
+      "minLength": 1
     },
     "UpdatePassword": {
       "type": "object",
@@ -472,7 +510,8 @@ func init() {
       "type": "object",
       "required": [
         "id",
-        "username"
+        "username",
+        "email"
       ],
       "properties": {
         "email": {
@@ -614,6 +653,82 @@ func init() {
       "post": {
         "description": "Logout for user",
         "operationId": "logout",
+        "responses": {
+          "204": {
+            "description": "The server successfully processed the request and is not returning any content."
+          },
+          "default": {
+            "description": "Generic error response.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/recovery-code": {
+      "post": {
+        "security": [],
+        "description": "Creates a password recovery token and sends it to the email.",
+        "operationId": "createRecoveryCode",
+        "parameters": [
+          {
+            "name": "args",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "email"
+              ],
+              "properties": {
+                "email": {
+                  "$ref": "#/definitions/Email"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The server successfully processed the request and is not returning any content."
+          },
+          "default": {
+            "description": "Generic error response.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/recovery-password": {
+      "post": {
+        "security": [],
+        "description": "Updates the password of the user who owns this recovery code.",
+        "operationId": "recoveryPassword",
+        "parameters": [
+          {
+            "name": "args",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "recoveryCode",
+                "password"
+              ],
+              "properties": {
+                "password": {
+                  "$ref": "#/definitions/Password"
+                },
+                "recoveryCode": {
+                  "$ref": "#/definitions/RecoveryCode"
+                }
+              }
+            }
+          }
+        ],
         "responses": {
           "204": {
             "description": "The server successfully processed the request and is not returning any content."
@@ -933,21 +1048,6 @@ func init() {
         }
       }
     },
-    "ListUsersParams": {
-      "type": "object",
-      "required": [
-        "username",
-        "pagination"
-      ],
-      "properties": {
-        "pagination": {
-          "$ref": "#/definitions/Pagination"
-        },
-        "username": {
-          "$ref": "#/definitions/Username"
-        }
-      }
-    },
     "LoginParam": {
       "type": "object",
       "required": [
@@ -963,34 +1063,16 @@ func init() {
         }
       }
     },
-    "Pagination": {
-      "type": "object",
-      "required": [
-        "limit",
-        "offset"
-      ],
-      "properties": {
-        "limit": {
-          "description": "Maximum amount of items to return.",
-          "type": "integer",
-          "format": "int32",
-          "maximum": 100,
-          "minimum": 1
-        },
-        "offset": {
-          "description": "Amount of items to skip.",
-          "type": "integer",
-          "format": "int32",
-          "maximum": 9900,
-          "minimum": 0
-        }
-      }
-    },
     "Password": {
       "type": "string",
       "format": "password",
       "maxLength": 100,
       "minLength": 8
+    },
+    "RecoveryCode": {
+      "type": "string",
+      "maxLength": 6,
+      "minLength": 1
     },
     "UpdatePassword": {
       "type": "object",
@@ -1011,7 +1093,8 @@ func init() {
       "type": "object",
       "required": [
         "id",
-        "username"
+        "username",
+        "email"
       ],
       "properties": {
         "email": {

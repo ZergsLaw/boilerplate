@@ -407,3 +407,68 @@ func TestServiceGetUsers(t *testing.T) {
 		})
 	}
 }
+
+func TestServiceCreateRecoveryCode(t *testing.T) {
+	t.Parallel()
+
+	_, shutdown, mockApp, client := testNewServer(t)
+	defer shutdown()
+
+	testCases := []struct {
+		name   string
+		email  string
+		appErr error
+		want   *models.Error
+	}{
+		{"success", email, nil, nil},
+		{"not found", notExistEmail, app.ErrNotFound, APIError("not found")},
+		{"any error", email, errAny, APIError("Internal Server Error")},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			mockApp.EXPECT().CreateRecoveryCode(gomock.Any(), tc.email).Return(tc.appErr)
+
+			params := operations.NewCreateRecoveryCodeParams().
+				WithArgs(operations.CreateRecoveryCodeBody{Email: models.Email(tc.email)})
+			_, err := client.Operations.CreateRecoveryCode(params)
+			assert.Equal(t, tc.want, errPayload(err))
+		})
+	}
+}
+
+func TestServiceRecoveryPassword(t *testing.T) {
+	t.Parallel()
+
+	_, shutdown, mockApp, client := testNewServer(t)
+	defer shutdown()
+	const recoveryCode = `123456`
+
+	testCases := []struct {
+		name   string
+		appErr error
+		want   *models.Error
+	}{
+		{"success", nil, nil},
+		{"not found", app.ErrNotFound, APIError("not found")},
+		{"code is expired", app.ErrCodeExpired, APIError("code is expired")},
+		{"any error", errAny, APIError("Internal Server Error")},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			mockApp.EXPECT().RecoveryPassword(gomock.Any(), recoveryCode, password).Return(tc.appErr)
+
+			params := operations.NewRecoveryPasswordParams().
+				WithArgs(operations.RecoveryPasswordBody{
+					Password:     models.Password(password),
+					RecoveryCode: recoveryCode,
+				})
+
+			_, err := client.Operations.RecoveryPassword(params)
+			assert.Equal(t, tc.want, errPayload(err))
+		})
+	}
+}

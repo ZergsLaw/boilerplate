@@ -1,5 +1,3 @@
-// +build integration
-
 package repo_test
 
 import (
@@ -132,6 +130,20 @@ func TestRepoSmoke(t *testing.T) {
 	session, err = Repo.SessionByTokenID(ctx, tokenUser2)
 	assert.Nil(t, session)
 	assert.Equal(t, app.ErrNotFound, errors.Unwrap(err))
+
+	const recoveryCode = "123456"
+	email, createdAt, err := Repo.GetEmail(ctx, recoveryCode)
+	assert.Zero(t, email)
+	assert.Zero(t, createdAt)
+	assert.Equal(t, app.ErrNotFound, errors.Unwrap(err))
+
+	err = Repo.SaveCode(ctx, user.Email, recoveryCode)
+	assert.Nil(t, err)
+
+	email, createdAt, err = Repo.GetEmail(ctx, recoveryCode)
+	assert.Nil(t, err)
+	assert.NotZero(t, createdAt)
+	assert.Equal(t, user.Email, email)
 }
 
 func generatorUser() func() app.User {

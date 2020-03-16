@@ -46,6 +46,11 @@ func configureAPI(api *operations.ServiceBoilerplateAPI) http.Handler {
 	//
 	// Example:
 	// api.APIAuthorizer = security.Authorized()
+	if api.CreateRecoveryCodeHandler == nil {
+		api.CreateRecoveryCodeHandler = operations.CreateRecoveryCodeHandlerFunc(func(params operations.CreateRecoveryCodeParams) middleware.Responder {
+			return middleware.NotImplemented("operation operations.CreateRecoveryCode has not yet been implemented")
+		})
+	}
 	if api.CreateUserHandler == nil {
 		api.CreateUserHandler = operations.CreateUserHandlerFunc(func(params operations.CreateUserParams) middleware.Responder {
 			return middleware.NotImplemented("operation operations.CreateUser has not yet been implemented")
@@ -74,6 +79,11 @@ func configureAPI(api *operations.ServiceBoilerplateAPI) http.Handler {
 	if api.LogoutHandler == nil {
 		api.LogoutHandler = operations.LogoutHandlerFunc(func(params operations.LogoutParams, principal *app.AuthUser) middleware.Responder {
 			return middleware.NotImplemented("operation operations.Logout has not yet been implemented")
+		})
+	}
+	if api.RecoveryPasswordHandler == nil {
+		api.RecoveryPasswordHandler = operations.RecoveryPasswordHandlerFunc(func(params operations.RecoveryPasswordParams) middleware.Responder {
+			return middleware.NotImplemented("operation operations.RecoveryPassword has not yet been implemented")
 		})
 	}
 	if api.UpdateEmailHandler == nil {

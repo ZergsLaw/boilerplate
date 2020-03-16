@@ -40,12 +40,14 @@ func (repo *Repo) NotificationTask(ctx context.Context) (task *app.TaskNotificat
 	return task, err
 }
 
-func parseKindNotification(str string) (app.Message, error) {
+func parseKindNotification(str string) (app.MessageKind, error) {
 	switch str {
 	case app.Welcome.String():
 		return app.Welcome, nil
 	case app.ChangeEmail.String():
 		return app.ChangeEmail, nil
+	case app.PassRecovery.String():
+		return app.PassRecovery, nil
 	default:
 		return 0, app.ErrNotUnknownKindTask
 	}

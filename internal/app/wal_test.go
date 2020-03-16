@@ -11,16 +11,21 @@ import (
 func TestApp_StartWAL(t *testing.T) {
 	t.Parallel()
 
-	application, _, _, _, mockWal, mockNotification, shutdown := initTest(t)
+	application, mocks, shutdown := initTest(t)
 	defer shutdown()
 
-	mockWal.EXPECT().NotificationTask(gomock.Any()).Return(&taskNotification, nil).Times(3)
-	mockNotification.EXPECT().Notification(taskNotification.Email, app.Welcome).Return(nil).Times(2)
-	mockWal.EXPECT().DeleteTaskNotification(gomock.Any(), taskNotification.ID).Return(nil)
-	mockWal.EXPECT().DeleteTaskNotification(gomock.Any(), taskNotification.ID).Return(errAny)
-	mockNotification.EXPECT().Notification(taskNotification.Email, app.Welcome).Return(errAny)
-	mockWal.EXPECT().NotificationTask(gomock.Any()).Return(nil, app.ErrNotFound)
-	mockWal.EXPECT().NotificationTask(gomock.Any()).Return(nil, errAny)
+	msg := app.Message{
+		Kind:    app.Welcome,
+		Content: "Welcome",
+	}
+
+	mocks.wal.EXPECT().NotificationTask(gomock.Any()).Return(&taskNotification, nil).Times(3)
+	mocks.notification.EXPECT().Notification(taskNotification.Email, msg).Return(nil).Times(2)
+	mocks.wal.EXPECT().DeleteTaskNotification(gomock.Any(), taskNotification.ID).Return(nil)
+	mocks.wal.EXPECT().DeleteTaskNotification(gomock.Any(), taskNotification.ID).Return(errAny)
+	mocks.notification.EXPECT().Notification(taskNotification.Email, msg).Return(errAny)
+	mocks.wal.EXPECT().NotificationTask(gomock.Any()).Return(nil, app.ErrNotFound)
+	mocks.wal.EXPECT().NotificationTask(gomock.Any()).Return(nil, errAny)
 
 	testCases := []struct {
 		name string

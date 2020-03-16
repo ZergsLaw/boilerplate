@@ -96,6 +96,8 @@ func New(application app.App, logger *zap.Logger, options ...Option) (*restapi.S
 	api.UpdateUsernameHandler = operations.UpdateUsernameHandlerFunc(svc.updateUsername)
 	api.UpdateEmailHandler = operations.UpdateEmailHandlerFunc(svc.updateEmail)
 	api.GetUsersHandler = operations.GetUsersHandlerFunc(svc.getUsers)
+	api.CreateRecoveryCodeHandler = operations.CreateRecoveryCodeHandlerFunc(svc.createRecoveryCode)
+	api.RecoveryPasswordHandler = operations.RecoveryPasswordHandlerFunc(svc.recoveryPassword)
 
 	server := restapi.NewServer(api)
 	server.Host = cfg.host

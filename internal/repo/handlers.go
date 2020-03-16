@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgtype"
 	"github.com/zergslaw/boilerplate/internal/app"
@@ -114,15 +115,30 @@ func (repo *Repo) UpdateEmail(ctx context.Context, userID app.UserID, email stri
 // UpdatePassword need for implements app.UserRepo.
 func (repo *Repo) UpdatePassword(ctx context.Context, userID app.UserID, passHash []byte) error {
 	return repo.execFunc(func(db *sql.DB) error {
-		const query = `UPDATE users SET pass_hash = $1, updated_at = now() WHERE id = $2`
+		tx, err := db.BeginTx(ctx, nil)
+		if err != nil {
+			return fmt.Errorf("begin tx: %w", err)
+		}
+
+		const query = `UPDATE users SET pass_hash = $1, updated_at = now() WHERE id = $2 RETURNING email`
 
 		hash := pgtype.Bytea{
 			Bytes:  passHash,
 			Status: pgtype.Present,
 		}
 
-		_, err := db.ExecContext(ctx, query, hash, userID)
-		return err
+		userEmail := ""
+		err = tx.QueryRowContext(ctx, query, hash, userID).Scan(&userEmail)
+		if err != nil {
+			return rollback(tx, err)
+		}
+
+		err = cleanRecoveryCodes(ctx, tx, userEmail)
+		if err != nil {
+			return rollback(tx, err)
+		}
+
+		return tx.Commit()
 	})
 }
 
@@ -279,7 +295,7 @@ func (repo *Repo) ListUserByUsername(ctx context.Context, username string, page 
 	return users, total, err
 }
 
-// SaveSession need for implements app.UserRepo.
+// SaveSession need for implements app.SessionRepo.
 func (repo *Repo) SaveSession(ctx context.Context, userID app.UserID, tokenID app.TokenID, origin app.Origin) error {
 	return repo.execFunc(func(db *sql.DB) error {
 		const query = `INSERT INTO sessions (user_id, token_id, ip, user_agent) VALUES ($1, $2, $3, $4)`
@@ -298,7 +314,7 @@ func (repo *Repo) SaveSession(ctx context.Context, userID app.UserID, tokenID ap
 	})
 }
 
-// SessionByTokenID need for implements app.UserRepo.
+// SessionByTokenID need for implements app.SessionRepo.
 func (repo *Repo) SessionByTokenID(ctx context.Context, tokenID app.TokenID) (session *app.Session, err error) {
 	err = repo.execFunc(func(db *sql.DB) error {
 		const query = `SELECT * FROM sessions WHERE token_id = $1 AND is_logout = false`
@@ -326,7 +342,7 @@ func (repo *Repo) SessionByTokenID(ctx context.Context, tokenID app.TokenID) (se
 	return
 }
 
-// DeleteSession need for implements app.UserRepo.
+// DeleteSession need for implements app.SessionRepo.
 func (repo *Repo) DeleteSession(ctx context.Context, tokenID app.TokenID) error {
 	return repo.execFunc(func(db *sql.DB) error {
 		const query = `UPDATE sessions SET is_logout = true WHERE token_id = $1`
@@ -334,4 +350,56 @@ func (repo *Repo) DeleteSession(ctx context.Context, tokenID app.TokenID) error 
 
 		return err
 	})
+}
+
+// SaveCode need for implements app.CodeRepo.
+func (repo *Repo) SaveCode(ctx context.Context, email, code string) error {
+	return repo.execFunc(func(db *sql.DB) error {
+		tx, err := db.BeginTx(ctx, nil)
+		if err != nil {
+			return fmt.Errorf("start tx: %w", err)
+		}
+
+		err = cleanRecoveryCodes(ctx, tx, email)
+		if err != nil {
+			return rollback(tx, err)
+		}
+
+		const query = `INSERT INTO recovery_code(email, code) VALUES ($1, $2)`
+		_, err = tx.ExecContext(ctx, query, email, code)
+		if err != nil {
+			return rollback(tx, err)
+		}
+
+		return tx.Commit()
+	})
+}
+
+func cleanRecoveryCodes(ctx context.Context, tx *sql.Tx, email string) error {
+	const query = `DELETE FROM recovery_code WHERE email = $1`
+
+	_, err := tx.ExecContext(ctx, query, email)
+	if err != nil {
+		return fmt.Errorf("delete recovery recoverycode: %w", err)
+	}
+
+	return nil
+}
+
+// GetEmail need for implements app.CodeRepo.
+func (repo *Repo) GetEmail(ctx context.Context, code string) (email string, createAt time.Time, err error) {
+	err = repo.execFunc(func(db *sql.DB) error {
+		const query = `SELECT email, created_at FROM recovery_code WHERE code = $1`
+
+		err = db.QueryRowContext(ctx, query, code).Scan(&email, &createAt)
+		switch {
+		case err == sql.ErrNoRows:
+			return app.ErrNotFound
+		case err != nil:
+			return err
+		}
+
+		return nil
+	})
+	return
 }

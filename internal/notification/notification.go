@@ -32,6 +32,7 @@ type (
 
 	notification struct {
 		Contact string `json:"contact"`
+		Content string `json:"content"`
 	}
 )
 
@@ -98,6 +99,7 @@ const (
 func (c *client) Notification(contact string, msg app.Message) error {
 	n := notification{
 		Contact: contact,
+		Content: msg.Content,
 	}
 
 	js, err := json.Marshal(n)
@@ -114,7 +116,7 @@ func (c *client) Notification(contact string, msg app.Message) error {
 		ContentType: http.DetectContentType(js),
 		MessageId:   reqID,
 		Timestamp:   time.Now(),
-		Type:        msg.String(),
+		Type:        msg.Kind.String(),
 		AppId:       c.appID,
 		Body:        js,
 	}

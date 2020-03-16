@@ -164,3 +164,33 @@ func errGetUsers(logger *zap.Logger, err error, code int) middleware.Responder {
 
 	return operations.NewGetUsersDefault(code).WithPayload(&models.Error{Message: swag.String(msg)})
 }
+
+func errCreateRecoveryCode(logger *zap.Logger, err error, code int) middleware.Responder {
+	if code < http.StatusInternalServerError {
+		logger.With(zap.String(log.Error, "client"), zap.Int(log.HTTPStatus, code)).Info(err.Error())
+	} else {
+		logger.With(zap.String(log.Error, "server"), zap.Int(log.HTTPStatus, code)).Warn(err.Error())
+	}
+
+	msg := err.Error()
+	if code == http.StatusInternalServerError { // Do no expose details about internal errors.
+		msg = http.StatusText(http.StatusInternalServerError)
+	}
+
+	return operations.NewCreateRecoveryCodeDefault(code).WithPayload(&models.Error{Message: swag.String(msg)})
+}
+
+func errRecoveryPassword(logger *zap.Logger, err error, code int) middleware.Responder {
+	if code < http.StatusInternalServerError {
+		logger.With(zap.String(log.Error, "client"), zap.Int(log.HTTPStatus, code)).Info(err.Error())
+	} else {
+		logger.With(zap.String(log.Error, "server"), zap.Int(log.HTTPStatus, code)).Warn(err.Error())
+	}
+
+	msg := err.Error()
+	if code == http.StatusInternalServerError { // Do no expose details about internal errors.
+		msg = http.StatusText(http.StatusInternalServerError)
+	}
+
+	return operations.NewRecoveryPasswordDefault(code).WithPayload(&models.Error{Message: swag.String(msg)})
+}

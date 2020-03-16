@@ -42,6 +42,9 @@ func NewServiceBoilerplateAPI(spec *loads.Document) *ServiceBoilerplateAPI {
 
 		JSONProducer: runtime.JSONProducer(),
 
+		CreateRecoveryCodeHandler: CreateRecoveryCodeHandlerFunc(func(params CreateRecoveryCodeParams) middleware.Responder {
+			return middleware.NotImplemented("operation CreateRecoveryCode has not yet been implemented")
+		}),
 		CreateUserHandler: CreateUserHandlerFunc(func(params CreateUserParams) middleware.Responder {
 			return middleware.NotImplemented("operation CreateUser has not yet been implemented")
 		}),
@@ -59,6 +62,9 @@ func NewServiceBoilerplateAPI(spec *loads.Document) *ServiceBoilerplateAPI {
 		}),
 		LogoutHandler: LogoutHandlerFunc(func(params LogoutParams, principal *app.AuthUser) middleware.Responder {
 			return middleware.NotImplemented("operation Logout has not yet been implemented")
+		}),
+		RecoveryPasswordHandler: RecoveryPasswordHandlerFunc(func(params RecoveryPasswordParams) middleware.Responder {
+			return middleware.NotImplemented("operation RecoveryPassword has not yet been implemented")
 		}),
 		UpdateEmailHandler: UpdateEmailHandlerFunc(func(params UpdateEmailParams, principal *app.AuthUser) middleware.Responder {
 			return middleware.NotImplemented("operation UpdateEmail has not yet been implemented")
@@ -122,6 +128,8 @@ type ServiceBoilerplateAPI struct {
 	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
 	APIAuthorizer runtime.Authorizer
 
+	// CreateRecoveryCodeHandler sets the operation handler for the create recovery code operation
+	CreateRecoveryCodeHandler CreateRecoveryCodeHandler
 	// CreateUserHandler sets the operation handler for the create user operation
 	CreateUserHandler CreateUserHandler
 	// DeleteUserHandler sets the operation handler for the delete user operation
@@ -134,6 +142,8 @@ type ServiceBoilerplateAPI struct {
 	LoginHandler LoginHandler
 	// LogoutHandler sets the operation handler for the logout operation
 	LogoutHandler LogoutHandler
+	// RecoveryPasswordHandler sets the operation handler for the recovery password operation
+	RecoveryPasswordHandler RecoveryPasswordHandler
 	// UpdateEmailHandler sets the operation handler for the update email operation
 	UpdateEmailHandler UpdateEmailHandler
 	// UpdatePasswordHandler sets the operation handler for the update password operation
@@ -214,6 +224,9 @@ func (o *ServiceBoilerplateAPI) Validate() error {
 		unregistered = append(unregistered, "CookieAuth")
 	}
 
+	if o.CreateRecoveryCodeHandler == nil {
+		unregistered = append(unregistered, "CreateRecoveryCodeHandler")
+	}
 	if o.CreateUserHandler == nil {
 		unregistered = append(unregistered, "CreateUserHandler")
 	}
@@ -231,6 +244,9 @@ func (o *ServiceBoilerplateAPI) Validate() error {
 	}
 	if o.LogoutHandler == nil {
 		unregistered = append(unregistered, "LogoutHandler")
+	}
+	if o.RecoveryPasswordHandler == nil {
+		unregistered = append(unregistered, "RecoveryPasswordHandler")
 	}
 	if o.UpdateEmailHandler == nil {
 		unregistered = append(unregistered, "UpdateEmailHandler")
@@ -349,6 +365,10 @@ func (o *ServiceBoilerplateAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
+	o.handlers["POST"]["/recovery-code"] = NewCreateRecoveryCode(o.context, o.CreateRecoveryCodeHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
 	o.handlers["POST"]["/user"] = NewCreateUser(o.context, o.CreateUserHandler)
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
@@ -370,6 +390,10 @@ func (o *ServiceBoilerplateAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/logout"] = NewLogout(o.context, o.LogoutHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/recovery-password"] = NewRecoveryPassword(o.context, o.RecoveryPasswordHandler)
 	if o.handlers["PATCH"] == nil {
 		o.handlers["PATCH"] = make(map[string]http.Handler)
 	}

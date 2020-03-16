@@ -35,30 +35,16 @@ definitions:
       message:
         type: string
 
-  Pagination:
-    type: object
-    required:
-      - limit
-      - offset
-    properties:
-      limit:
-        description: Maximum amount of items to return.
-        type: integer
-        format: int32
-        minimum: 1
-        maximum: 100
-      offset:
-        description: Amount of items to skip.
-        type: integer
-        format: int32
-        minimum: 0
-        maximum: 9900
-
   Email:
     type: string
     format: email
     minLength: 1
     maxLength: 255
+
+  RecoveryCode:
+    type: string
+    minLength: 1
+    maxLength: 6
 
   Password:
     type: string
@@ -99,17 +85,6 @@ definitions:
         $ref: '#/definitions/Username'
       password:
         $ref: '#/definitions/Password'
-
-  ListUsersParams:
-    type: object
-    required:
-      - username
-      - pagination
-    properties:
-      username:
-        $ref: '#/definitions/Username'
-      pagination:
-        $ref: '#/definitions/Pagination'
 
   LoginParam:
     type: object
@@ -254,6 +229,49 @@ paths:
     delete:
       operationId: deleteUser
       description: Deletion of your account.
+      responses:
+        204: {$ref: '#/responses/NoContent'}
+        default: {$ref: '#/responses/GenericError'}
+
+  /recovery-code:
+    post:
+      operationId: createRecoveryCode
+      security: []
+      description: Creates a password recovery token and sends it to the email.
+      parameters:
+        - name: args
+          in: body
+          required: true
+          schema:
+            type: object
+            required:
+              - email
+            properties:
+              email:
+                $ref: '#/definitions/Email'
+      responses:
+        204: {$ref: '#/responses/NoContent'}
+        default: {$ref: '#/responses/GenericError'}
+
+  /recovery-password:
+    post:
+      operationId: recoveryPassword
+      security: []
+      description: Updates the password of the user who owns this recovery code.
+      parameters:
+        - name: args
+          in: body
+          required: true
+          schema:
+            type: object
+            required:
+              - recovery_code
+              - password
+            properties:
+              recoveryCode:
+                $ref: '#/definitions/RecoveryCode'
+              password:
+                $ref: '#/definitions/Password'
       responses:
         204: {$ref: '#/responses/NoContent'}
         default: {$ref: '#/responses/GenericError'}

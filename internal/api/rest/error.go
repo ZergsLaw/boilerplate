@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-//go:generate genny -in=$GOFILE -out=gen-$GOFILE gen "CreateUser=Login,Logout,VerificationEmail,VerificationUsername,GetUser,DeleteUser,UpdatePassword,UpdateUsername,UpdateEmail,GetUsers"
+//go:generate genny -in=$GOFILE -out=gen-$GOFILE gen "CreateUser=Login,Logout,VerificationEmail,VerificationUsername,GetUser,DeleteUser,UpdatePassword,UpdateUsername,UpdateEmail,GetUsers,CreateRecoveryCode,RecoveryPassword"
 
 func errCreateUser(logger *zap.Logger, err error, code int) middleware.Responder {
 	if code < http.StatusInternalServerError {

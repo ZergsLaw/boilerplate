@@ -133,6 +133,10 @@ func errPayload(err interface{}) *models.Error {
 		return err.Payload
 	case *operations.GetUsersDefault:
 		return err.Payload
+	case *operations.CreateRecoveryCodeDefault:
+		return err.Payload
+	case *operations.RecoveryPasswordDefault:
+		return err.Payload
 	default:
 		return nil
 	}

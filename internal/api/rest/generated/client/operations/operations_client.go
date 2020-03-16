@@ -25,6 +25,8 @@ type Client struct {
 
 // ClientService is the interface for Client methods
 type ClientService interface {
+	CreateRecoveryCode(params *CreateRecoveryCodeParams) (*CreateRecoveryCodeNoContent, error)
+
 	CreateUser(params *CreateUserParams) (*CreateUserOK, error)
 
 	DeleteUser(params *DeleteUserParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteUserNoContent, error)
@@ -37,6 +39,8 @@ type ClientService interface {
 
 	Logout(params *LogoutParams, authInfo runtime.ClientAuthInfoWriter) (*LogoutNoContent, error)
 
+	RecoveryPassword(params *RecoveryPasswordParams) (*RecoveryPasswordNoContent, error)
+
 	UpdateEmail(params *UpdateEmailParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateEmailNoContent, error)
 
 	UpdatePassword(params *UpdatePasswordParams, authInfo runtime.ClientAuthInfoWriter) (*UpdatePasswordNoContent, error)
@@ -48,6 +52,39 @@ type ClientService interface {
 	VerificationUsername(params *VerificationUsernameParams) (*VerificationUsernameNoContent, error)
 
 	SetTransport(transport runtime.ClientTransport)
+}
+
+/*
+  CreateRecoveryCode Creates a password recovery token and sends it to the email.
+*/
+func (a *Client) CreateRecoveryCode(params *CreateRecoveryCodeParams) (*CreateRecoveryCodeNoContent, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCreateRecoveryCodeParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "createRecoveryCode",
+		Method:             "POST",
+		PathPattern:        "/recovery-code",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateRecoveryCodeReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CreateRecoveryCodeNoContent)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CreateRecoveryCodeDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -249,6 +286,39 @@ func (a *Client) Logout(params *LogoutParams, authInfo runtime.ClientAuthInfoWri
 	}
 	// unexpected success response
 	unexpectedSuccess := result.(*LogoutDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
+}
+
+/*
+  RecoveryPassword Updates the password of the user who owns this recovery code.
+*/
+func (a *Client) RecoveryPassword(params *RecoveryPasswordParams) (*RecoveryPasswordNoContent, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewRecoveryPasswordParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "recoveryPassword",
+		Method:             "POST",
+		PathPattern:        "/recovery-password",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &RecoveryPasswordReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*RecoveryPasswordNoContent)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*RecoveryPasswordDefault)
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

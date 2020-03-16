@@ -178,6 +178,36 @@ func (svc *service) updateEmail(params operations.UpdateEmailParams, authUser *a
 	}
 }
 
+func (svc *service) createRecoveryCode(params operations.CreateRecoveryCodeParams) middleware.Responder {
+	ctx, log, _ := fromRequest(params.HTTPRequest, nil)
+
+	err := svc.app.CreateRecoveryCode(ctx, string(params.Args.Email))
+	switch {
+	case err == nil:
+		return operations.NewCreateRecoveryCodeNoContent()
+	case errors.Is(err, app.ErrNotFound):
+		return errCreateRecoveryCode(log, err, http.StatusNotFound)
+	default:
+		return errCreateRecoveryCode(log, err, http.StatusInternalServerError)
+	}
+}
+
+func (svc *service) recoveryPassword(params operations.RecoveryPasswordParams) middleware.Responder {
+	ctx, log, _ := fromRequest(params.HTTPRequest, nil)
+
+	err := svc.app.RecoveryPassword(ctx, string(params.Args.RecoveryCode), string(params.Args.Password))
+	switch {
+	case err == nil:
+		return operations.NewRecoveryPasswordNoContent()
+	case errors.Is(err, app.ErrNotFound):
+		return errRecoveryPassword(log, err, http.StatusNotFound)
+	case errors.Is(err, app.ErrCodeExpired):
+		return errRecoveryPassword(log, err, http.StatusBadRequest)
+	default:
+		return errRecoveryPassword(log, err, http.StatusInternalServerError)
+	}
+}
+
 func (svc *service) getUsers(params operations.GetUsersParams, authUser *app.AuthUser) middleware.Responder {
 	ctx, log, _ := fromRequest(params.HTTPRequest, authUser)
 

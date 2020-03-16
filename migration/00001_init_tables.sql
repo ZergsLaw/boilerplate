@@ -40,8 +40,21 @@ create table notifications
     primary key (id)
 );
 
+create table recovery_code
+(
+    id         serial,
+    email      text references users (email) on delete cascade,
+    code       text                    not null,
+    created_at timestamp default now() not null,
+
+    unique (email),
+    unique (code),
+    primary key (id)
+);
+
 -- +goose Down
 -- SQL in this section is executed when the migration is rolled back.
 drop table sessions;
 drop table notifications;
+drop table recovery_code;
 drop table users;

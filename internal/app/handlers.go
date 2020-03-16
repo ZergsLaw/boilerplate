@@ -8,7 +8,7 @@ import (
 )
 
 func (a *app) VerificationEmail(ctx context.Context, email string) error {
-	_, err := a.repo.UserByEmail(ctx, email)
+	_, err := a.userRepo.UserByEmail(ctx, email)
 	switch {
 	case errors.Is(err, ErrNotFound):
 		return nil
@@ -20,7 +20,7 @@ func (a *app) VerificationEmail(ctx context.Context, email string) error {
 }
 
 func (a *app) VerificationUsername(ctx context.Context, username string) error {
-	_, err := a.repo.UserByUsername(ctx, username)
+	_, err := a.userRepo.UserByUsername(ctx, username)
 	switch {
 	case errors.Is(err, ErrNotFound):
 		return nil
@@ -38,7 +38,7 @@ const (
 func (a *app) Login(ctx context.Context, email, password string, origin Origin) (*User, AuthToken, error) {
 	email = strings.ToLower(email)
 
-	user, err := a.repo.UserByEmail(ctx, email)
+	user, err := a.userRepo.UserByEmail(ctx, email)
 	if err != nil {
 		return nil, "", err
 	}
@@ -52,7 +52,7 @@ func (a *app) Login(ctx context.Context, email, password string, origin Origin) 
 		return nil, "", err
 	}
 
-	err = a.repo.SaveSession(ctx, user.ID, tokenID, origin)
+	err = a.sessionRepo.SaveSession(ctx, user.ID, tokenID, origin)
 	if err != nil {
 		return nil, "", err
 	}
@@ -61,7 +61,7 @@ func (a *app) Login(ctx context.Context, email, password string, origin Origin) 
 }
 
 func (a *app) Logout(ctx context.Context, authUser AuthUser) error {
-	return a.repo.DeleteSession(ctx, authUser.Session.TokenID)
+	return a.sessionRepo.DeleteSession(ctx, authUser.Session.TokenID)
 }
 
 func (a *app) CreateUser(ctx context.Context, email, username, password string, origin Origin) (*User, AuthToken, error) {
@@ -71,7 +71,7 @@ func (a *app) CreateUser(ctx context.Context, email, username, password string, 
 	}
 	email = strings.ToLower(email)
 
-	_, err = a.repo.CreateUser(ctx, User{
+	_, err = a.userRepo.CreateUser(ctx, User{
 		Email:    email,
 		Username: username,
 		PassHash: passHash,
@@ -84,11 +84,11 @@ func (a *app) CreateUser(ctx context.Context, email, username, password string, 
 }
 
 func (a *app) User(ctx context.Context, _ AuthUser, userID UserID) (*User, error) {
-	return a.repo.UserByID(ctx, userID)
+	return a.userRepo.UserByID(ctx, userID)
 }
 
 func (a *app) DeleteUser(ctx context.Context, authUser AuthUser) error {
-	return a.repo.DeleteUser(ctx, authUser.ID)
+	return a.userRepo.DeleteUser(ctx, authUser.ID)
 }
 
 func (a *app) UpdateUsername(ctx context.Context, authUser AuthUser, username string) error {
@@ -96,7 +96,7 @@ func (a *app) UpdateUsername(ctx context.Context, authUser AuthUser, username st
 		return ErrUsernameNeedDifferentiate
 	}
 
-	return a.repo.UpdateUsername(ctx, authUser.ID, username)
+	return a.userRepo.UpdateUsername(ctx, authUser.ID, username)
 }
 
 func (a *app) UpdateEmail(ctx context.Context, authUser AuthUser, email string) error {
@@ -105,7 +105,7 @@ func (a *app) UpdateEmail(ctx context.Context, authUser AuthUser, email string) 
 		return ErrEmailNeedDifferentiate
 	}
 
-	return a.repo.UpdateEmail(ctx, authUser.ID, email)
+	return a.userRepo.UpdateEmail(ctx, authUser.ID, email)
 }
 
 func (a *app) UpdatePassword(ctx context.Context, authUser AuthUser, oldPass, newPass string) error {
@@ -118,11 +118,49 @@ func (a *app) UpdatePassword(ctx context.Context, authUser AuthUser, oldPass, ne
 		return err
 	}
 
-	return a.repo.UpdatePassword(ctx, authUser.ID, passHash)
+	return a.userRepo.UpdatePassword(ctx, authUser.ID, passHash)
 }
 
 func (a *app) ListUserByUsername(ctx context.Context, _ AuthUser, username string, page Page) ([]User, int, error) {
-	return a.repo.ListUserByUsername(ctx, username, page)
+	return a.userRepo.ListUserByUsername(ctx, username, page)
+}
+
+func (a *app) CreateRecoveryCode(ctx context.Context, email string) error {
+	const codeLength = 6
+	email = strings.ToLower(email)
+
+	_, err := a.userRepo.UserByEmail(ctx, email)
+	if err != nil {
+		return err
+	}
+
+	code := a.code.Generate(codeLength)
+
+	return a.codeRepo.SaveCode(ctx, email, code)
+}
+
+func (a *app) RecoveryPassword(ctx context.Context, code, newPassword string) error {
+	email, createdAt, err := a.codeRepo.GetEmail(ctx, code)
+	if err != nil {
+		return err
+	}
+
+	const recoveryCodeLifetime = time.Hour * 24
+	if time.Since(createdAt) > recoveryCodeLifetime {
+		return ErrCodeExpired
+	}
+
+	user, err := a.userRepo.UserByEmail(ctx, email)
+	if err != nil {
+		return err
+	}
+
+	passHash, err := a.password.Hashing(newPassword)
+	if err != nil {
+		return err
+	}
+
+	return a.userRepo.UpdatePassword(ctx, user.ID, passHash)
 }
 
 func (a *app) UserByAuthToken(ctx context.Context, token AuthToken) (*AuthUser, error) {
@@ -135,12 +173,12 @@ func (a *app) UserByAuthToken(ctx context.Context, token AuthToken) (*AuthUser, 
 		return nil, err
 	}
 
-	user, err := a.repo.UserByTokenID(ctx, tokenID)
+	user, err := a.userRepo.UserByTokenID(ctx, tokenID)
 	if err != nil {
 		return nil, err
 	}
 
-	session, err := a.repo.SessionByTokenID(ctx, tokenID)
+	session, err := a.sessionRepo.SessionByTokenID(ctx, tokenID)
 	if err != nil {
 		return nil, err
 	}

@@ -182,8 +182,31 @@ func (mr *UserRepoMockRecorder) ListUserByUsername(arg0, arg1, arg2 interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListUserByUsername", reflect.TypeOf((*UserRepo)(nil).ListUserByUsername), arg0, arg1, arg2)
 }
 
+// SessionRepo is a mock of SessionRepo interface
+type SessionRepo struct {
+	ctrl     *gomock.Controller
+	recorder *SessionRepoMockRecorder
+}
+
+// SessionRepoMockRecorder is the mock recorder for SessionRepo
+type SessionRepoMockRecorder struct {
+	mock *SessionRepo
+}
+
+// NewSessionRepo creates a new mock instance
+func NewSessionRepo(ctrl *gomock.Controller) *SessionRepo {
+	mock := &SessionRepo{ctrl: ctrl}
+	mock.recorder = &SessionRepoMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *SessionRepo) EXPECT() *SessionRepoMockRecorder {
+	return m.recorder
+}
+
 // SaveSession mocks base method
-func (m *UserRepo) SaveSession(arg0 context.Context, arg1 app.UserID, arg2 app.TokenID, arg3 app.Origin) error {
+func (m *SessionRepo) SaveSession(arg0 context.Context, arg1 app.UserID, arg2 app.TokenID, arg3 app.Origin) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveSession", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
@@ -191,13 +214,13 @@ func (m *UserRepo) SaveSession(arg0 context.Context, arg1 app.UserID, arg2 app.T
 }
 
 // SaveSession indicates an expected call of SaveSession
-func (mr *UserRepoMockRecorder) SaveSession(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *SessionRepoMockRecorder) SaveSession(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveSession", reflect.TypeOf((*UserRepo)(nil).SaveSession), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveSession", reflect.TypeOf((*SessionRepo)(nil).SaveSession), arg0, arg1, arg2, arg3)
 }
 
 // SessionByTokenID mocks base method
-func (m *UserRepo) SessionByTokenID(arg0 context.Context, arg1 app.TokenID) (*app.Session, error) {
+func (m *SessionRepo) SessionByTokenID(arg0 context.Context, arg1 app.TokenID) (*app.Session, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SessionByTokenID", arg0, arg1)
 	ret0, _ := ret[0].(*app.Session)
@@ -206,13 +229,13 @@ func (m *UserRepo) SessionByTokenID(arg0 context.Context, arg1 app.TokenID) (*ap
 }
 
 // SessionByTokenID indicates an expected call of SessionByTokenID
-func (mr *UserRepoMockRecorder) SessionByTokenID(arg0, arg1 interface{}) *gomock.Call {
+func (mr *SessionRepoMockRecorder) SessionByTokenID(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SessionByTokenID", reflect.TypeOf((*UserRepo)(nil).SessionByTokenID), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SessionByTokenID", reflect.TypeOf((*SessionRepo)(nil).SessionByTokenID), arg0, arg1)
 }
 
 // DeleteSession mocks base method
-func (m *UserRepo) DeleteSession(arg0 context.Context, arg1 app.TokenID) error {
+func (m *SessionRepo) DeleteSession(arg0 context.Context, arg1 app.TokenID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteSession", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -220,9 +243,62 @@ func (m *UserRepo) DeleteSession(arg0 context.Context, arg1 app.TokenID) error {
 }
 
 // DeleteSession indicates an expected call of DeleteSession
-func (mr *UserRepoMockRecorder) DeleteSession(arg0, arg1 interface{}) *gomock.Call {
+func (mr *SessionRepoMockRecorder) DeleteSession(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSession", reflect.TypeOf((*UserRepo)(nil).DeleteSession), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSession", reflect.TypeOf((*SessionRepo)(nil).DeleteSession), arg0, arg1)
+}
+
+// CodeRepo is a mock of CodeRepo interface
+type CodeRepo struct {
+	ctrl     *gomock.Controller
+	recorder *CodeRepoMockRecorder
+}
+
+// CodeRepoMockRecorder is the mock recorder for CodeRepo
+type CodeRepoMockRecorder struct {
+	mock *CodeRepo
+}
+
+// NewCodeRepo creates a new mock instance
+func NewCodeRepo(ctrl *gomock.Controller) *CodeRepo {
+	mock := &CodeRepo{ctrl: ctrl}
+	mock.recorder = &CodeRepoMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *CodeRepo) EXPECT() *CodeRepoMockRecorder {
+	return m.recorder
+}
+
+// SaveCode mocks base method
+func (m *CodeRepo) SaveCode(ctx context.Context, email, code string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveCode", ctx, email, code)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveCode indicates an expected call of SaveCode
+func (mr *CodeRepoMockRecorder) SaveCode(ctx, email, code interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveCode", reflect.TypeOf((*CodeRepo)(nil).SaveCode), ctx, email, code)
+}
+
+// GetEmail mocks base method
+func (m *CodeRepo) GetEmail(ctx context.Context, code string) (string, time.Time, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetEmail", ctx, code)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(time.Time)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetEmail indicates an expected call of GetEmail
+func (mr *CodeRepoMockRecorder) GetEmail(ctx, code interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEmail", reflect.TypeOf((*CodeRepo)(nil).GetEmail), ctx, code)
 }
 
 // WAL is a mock of WAL interface
@@ -312,6 +388,43 @@ func (m *Notification) Notification(contact string, msg app.Message) error {
 func (mr *NotificationMockRecorder) Notification(contact, msg interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Notification", reflect.TypeOf((*Notification)(nil).Notification), contact, msg)
+}
+
+// Code is a mock of Code interface
+type Code struct {
+	ctrl     *gomock.Controller
+	recorder *CodeMockRecorder
+}
+
+// CodeMockRecorder is the mock recorder for Code
+type CodeMockRecorder struct {
+	mock *Code
+}
+
+// NewCode creates a new mock instance
+func NewCode(ctrl *gomock.Controller) *Code {
+	mock := &Code{ctrl: ctrl}
+	mock.recorder = &CodeMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *Code) EXPECT() *CodeMockRecorder {
+	return m.recorder
+}
+
+// Generate mocks base method
+func (m *Code) Generate(length int) string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Generate", length)
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// Generate indicates an expected call of Generate
+func (mr *CodeMockRecorder) Generate(length interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generate", reflect.TypeOf((*Code)(nil).Generate), length)
 }
 
 // Password is a mock of Password interface
@@ -669,4 +782,32 @@ func (m *App) StartWALNotification(ctx context.Context) error {
 func (mr *AppMockRecorder) StartWALNotification(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartWALNotification", reflect.TypeOf((*App)(nil).StartWALNotification), ctx)
+}
+
+// CreateRecoveryCode mocks base method
+func (m *App) CreateRecoveryCode(ctx context.Context, email string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateRecoveryCode", ctx, email)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateRecoveryCode indicates an expected call of CreateRecoveryCode
+func (mr *AppMockRecorder) CreateRecoveryCode(ctx, email interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRecoveryCode", reflect.TypeOf((*App)(nil).CreateRecoveryCode), ctx, email)
+}
+
+// RecoveryPassword mocks base method
+func (m *App) RecoveryPassword(ctx context.Context, code, newPassword string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecoveryPassword", ctx, code, newPassword)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RecoveryPassword indicates an expected call of RecoveryPassword
+func (mr *AppMockRecorder) RecoveryPassword(ctx, code, newPassword interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecoveryPassword", reflect.TypeOf((*App)(nil).RecoveryPassword), ctx, code, newPassword)
 }

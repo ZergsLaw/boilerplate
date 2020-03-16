@@ -59,18 +59,46 @@ var (
 		Email: email1,
 		Kind:  app.Welcome,
 	}
+
+	recoveryCode = "123456"
 )
 
-func initTest(t testing.TB) (app.App, *mock.UserRepo, *mock.Password, *mock.Auth, *mock.WAL, *mock.Notification, func()) {
+type Mocks struct {
+	userRepo     *mock.UserRepo
+	sessionRepo  *mock.SessionRepo
+	codeRepo     *mock.CodeRepo
+	code         *mock.Code
+	password     *mock.Password
+	auth         *mock.Auth
+	wal          *mock.WAL
+	notification *mock.Notification
+}
+
+func initTest(t *testing.T) (app.App, *Mocks, func()) {
 	t.Helper()
 	ctrl := gomock.NewController(t)
 
 	mockUserRepo := mock.NewUserRepo(ctrl)
+	mockSessionRepo := mock.NewSessionRepo(ctrl)
+	mockCodeRepo := mock.NewCodeRepo(ctrl)
+	mockCode := mock.NewCode(ctrl)
 	mockPass := mock.NewPassword(ctrl)
 	mockToken := mock.NewAuth(ctrl)
 	mockWal := mock.NewWAL(ctrl)
 	mockNotification := mock.NewNotification(ctrl)
 
-	return app.New(mockUserRepo, mockPass, mockToken, mockWal, mockNotification),
-		mockUserRepo, mockPass, mockToken, mockWal, mockNotification, ctrl.Finish
+	appl := app.New(mockUserRepo, mockSessionRepo, mockCodeRepo, mockPass, mockToken, mockWal, mockNotification, mockCode)
+
+	mocks := &Mocks{
+		userRepo:     mockUserRepo,
+		sessionRepo:  mockSessionRepo,
+		codeRepo:     mockCodeRepo,
+		code:         mockCode,
+		password:     mockPass,
+		auth:         mockToken,
+		wal:          mockWal,
+		notification: mockNotification,
+	}
+
+	return appl, mocks, ctrl.Finish
 }

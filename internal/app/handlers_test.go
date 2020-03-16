@@ -12,12 +12,12 @@ import (
 func TestApp_VerificationEmail(t *testing.T) {
 	t.Parallel()
 
-	application, mockRepo, _, _, _, _, shutdown := initTest(t)
+	application, mocks, shutdown := initTest(t)
 	defer shutdown()
 
-	mockRepo.EXPECT().UserByEmail(ctx, notExistEmail).Return(nil, app.ErrNotFound)
-	mockRepo.EXPECT().UserByEmail(ctx, email1).Return(&user1, nil)
-	mockRepo.EXPECT().UserByEmail(ctx, "").Return(nil, errAny)
+	mocks.userRepo.EXPECT().UserByEmail(ctx, notExistEmail).Return(nil, app.ErrNotFound)
+	mocks.userRepo.EXPECT().UserByEmail(ctx, email1).Return(&user1, nil)
+	mocks.userRepo.EXPECT().UserByEmail(ctx, "").Return(nil, errAny)
 
 	testCases := []struct {
 		name  string
@@ -41,12 +41,12 @@ func TestApp_VerificationEmail(t *testing.T) {
 func TestApp_VerificationUsername(t *testing.T) {
 	t.Parallel()
 
-	application, mockRepo, _, _, _, _, shutdown := initTest(t)
+	application, mocks, shutdown := initTest(t)
 	defer shutdown()
 
-	mockRepo.EXPECT().UserByUsername(ctx, notExistUsername).Return(nil, app.ErrNotFound)
-	mockRepo.EXPECT().UserByUsername(ctx, username).Return(&user1, nil)
-	mockRepo.EXPECT().UserByUsername(ctx, "").Return(nil, errAny)
+	mocks.userRepo.EXPECT().UserByUsername(ctx, notExistUsername).Return(nil, app.ErrNotFound)
+	mocks.userRepo.EXPECT().UserByUsername(ctx, username).Return(&user1, nil)
+	mocks.userRepo.EXPECT().UserByUsername(ctx, "").Return(nil, errAny)
 
 	testCases := []struct {
 		name     string
@@ -72,18 +72,18 @@ const tokenExpire = 24 * 7 * time.Hour
 func TestApp_Login(t *testing.T) {
 	t.Parallel()
 
-	application, mockRepo, mockPassword, mockToken, _, _, shutdown := initTest(t)
+	application, mocks, shutdown := initTest(t)
 	defer shutdown()
 
-	mockRepo.EXPECT().UserByEmail(ctx, strings.ToLower(email1)).Return(&user1, nil).Times(4)
-	mockRepo.EXPECT().SaveSession(ctx, user1.ID, tokenID1, origin).Return(nil)
-	mockRepo.EXPECT().SaveSession(ctx, user1.ID, tokenID1, origin).Return(errAny)
-	mockRepo.EXPECT().UserByEmail(ctx, strings.ToLower(notExistEmail)).Return(nil, app.ErrNotFound)
-	mockPassword.EXPECT().Compare(user1.PassHash, []byte(password1)).Return(true).Times(3)
-	mockPassword.EXPECT().Compare(user1.PassHash, []byte(password2)).Return(false)
-	mockToken.EXPECT().Token(tokenExpire).Return(token1, tokenID1, nil)
-	mockToken.EXPECT().Token(tokenExpire).Return(app.AuthToken(""), app.TokenID(""), errAny)
-	mockToken.EXPECT().Token(tokenExpire).Return(token1, tokenID1, nil)
+	mocks.userRepo.EXPECT().UserByEmail(ctx, strings.ToLower(email1)).Return(&user1, nil).Times(4)
+	mocks.sessionRepo.EXPECT().SaveSession(ctx, user1.ID, tokenID1, origin).Return(nil)
+	mocks.sessionRepo.EXPECT().SaveSession(ctx, user1.ID, tokenID1, origin).Return(errAny)
+	mocks.userRepo.EXPECT().UserByEmail(ctx, strings.ToLower(notExistEmail)).Return(nil, app.ErrNotFound)
+	mocks.password.EXPECT().Compare(user1.PassHash, []byte(password1)).Return(true).Times(3)
+	mocks.password.EXPECT().Compare(user1.PassHash, []byte(password2)).Return(false)
+	mocks.auth.EXPECT().Token(tokenExpire).Return(token1, tokenID1, nil)
+	mocks.auth.EXPECT().Token(tokenExpire).Return(app.AuthToken(""), app.TokenID(""), errAny)
+	mocks.auth.EXPECT().Token(tokenExpire).Return(token1, tokenID1, nil)
 
 	testCases := []struct {
 		name      string
@@ -120,27 +120,27 @@ func TestApp_Login(t *testing.T) {
 func TestApp_CreateUser(t *testing.T) {
 	t.Parallel()
 
-	application, mockRepo, mockPassword, mockToken, _, _, shutdown := initTest(t)
+	application, mocks, shutdown := initTest(t)
 	defer shutdown()
 
-	mockPassword.EXPECT().Hashing(password1).Return([]byte(password1), nil).Times(2)
-	mockRepo.EXPECT().CreateUser(ctx, app.User{
+	mocks.password.EXPECT().Hashing(password1).Return([]byte(password1), nil).Times(2)
+	mocks.userRepo.EXPECT().CreateUser(ctx, app.User{
 		Email:    email1,
 		Username: username,
 		PassHash: []byte(password1),
 	}).Return(user1.ID, nil)
-	mockRepo.EXPECT().UserByEmail(ctx, email1).Return(&user1, nil)
-	mockPassword.EXPECT().Compare(user1.PassHash, []byte(password1)).Return(true)
-	mockToken.EXPECT().Token(tokenExpire).Return(token1, tokenID1, nil)
-	mockRepo.EXPECT().SaveSession(ctx, user1.ID, tokenID1, origin).Return(nil)
+	mocks.userRepo.EXPECT().UserByEmail(ctx, email1).Return(&user1, nil)
+	mocks.password.EXPECT().Compare(user1.PassHash, []byte(password1)).Return(true)
+	mocks.auth.EXPECT().Token(tokenExpire).Return(token1, tokenID1, nil)
+	mocks.sessionRepo.EXPECT().SaveSession(ctx, user1.ID, tokenID1, origin).Return(nil)
 
-	mockRepo.EXPECT().CreateUser(ctx, app.User{
+	mocks.userRepo.EXPECT().CreateUser(ctx, app.User{
 		Email:    email1,
 		Username: username,
 		PassHash: []byte(password1),
 	}).Return(app.UserID(0), errAny)
 
-	mockPassword.EXPECT().Hashing(password1).Return(nil, errAny)
+	mocks.password.EXPECT().Hashing(password1).Return(nil, errAny)
 
 	testCases := []struct {
 		name      string
@@ -176,10 +176,10 @@ func TestApp_CreateUser(t *testing.T) {
 func TestApp_UpdateUsername(t *testing.T) {
 	t.Parallel()
 
-	application, mockRepo, _, _, _, _, shutdown := initTest(t)
+	application, mocks, shutdown := initTest(t)
 	defer shutdown()
 
-	mockRepo.EXPECT().UpdateUsername(ctx, user1.ID, notExistUsername).Return(nil)
+	mocks.userRepo.EXPECT().UpdateUsername(ctx, user1.ID, notExistUsername).Return(nil)
 
 	testCases := []struct {
 		name     string
@@ -202,10 +202,10 @@ func TestApp_UpdateUsername(t *testing.T) {
 func TestApp_UpdateEmail(t *testing.T) {
 	t.Parallel()
 
-	application, mockRepo, _, _, _, _, shutdown := initTest(t)
+	application, mocks, shutdown := initTest(t)
 	defer shutdown()
 
-	mockRepo.EXPECT().UpdateEmail(ctx, user1.ID, strings.ToLower(notExistEmail)).Return(nil)
+	mocks.userRepo.EXPECT().UpdateEmail(ctx, user1.ID, strings.ToLower(notExistEmail)).Return(nil)
 
 	testCases := []struct {
 		name  string
@@ -228,14 +228,14 @@ func TestApp_UpdateEmail(t *testing.T) {
 func TestApp_UpdatePassword(t *testing.T) {
 	t.Parallel()
 
-	application, mockRepo, mockPassword, _, _, _, shutdown := initTest(t)
+	application, mocks, shutdown := initTest(t)
 	defer shutdown()
 
-	mockRepo.EXPECT().UpdatePassword(ctx, user1.ID, []byte(password2)).Return(nil)
-	mockPassword.EXPECT().Compare(user1.PassHash, []byte(password1)).Return(true).Times(2)
-	mockPassword.EXPECT().Compare(user1.PassHash, []byte(password2)).Return(false).Times(1)
-	mockPassword.EXPECT().Hashing(password2).Return([]byte(password2), nil)
-	mockPassword.EXPECT().Hashing(password2).Return(nil, errAny)
+	mocks.userRepo.EXPECT().UpdatePassword(ctx, user1.ID, []byte(password2)).Return(nil)
+	mocks.password.EXPECT().Compare(user1.PassHash, []byte(password1)).Return(true).Times(2)
+	mocks.password.EXPECT().Compare(user1.PassHash, []byte(password2)).Return(false).Times(1)
+	mocks.password.EXPECT().Hashing(password2).Return([]byte(password2), nil)
+	mocks.password.EXPECT().Hashing(password2).Return(nil, errAny)
 
 	testCases := []struct {
 		name             string
@@ -256,20 +256,85 @@ func TestApp_UpdatePassword(t *testing.T) {
 	}
 }
 
+func TestApp_CreateRecoveryCode(t *testing.T) {
+	t.Parallel()
+
+	application, mocks, shutdown := initTest(t)
+	defer shutdown()
+
+	const codeLength = 6
+	mocks.userRepo.EXPECT().UserByEmail(ctx, email1).Return(&user1, nil)
+	mocks.code.EXPECT().Generate(codeLength).Return(recoveryCode)
+	mocks.codeRepo.EXPECT().SaveCode(ctx, email1, recoveryCode)
+	mocks.userRepo.EXPECT().UserByEmail(ctx, strings.ToLower(notExistEmail)).Return(nil, app.ErrNotFound)
+
+	testCases := []struct {
+		name  string
+		email string
+		want  error
+	}{
+		{"success", email1, nil},
+		{"user not found", notExistEmail, app.ErrNotFound},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			err := application.CreateRecoveryCode(ctx, tc.email)
+			assert.Equal(t, tc.want, err)
+		})
+	}
+}
+
+func TestApp_RecoveryPassword(t *testing.T) {
+	t.Parallel()
+
+	application, mocks, shutdown := initTest(t)
+	defer shutdown()
+
+	mocks.codeRepo.EXPECT().GetEmail(ctx, recoveryCode).Return(email1, time.Now(), nil).Times(3)
+	mocks.userRepo.EXPECT().UserByEmail(ctx, email1).Return(&user1, nil).Times(2)
+	mocks.password.EXPECT().Hashing(password2).Return([]byte(password2), nil)
+	mocks.userRepo.EXPECT().UpdatePassword(ctx, user1.ID, []byte(password2)).Return(nil)
+	mocks.password.EXPECT().Hashing(password2).Return(nil, errAny)
+	mocks.userRepo.EXPECT().UserByEmail(ctx, email1).Return(nil, app.ErrNotFound)
+	mocks.codeRepo.EXPECT().GetEmail(ctx, recoveryCode).Return(email1, time.Time{}, nil)
+	mocks.codeRepo.EXPECT().GetEmail(ctx, recoveryCode).Return("", time.Time{}, app.ErrNotFound)
+
+	testCases := []struct {
+		name string
+		want error
+	}{
+		{"success", nil},
+		{"hashing error", errAny},
+		{"user not found", app.ErrNotFound},
+		{"recovery recoverycode is expired", app.ErrCodeExpired},
+		{"not found email by recoverycode", app.ErrNotFound},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			err := application.RecoveryPassword(ctx, recoveryCode, password2)
+			assert.Equal(t, tc.want, err)
+		})
+	}
+}
+
 func TestApp_UserByAuthToken(t *testing.T) {
 	t.Parallel()
 
-	application, mockRepo, _, mockToken, _, _, shutdown := initTest(t)
+	application, mocks, shutdown := initTest(t)
 	defer shutdown()
 
 	const expiredToken app.AuthToken = "notValidToken"
 
-	mockToken.EXPECT().Parse(token1).Return(tokenID1, nil).Times(3)
-	mockToken.EXPECT().Parse(expiredToken).Return(app.TokenID(""), app.ErrExpiredToken)
-	mockRepo.EXPECT().UserByTokenID(ctx, tokenID1).Return(&user1, nil).Times(2)
-	mockRepo.EXPECT().UserByTokenID(ctx, tokenID1).Return(nil, app.ErrNotFound)
-	mockRepo.EXPECT().SessionByTokenID(ctx, tokenID1).Return(&session1, nil)
-	mockRepo.EXPECT().SessionByTokenID(ctx, tokenID1).Return(nil, errAny)
+	mocks.auth.EXPECT().Parse(token1).Return(tokenID1, nil).Times(3)
+	mocks.auth.EXPECT().Parse(expiredToken).Return(app.TokenID(""), app.ErrExpiredToken)
+	mocks.userRepo.EXPECT().UserByTokenID(ctx, tokenID1).Return(&user1, nil).Times(2)
+	mocks.userRepo.EXPECT().UserByTokenID(ctx, tokenID1).Return(nil, app.ErrNotFound)
+	mocks.sessionRepo.EXPECT().SessionByTokenID(ctx, tokenID1).Return(&session1, nil)
+	mocks.sessionRepo.EXPECT().SessionByTokenID(ctx, tokenID1).Return(nil, errAny)
 
 	testCases := []struct {
 		name    string
