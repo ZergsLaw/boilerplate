@@ -19,11 +19,12 @@ func TestApp_StartWAL(t *testing.T) {
 		Content: "Welcome",
 	}
 
+	mocks.userRepo.EXPECT().UserByID(gomock.Any(), taskNotification.UserID).Return(&user1, nil).Times(3)
 	mocks.wal.EXPECT().NotificationTask(gomock.Any()).Return(&taskNotification, nil).Times(3)
-	mocks.notification.EXPECT().Notification(taskNotification.Email, msg).Return(nil).Times(2)
+	mocks.notification.EXPECT().Notification(user1.Email, msg).Return(nil).Times(2)
 	mocks.wal.EXPECT().DeleteTaskNotification(gomock.Any(), taskNotification.ID).Return(nil)
 	mocks.wal.EXPECT().DeleteTaskNotification(gomock.Any(), taskNotification.ID).Return(errAny)
-	mocks.notification.EXPECT().Notification(taskNotification.Email, msg).Return(errAny)
+	mocks.notification.EXPECT().Notification(user1.Email, msg).Return(errAny)
 	mocks.wal.EXPECT().NotificationTask(gomock.Any()).Return(nil, app.ErrNotFound)
 	mocks.wal.EXPECT().NotificationTask(gomock.Any()).Return(nil, errAny)
 

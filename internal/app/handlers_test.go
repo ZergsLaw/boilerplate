@@ -265,7 +265,7 @@ func TestApp_CreateRecoveryCode(t *testing.T) {
 	const codeLength = 6
 	mocks.userRepo.EXPECT().UserByEmail(ctx, email1).Return(&user1, nil)
 	mocks.code.EXPECT().Generate(codeLength).Return(recoveryCode)
-	mocks.codeRepo.EXPECT().SaveCode(ctx, email1, recoveryCode)
+	mocks.codeRepo.EXPECT().SaveCode(ctx, user1.ID, recoveryCode)
 	mocks.userRepo.EXPECT().UserByEmail(ctx, strings.ToLower(notExistEmail)).Return(nil, app.ErrNotFound)
 
 	testCases := []struct {
@@ -292,14 +292,12 @@ func TestApp_RecoveryPassword(t *testing.T) {
 	application, mocks, shutdown := initTest(t)
 	defer shutdown()
 
-	mocks.codeRepo.EXPECT().GetEmail(ctx, recoveryCode).Return(email1, time.Now(), nil).Times(3)
-	mocks.userRepo.EXPECT().UserByEmail(ctx, email1).Return(&user1, nil).Times(2)
+	mocks.codeRepo.EXPECT().UserID(ctx, recoveryCode).Return(user1.ID, time.Now(), nil).Times(2)
 	mocks.password.EXPECT().Hashing(password2).Return([]byte(password2), nil)
 	mocks.userRepo.EXPECT().UpdatePassword(ctx, user1.ID, []byte(password2)).Return(nil)
 	mocks.password.EXPECT().Hashing(password2).Return(nil, errAny)
-	mocks.userRepo.EXPECT().UserByEmail(ctx, email1).Return(nil, app.ErrNotFound)
-	mocks.codeRepo.EXPECT().GetEmail(ctx, recoveryCode).Return(email1, time.Time{}, nil)
-	mocks.codeRepo.EXPECT().GetEmail(ctx, recoveryCode).Return("", time.Time{}, app.ErrNotFound)
+	mocks.codeRepo.EXPECT().UserID(ctx, recoveryCode).Return(user1.ID, time.Time{}, nil)
+	mocks.codeRepo.EXPECT().UserID(ctx, recoveryCode).Return(app.UserID(0), time.Time{}, app.ErrNotFound)
 
 	testCases := []struct {
 		name string
@@ -307,7 +305,6 @@ func TestApp_RecoveryPassword(t *testing.T) {
 	}{
 		{"success", nil},
 		{"hashing error", errAny},
-		{"user not found", app.ErrNotFound},
 		{"recovery recoverycode is expired", app.ErrCodeExpired},
 		{"not found email by recoverycode", app.ErrNotFound},
 	}

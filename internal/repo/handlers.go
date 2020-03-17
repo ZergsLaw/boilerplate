@@ -35,11 +35,9 @@ func (repo *Repo) CreateUser(ctx context.Context, newUser app.User) (userID app.
 			return rollback(tx, fmt.Errorf("create user: %w", err))
 		}
 
-		const queryCreateTask = `INSERT INTO notifications (user_id, kind) VALUES ($1, $2)`
-
-		_, err = tx.ExecContext(ctx, queryCreateTask, userID, app.Welcome.String())
+		err = createTaskNotification(ctx, tx, userID, app.Welcome)
 		if err != nil {
-			return rollback(tx, fmt.Errorf("create notification task: %w", err))
+			return rollback(tx, err)
 		}
 
 		return tx.Commit()
@@ -101,11 +99,9 @@ func (repo *Repo) UpdateEmail(ctx context.Context, userID app.UserID, email stri
 			return rollback(tx, err)
 		}
 
-		const queryCreateTask = `INSERT INTO notifications (user_id, kind) VALUES ($1, $2)`
-
-		_, err = tx.ExecContext(ctx, queryCreateTask, userID, app.ChangeEmail.String())
+		err = createTaskNotification(ctx, tx, userID, app.ChangeEmail)
 		if err != nil {
-			return rollback(tx, fmt.Errorf("create notification task: %w", err))
+			return rollback(tx, err)
 		}
 
 		return tx.Commit()
@@ -133,7 +129,7 @@ func (repo *Repo) UpdatePassword(ctx context.Context, userID app.UserID, passHas
 			return rollback(tx, err)
 		}
 
-		err = cleanRecoveryCodes(ctx, tx, userEmail)
+		err = cleanRecoveryCodes(ctx, tx, userID)
 		if err != nil {
 			return rollback(tx, err)
 		}
@@ -353,20 +349,25 @@ func (repo *Repo) DeleteSession(ctx context.Context, tokenID app.TokenID) error 
 }
 
 // SaveCode need for implements app.CodeRepo.
-func (repo *Repo) SaveCode(ctx context.Context, email, code string) error {
+func (repo *Repo) SaveCode(ctx context.Context, userID app.UserID, code string) error {
 	return repo.execFunc(func(db *sql.DB) error {
 		tx, err := db.BeginTx(ctx, nil)
 		if err != nil {
 			return fmt.Errorf("start tx: %w", err)
 		}
 
-		err = cleanRecoveryCodes(ctx, tx, email)
+		err = cleanRecoveryCodes(ctx, tx, userID)
 		if err != nil {
 			return rollback(tx, err)
 		}
 
-		const query = `INSERT INTO recovery_code(email, code) VALUES ($1, $2)`
-		_, err = tx.ExecContext(ctx, query, email, code)
+		const query = `INSERT INTO recovery_code(user_id, code) VALUES ($1, $2)`
+		_, err = tx.ExecContext(ctx, query, userID, code)
+		if err != nil {
+			return rollback(tx, err)
+		}
+
+		err = createTaskNotification(ctx, tx, userID, app.PassRecovery)
 		if err != nil {
 			return rollback(tx, err)
 		}
@@ -375,10 +376,21 @@ func (repo *Repo) SaveCode(ctx context.Context, email, code string) error {
 	})
 }
 
-func cleanRecoveryCodes(ctx context.Context, tx *sql.Tx, email string) error {
-	const query = `DELETE FROM recovery_code WHERE email = $1`
+func createTaskNotification(ctx context.Context, tx *sql.Tx, userID app.UserID, kind app.MessageKind) error {
+	const queryCreateTask = `INSERT INTO notifications (user_id, kind) VALUES ($1, $2)`
 
-	_, err := tx.ExecContext(ctx, query, email)
+	_, err := tx.ExecContext(ctx, queryCreateTask, userID, kind.String())
+	if err != nil {
+		return fmt.Errorf("create task notification: %w", err)
+	}
+
+	return nil
+}
+
+func cleanRecoveryCodes(ctx context.Context, tx *sql.Tx, id app.UserID) error {
+	const query = `DELETE FROM recovery_code WHERE user_id = $1`
+
+	_, err := tx.ExecContext(ctx, query, id)
 	if err != nil {
 		return fmt.Errorf("delete recovery recoverycode: %w", err)
 	}
@@ -386,12 +398,30 @@ func cleanRecoveryCodes(ctx context.Context, tx *sql.Tx, email string) error {
 	return nil
 }
 
-// GetEmail need for implements app.CodeRepo.
-func (repo *Repo) GetEmail(ctx context.Context, code string) (email string, createAt time.Time, err error) {
+// UserID need for implements app.CodeRepo.
+func (repo *Repo) UserID(ctx context.Context, code string) (userID app.UserID, createAt time.Time, err error) {
 	err = repo.execFunc(func(db *sql.DB) error {
-		const query = `SELECT email, created_at FROM recovery_code WHERE code = $1`
+		const query = `SELECT user_id, created_at FROM recovery_code WHERE code = $1`
 
-		err = db.QueryRowContext(ctx, query, code).Scan(&email, &createAt)
+		err = db.QueryRowContext(ctx, query, code).Scan(&userID, &createAt)
+		switch {
+		case err == sql.ErrNoRows:
+			return app.ErrNotFound
+		case err != nil:
+			return err
+		}
+
+		return nil
+	})
+	return
+}
+
+// Code need for implements app.CodeRepo.
+func (repo *Repo) Code(ctx context.Context, id app.UserID) (code string, err error) {
+	err = repo.execFunc(func(db *sql.DB) error {
+		const query = `SELECT code FROM recovery_code WHERE user_id = $1`
+
+		err = db.QueryRowContext(ctx, query, id).Scan(&code)
 		switch {
 		case err == sql.ErrNoRows:
 			return app.ErrNotFound

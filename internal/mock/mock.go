@@ -272,33 +272,48 @@ func (m *CodeRepo) EXPECT() *CodeRepoMockRecorder {
 }
 
 // SaveCode mocks base method
-func (m *CodeRepo) SaveCode(ctx context.Context, email, code string) error {
+func (m *CodeRepo) SaveCode(ctx context.Context, id app.UserID, code string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveCode", ctx, email, code)
+	ret := m.ctrl.Call(m, "SaveCode", ctx, id, code)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SaveCode indicates an expected call of SaveCode
-func (mr *CodeRepoMockRecorder) SaveCode(ctx, email, code interface{}) *gomock.Call {
+func (mr *CodeRepoMockRecorder) SaveCode(ctx, id, code interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveCode", reflect.TypeOf((*CodeRepo)(nil).SaveCode), ctx, email, code)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveCode", reflect.TypeOf((*CodeRepo)(nil).SaveCode), ctx, id, code)
 }
 
-// GetEmail mocks base method
-func (m *CodeRepo) GetEmail(ctx context.Context, code string) (string, time.Time, error) {
+// UserID mocks base method
+func (m *CodeRepo) UserID(ctx context.Context, code string) (app.UserID, time.Time, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEmail", ctx, code)
-	ret0, _ := ret[0].(string)
+	ret := m.ctrl.Call(m, "UserID", ctx, code)
+	ret0, _ := ret[0].(app.UserID)
 	ret1, _ := ret[1].(time.Time)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
 }
 
-// GetEmail indicates an expected call of GetEmail
-func (mr *CodeRepoMockRecorder) GetEmail(ctx, code interface{}) *gomock.Call {
+// UserID indicates an expected call of UserID
+func (mr *CodeRepoMockRecorder) UserID(ctx, code interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEmail", reflect.TypeOf((*CodeRepo)(nil).GetEmail), ctx, code)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserID", reflect.TypeOf((*CodeRepo)(nil).UserID), ctx, code)
+}
+
+// Code mocks base method
+func (m *CodeRepo) Code(ctx context.Context, id app.UserID) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Code", ctx, id)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Code indicates an expected call of Code
+func (mr *CodeRepoMockRecorder) Code(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Code", reflect.TypeOf((*CodeRepo)(nil).Code), ctx, id)
 }
 
 // WAL is a mock of WAL interface
@@ -770,20 +785,6 @@ func (mr *AppMockRecorder) ListUserByUsername(arg0, arg1, arg2, arg3 interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListUserByUsername", reflect.TypeOf((*App)(nil).ListUserByUsername), arg0, arg1, arg2, arg3)
 }
 
-// StartWALNotification mocks base method
-func (m *App) StartWALNotification(ctx context.Context) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartWALNotification", ctx)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// StartWALNotification indicates an expected call of StartWALNotification
-func (mr *AppMockRecorder) StartWALNotification(ctx interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartWALNotification", reflect.TypeOf((*App)(nil).StartWALNotification), ctx)
-}
-
 // CreateRecoveryCode mocks base method
 func (m *App) CreateRecoveryCode(ctx context.Context, email string) error {
 	m.ctrl.T.Helper()
@@ -810,4 +811,18 @@ func (m *App) RecoveryPassword(ctx context.Context, code, newPassword string) er
 func (mr *AppMockRecorder) RecoveryPassword(ctx, code, newPassword interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecoveryPassword", reflect.TypeOf((*App)(nil).RecoveryPassword), ctx, code, newPassword)
+}
+
+// StartWALNotification mocks base method
+func (m *App) StartWALNotification(ctx context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StartWALNotification", ctx)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StartWALNotification indicates an expected call of StartWALNotification
+func (mr *AppMockRecorder) StartWALNotification(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartWALNotification", reflect.TypeOf((*App)(nil).StartWALNotification), ctx)
 }

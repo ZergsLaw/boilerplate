@@ -17,7 +17,7 @@ create table users
 create table sessions
 (
     id         serial,
-    user_id    integer references users (id) on delete cascade,
+    user_id    integer references users on delete cascade,
     token_id   text                    not null,
     ip         inet                    not null,
     user_agent text                    not null default '',
@@ -43,11 +43,11 @@ create table notifications
 create table recovery_code
 (
     id         serial,
-    email      text references users (email) on delete cascade,
-    code       text                    not null,
-    created_at timestamp default now() not null,
+    user_id    integer references users on delete cascade not null,
+    code       text                                       not null,
+    created_at timestamp default now()                    not null,
 
-    unique (email),
+    unique (user_id),
     unique (code),
     primary key (id)
 );

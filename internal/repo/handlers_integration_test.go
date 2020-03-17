@@ -66,6 +66,9 @@ func TestRepoSmoke(t *testing.T) {
 	assert.Equal(t, 2, task.ID)
 	assert.Equal(t, app.ChangeEmail, task.Kind)
 
+	err = Repo.DeleteTaskNotification(ctx, task.ID)
+	assert.Nil(t, err)
+
 	res, err = Repo.UserByEmail(ctx, user.Email)
 	assert.Nil(t, err)
 	user.UpdatedAt = res.UpdatedAt
@@ -80,6 +83,32 @@ func TestRepoSmoke(t *testing.T) {
 	assert.Nil(t, err)
 	user.UpdatedAt = res.UpdatedAt
 	assert.Equal(t, &user, res)
+
+	const recoveryCode = "123456"
+	userID, createdAt, err := Repo.UserID(ctx, recoveryCode)
+	assert.Zero(t, userID)
+	assert.Zero(t, createdAt)
+	assert.Equal(t, app.ErrNotFound, errors.Unwrap(err))
+
+	err = Repo.SaveCode(ctx, user.ID, recoveryCode)
+	assert.Nil(t, err)
+
+	code, err := Repo.Code(ctx, user.ID)
+	assert.Nil(t, err)
+	assert.Equal(t, recoveryCode, code)
+
+	task, err = Repo.NotificationTask(ctx)
+	assert.Nil(t, err)
+	assert.Equal(t, 3, task.ID)
+	assert.Equal(t, app.PassRecovery, task.Kind)
+
+	userID, createdAt, err = Repo.UserID(ctx, recoveryCode)
+	assert.Nil(t, err)
+	assert.NotZero(t, createdAt)
+	assert.Equal(t, user.ID, userID)
+
+	err = Repo.DeleteTaskNotification(ctx, task.ID)
+	assert.Nil(t, err)
 
 	user2 := userGenerator()
 	user2.ID, err = Repo.CreateUser(ctx, user2)
@@ -130,20 +159,6 @@ func TestRepoSmoke(t *testing.T) {
 	session, err = Repo.SessionByTokenID(ctx, tokenUser2)
 	assert.Nil(t, session)
 	assert.Equal(t, app.ErrNotFound, errors.Unwrap(err))
-
-	const recoveryCode = "123456"
-	email, createdAt, err := Repo.GetEmail(ctx, recoveryCode)
-	assert.Zero(t, email)
-	assert.Zero(t, createdAt)
-	assert.Equal(t, app.ErrNotFound, errors.Unwrap(err))
-
-	err = Repo.SaveCode(ctx, user.Email, recoveryCode)
-	assert.Nil(t, err)
-
-	email, createdAt, err = Repo.GetEmail(ctx, recoveryCode)
-	assert.Nil(t, err)
-	assert.NotZero(t, createdAt)
-	assert.Equal(t, user.Email, email)
 }
 
 func generatorUser() func() app.User {

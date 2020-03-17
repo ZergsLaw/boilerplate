@@ -77,11 +77,15 @@ type (
 	CodeRepo interface {
 		// SaveCode the code to restore the password to the repository.
 		// Removes all recovery codes from this email before adding a new one.
+		// Creates a task to send the recovery code to the user's mail.
 		// Errors: unknown.
-		SaveCode(ctx context.Context, email, code string) error
-		// GetEmail returns the mail of the user who requested a password recovery by the received code.
+		SaveCode(ctx context.Context, id UserID, code string) error
+		// UserID returns user id by recovery code.
 		// Errors: ErrNotFound, unknown.
-		GetEmail(ctx context.Context, code string) (email string, createAt time.Time, err error)
+		UserID(ctx context.Context, code string) (userID UserID, createAt time.Time, err error)
+		// Code returns recovery code for recovery password by user id.
+		// Errors: ErrNotFound, unknown.
+		Code(ctx context.Context, id UserID) (code string, err error)
 	}
 	// WAL module returning tasks and also closing them.
 	WAL interface {
@@ -188,9 +192,9 @@ type (
 	TokenID string
 	// TaskNotification contains information to perform the task of notifying the user.
 	TaskNotification struct {
-		ID    int
-		Email string
-		Kind  MessageKind
+		ID     int
+		UserID UserID
+		Kind   MessageKind
 	}
 	// MessageKind selects the type of message to be sent.
 	MessageKind int

@@ -11,9 +11,9 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// Email email
+// UserID email
 //
-// swagger:model Email
+// swagger:model UserID
 type Email strfmt.Email
 
 // Validate validates this email

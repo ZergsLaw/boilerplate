@@ -34,12 +34,19 @@ func (a *app) StartWALNotification(ctx context.Context) error {
 	return ctx.Err()
 }
 
-func (a *app) execNotification(ctx context.Context, task TaskNotification) (err error) {
+func (a *app) execNotification(ctx context.Context, task TaskNotification) error {
+	user, err := a.userRepo.UserByID(ctx, task.UserID)
+	if err != nil {
+		return err
+	}
+
 	switch task.Kind {
 	case Welcome:
-		err = a.welcome(task.Email)
+		err = a.sendNotification(Welcome, user.Email, welcomeMsg)
 	case ChangeEmail:
-		err = a.changeEmail(task.Email)
+		err = a.sendNotification(ChangeEmail, user.Email, changeEmailMsg)
+	case PassRecovery:
+		err = a.sendRecoveryCode(ctx, user.Email, task)
 	default:
 		err = ErrNotUnknownKindTask
 	}
@@ -55,16 +62,18 @@ const (
 	changeEmailMsg = `Change email successful`
 )
 
-func (a *app) welcome(contact string) error {
-	return a.notification.Notification(contact, Message{
-		Kind:    Welcome,
-		Content: welcomeMsg,
-	})
+func (a *app) sendRecoveryCode(ctx context.Context, contact string, task TaskNotification) error {
+	code, err := a.codeRepo.Code(ctx, task.UserID)
+	if err != nil {
+		return err
+	}
+
+	return a.sendNotification(task.Kind, contact, code)
 }
 
-func (a *app) changeEmail(contact string) error {
+func (a *app) sendNotification(kind MessageKind, contact, content string) error {
 	return a.notification.Notification(contact, Message{
-		Kind:    ChangeEmail,
-		Content: changeEmailMsg,
+		Kind:    kind,
+		Content: content,
 	})
 }

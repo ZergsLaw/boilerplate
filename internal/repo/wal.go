@@ -11,13 +11,12 @@ import (
 // NotificationTask need for implements app.WAL.
 func (repo *Repo) NotificationTask(ctx context.Context) (task *app.TaskNotification, err error) {
 	err = repo.execFunc(func(db *sql.DB) error {
-		const query = `SELECT notifications.id, notifications.kind, users.email FROM
-        notifications LEFT JOIN users ON notifications.user_id = users.id 
-		WHERE notifications.is_done = false 
-		ORDER BY notifications.created_at LIMIT 1`
+		const query = `SELECT id, kind, user_id FROM notifications
+		WHERE is_done = false 
+		ORDER BY created_at LIMIT 1`
 
-		id, email, kind := 0, "", ""
-		err = db.QueryRowContext(ctx, query).Scan(&id, &kind, &email)
+		id, userID, kind := 0, app.UserID(0), ""
+		err = db.QueryRowContext(ctx, query).Scan(&id, &kind, &userID)
 		switch {
 		case err == sql.ErrNoRows:
 			return app.ErrNotFound
@@ -31,9 +30,9 @@ func (repo *Repo) NotificationTask(ctx context.Context) (task *app.TaskNotificat
 		}
 
 		task = &app.TaskNotification{
-			ID:    id,
-			Email: email,
-			Kind:  msgKind,
+			ID:     id,
+			UserID: userID,
+			Kind:   msgKind,
 		}
 		return nil
 	})

@@ -129,18 +129,18 @@ func (a *app) CreateRecoveryCode(ctx context.Context, email string) error {
 	const codeLength = 6
 	email = strings.ToLower(email)
 
-	_, err := a.userRepo.UserByEmail(ctx, email)
+	user, err := a.userRepo.UserByEmail(ctx, email)
 	if err != nil {
 		return err
 	}
 
 	code := a.code.Generate(codeLength)
 
-	return a.codeRepo.SaveCode(ctx, email, code)
+	return a.codeRepo.SaveCode(ctx, user.ID, code)
 }
 
 func (a *app) RecoveryPassword(ctx context.Context, code, newPassword string) error {
-	email, createdAt, err := a.codeRepo.GetEmail(ctx, code)
+	userID, createdAt, err := a.codeRepo.UserID(ctx, code)
 	if err != nil {
 		return err
 	}
@@ -150,17 +150,12 @@ func (a *app) RecoveryPassword(ctx context.Context, code, newPassword string) er
 		return ErrCodeExpired
 	}
 
-	user, err := a.userRepo.UserByEmail(ctx, email)
-	if err != nil {
-		return err
-	}
-
 	passHash, err := a.password.Hashing(newPassword)
 	if err != nil {
 		return err
 	}
 
-	return a.userRepo.UpdatePassword(ctx, user.ID, passHash)
+	return a.userRepo.UpdatePassword(ctx, userID, passHash)
 }
 
 func (a *app) UserByAuthToken(ctx context.Context, token AuthToken) (*AuthUser, error) {

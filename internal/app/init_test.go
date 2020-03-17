@@ -55,9 +55,9 @@ var (
 	}
 
 	taskNotification = app.TaskNotification{
-		ID:    1,
-		Email: email1,
-		Kind:  app.Welcome,
+		ID:     1,
+		UserID: user1.ID,
+		Kind:   app.Welcome,
 	}
 
 	recoveryCode = "123456"
