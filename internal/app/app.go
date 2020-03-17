@@ -186,7 +186,7 @@ type (
 	SessionID int
 	// SocialID contains id from social network with OAuth.
 	SocialID string
-	// AuthToken authorization auth.
+	// AuthToken authorization token.
 	AuthToken string
 	// TokenID contains auth id.
 	TokenID string
