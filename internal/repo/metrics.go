@@ -55,16 +55,7 @@ func InitMetrics(namespace string) {
 		[]string{methodLabel},
 	)
 
-	for _, method := range methodsOf(new(app.UserRepo)) {
-		l := prometheus.Labels{
-			methodLabel: method,
-		}
-		metric.callTotal.With(l)
-		metric.callErrTotal.With(l)
-		metric.callDuration.With(l)
-	}
-
-	for _, method := range methodsOf(new(app.WAL)) {
+	for _, method := range methodsOf(new(app.UserRepo), new(app.SessionRepo), new(app.CodeRepo), new(app.WAL)) {
 		l := prometheus.Labels{
 			methodLabel: method,
 		}
@@ -74,16 +65,18 @@ func InitMetrics(namespace string) {
 	}
 }
 
-func methodsOf(v interface{}) []string {
-	typ := reflect.TypeOf(v)
-	if typ.Kind() != reflect.Ptr || typ.Elem().Kind() != reflect.Interface {
-		panic("require pointer to interface")
+func methodsOf(values ...interface{}) []string {
+	var methods []string
+
+	for i := range values {
+		typ := reflect.TypeOf(values[i])
+		if typ.Kind() != reflect.Ptr || typ.Elem().Kind() != reflect.Interface {
+			panic("require pointer to interface")
+		}
+		typ = typ.Elem()
+		methods = append(methods, typ.Method(i).Name)
 	}
-	typ = typ.Elem()
-	methods := make([]string, typ.NumMethod())
-	for i := 0; i < typ.NumMethod(); i++ {
-		methods[i] = typ.Method(i).Name
-	}
+
 	return methods
 }
 
