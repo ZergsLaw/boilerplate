@@ -44,7 +44,7 @@ var (
 func testNew(t *testing.T) (rpc.UsersClient, *mock.App, func()) {
 	t.Helper()
 
-	logger, err := zap.NewDevelopment()
+	logger, err := zap.NewDevelopment(zap.AddStacktrace(zap.FatalLevel))
 	assert.Nil(t, err)
 
 	ctrl := gomock.NewController(t)

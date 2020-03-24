@@ -76,7 +76,7 @@ func testNewServer(t *testing.T) (string, func(), *mock.App, *client.ServiceBoil
 	mockApp.EXPECT().UserByAuthToken(gomock.Any(), app.AuthToken(sessUser)).
 		Return(&authUser, nil).AnyTimes()
 
-	log, err := zap.NewDevelopment()
+	log, err := zap.NewDevelopment(zap.AddStacktrace(zap.FatalLevel))
 	assert.NoError(t, err)
 
 	randomPort := rest.SetPort(0)
