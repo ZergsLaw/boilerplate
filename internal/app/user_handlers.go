@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func (a *app) VerificationEmail(ctx context.Context, email string) error {
+func (a *Application) VerificationEmail(ctx context.Context, email string) error {
 	_, err := a.userRepo.UserByEmail(ctx, email)
 	switch {
 	case errors.Is(err, ErrNotFound):
@@ -19,7 +19,7 @@ func (a *app) VerificationEmail(ctx context.Context, email string) error {
 	}
 }
 
-func (a *app) VerificationUsername(ctx context.Context, username string) error {
+func (a *Application) VerificationUsername(ctx context.Context, username string) error {
 	_, err := a.userRepo.UserByUsername(ctx, username)
 	switch {
 	case errors.Is(err, ErrNotFound):
@@ -35,7 +35,7 @@ const (
 	tokenExpire = 24 * 7 * time.Hour
 )
 
-func (a *app) Login(ctx context.Context, email, password string, origin Origin) (*User, AuthToken, error) {
+func (a *Application) Login(ctx context.Context, email, password string, origin Origin) (*User, AuthToken, error) {
 	email = strings.ToLower(email)
 
 	user, err := a.userRepo.UserByEmail(ctx, email)
@@ -60,11 +60,11 @@ func (a *app) Login(ctx context.Context, email, password string, origin Origin) 
 	return user, token, nil
 }
 
-func (a *app) Logout(ctx context.Context, authUser AuthUser) error {
+func (a *Application) Logout(ctx context.Context, authUser AuthUser) error {
 	return a.sessionRepo.DeleteSession(ctx, authUser.Session.TokenID)
 }
 
-func (a *app) CreateUser(ctx context.Context, email, username, password string, origin Origin) (*User, AuthToken, error) {
+func (a *Application) CreateUser(ctx context.Context, email, username, password string, origin Origin) (*User, AuthToken, error) {
 	passHash, err := a.password.Hashing(password)
 	if err != nil {
 		return nil, "", err
@@ -83,15 +83,15 @@ func (a *app) CreateUser(ctx context.Context, email, username, password string, 
 	return a.Login(ctx, email, password, origin)
 }
 
-func (a *app) User(ctx context.Context, _ AuthUser, userID UserID) (*User, error) {
+func (a *Application) User(ctx context.Context, _ AuthUser, userID UserID) (*User, error) {
 	return a.userRepo.UserByID(ctx, userID)
 }
 
-func (a *app) DeleteUser(ctx context.Context, authUser AuthUser) error {
+func (a *Application) DeleteUser(ctx context.Context, authUser AuthUser) error {
 	return a.userRepo.DeleteUser(ctx, authUser.ID)
 }
 
-func (a *app) UpdateUsername(ctx context.Context, authUser AuthUser, username string) error {
+func (a *Application) UpdateUsername(ctx context.Context, authUser AuthUser, username string) error {
 	if authUser.Username == username {
 		return ErrUsernameNeedDifferentiate
 	}
@@ -99,7 +99,7 @@ func (a *app) UpdateUsername(ctx context.Context, authUser AuthUser, username st
 	return a.userRepo.UpdateUsername(ctx, authUser.ID, username)
 }
 
-func (a *app) UpdateEmail(ctx context.Context, authUser AuthUser, email string) error {
+func (a *Application) UpdateEmail(ctx context.Context, authUser AuthUser, email string) error {
 	email = strings.ToLower(email)
 	if authUser.Email == email {
 		return ErrEmailNeedDifferentiate
@@ -108,7 +108,7 @@ func (a *app) UpdateEmail(ctx context.Context, authUser AuthUser, email string) 
 	return a.userRepo.UpdateEmail(ctx, authUser.ID, email)
 }
 
-func (a *app) UpdatePassword(ctx context.Context, authUser AuthUser, oldPass, newPass string) error {
+func (a *Application) UpdatePassword(ctx context.Context, authUser AuthUser, oldPass, newPass string) error {
 	if !a.password.Compare(authUser.PassHash, []byte(oldPass)) {
 		return ErrNotValidPassword
 	}
@@ -121,11 +121,11 @@ func (a *app) UpdatePassword(ctx context.Context, authUser AuthUser, oldPass, ne
 	return a.userRepo.UpdatePassword(ctx, authUser.ID, passHash)
 }
 
-func (a *app) ListUserByUsername(ctx context.Context, _ AuthUser, username string, page Page) ([]User, int, error) {
+func (a *Application) ListUserByUsername(ctx context.Context, _ AuthUser, username string, page Page) ([]User, int, error) {
 	return a.userRepo.ListUserByUsername(ctx, username, page)
 }
 
-func (a *app) CreateRecoveryCode(ctx context.Context, email string) error {
+func (a *Application) CreateRecoveryCode(ctx context.Context, email string) error {
 	const codeLength = 6
 	email = strings.ToLower(email)
 
@@ -139,7 +139,7 @@ func (a *app) CreateRecoveryCode(ctx context.Context, email string) error {
 	return a.codeRepo.SaveCode(ctx, user.ID, code)
 }
 
-func (a *app) RecoveryPassword(ctx context.Context, code, newPassword string) error {
+func (a *Application) RecoveryPassword(ctx context.Context, code, newPassword string) error {
 	userID, createdAt, err := a.codeRepo.UserID(ctx, code)
 	if err != nil {
 		return err
@@ -158,7 +158,7 @@ func (a *app) RecoveryPassword(ctx context.Context, code, newPassword string) er
 	return a.userRepo.UpdatePassword(ctx, userID, passHash)
 }
 
-func (a *app) UserByAuthToken(ctx context.Context, token AuthToken) (*AuthUser, error) {
+func (a *Application) UserByAuthToken(ctx context.Context, token AuthToken) (*AuthUser, error) {
 	if token == "" {
 		return nil, ErrInvalidToken
 	}

@@ -20,7 +20,7 @@ import (
 
 type (
 	service struct {
-		app app.App
+		userApp app.UserApp
 	}
 
 	config struct {
@@ -66,7 +66,7 @@ func defaultConfig() *config {
 
 // New returns Swagger server configured to listen on the TCP network.
 func New(application app.App, logger *zap.Logger, options ...Option) (*restapi.Server, error) {
-	svc := &service{app: application}
+	svc := &service{userApp: application}
 	cfg := defaultConfig()
 
 	for i := range options {

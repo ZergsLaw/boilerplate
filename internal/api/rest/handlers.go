@@ -14,7 +14,7 @@ import (
 func (svc *service) verificationEmail(params operations.VerificationEmailParams) middleware.Responder {
 	ctx, log, _ := fromRequest(params.HTTPRequest, nil)
 
-	err := svc.app.VerificationEmail(ctx, string(params.Args.Email))
+	err := svc.userApp.VerificationEmail(ctx, string(params.Args.Email))
 	switch {
 	case err == nil:
 		return operations.NewVerificationEmailNoContent()
@@ -28,7 +28,7 @@ func (svc *service) verificationEmail(params operations.VerificationEmailParams)
 func (svc *service) verificationUsername(params operations.VerificationUsernameParams) middleware.Responder {
 	ctx, log, _ := fromRequest(params.HTTPRequest, nil)
 
-	err := svc.app.VerificationUsername(ctx, string(params.Args.Username))
+	err := svc.userApp.VerificationUsername(ctx, string(params.Args.Username))
 	switch {
 	case err == nil:
 		return operations.NewVerificationUsernameNoContent()
@@ -47,7 +47,7 @@ func (svc *service) createUser(params operations.CreateUserParams) middleware.Re
 		UserAgent: params.HTTPRequest.Header.Get("User-Agent"),
 	}
 
-	u, token, err := svc.app.CreateUser(
+	u, token, err := svc.userApp.CreateUser(
 		ctx,
 		string(params.Args.Email),
 		string(params.Args.Username),
@@ -75,7 +75,7 @@ func (svc *service) login(params operations.LoginParams) middleware.Responder {
 		UserAgent: params.HTTPRequest.Header.Get("User-Agent"),
 	}
 
-	u, token, err := svc.app.Login(ctx, string(params.Args.Email), string(params.Args.Password), origin)
+	u, token, err := svc.userApp.Login(ctx, string(params.Args.Email), string(params.Args.Password), origin)
 	switch {
 	case err == nil:
 		cookie := generateCookie(token)
@@ -92,7 +92,7 @@ func (svc *service) login(params operations.LoginParams) middleware.Responder {
 func (svc *service) logout(params operations.LogoutParams, authUser *app.AuthUser) middleware.Responder {
 	ctx, log, _ := fromRequest(params.HTTPRequest, authUser)
 
-	err := svc.app.Logout(ctx, *authUser)
+	err := svc.userApp.Logout(ctx, *authUser)
 	switch {
 	case err == nil:
 		return operations.NewLogoutNoContent()
@@ -109,7 +109,7 @@ func (svc *service) getUser(params operations.GetUserParams, authUser *app.AuthU
 		getUserID = app.UserID(*params.ID)
 	}
 
-	u, err := svc.app.User(ctx, *authUser, getUserID)
+	u, err := svc.userApp.User(ctx, *authUser, getUserID)
 	switch {
 	case err == nil:
 		return operations.NewGetUserOK().WithPayload(User(u))
@@ -123,7 +123,7 @@ func (svc *service) getUser(params operations.GetUserParams, authUser *app.AuthU
 func (svc *service) deleteUser(params operations.DeleteUserParams, authUser *app.AuthUser) middleware.Responder {
 	ctx, log, _ := fromRequest(params.HTTPRequest, authUser)
 
-	err := svc.app.DeleteUser(ctx, *authUser)
+	err := svc.userApp.DeleteUser(ctx, *authUser)
 	switch {
 	case err == nil:
 		return operations.NewDeleteUserNoContent()
@@ -135,7 +135,7 @@ func (svc *service) deleteUser(params operations.DeleteUserParams, authUser *app
 func (svc *service) updatePassword(params operations.UpdatePasswordParams, authUser *app.AuthUser) middleware.Responder {
 	ctx, log, _ := fromRequest(params.HTTPRequest, authUser)
 
-	err := svc.app.UpdatePassword(ctx, *authUser, string(params.Args.Old), string(params.Args.New))
+	err := svc.userApp.UpdatePassword(ctx, *authUser, string(params.Args.Old), string(params.Args.New))
 	switch {
 	case err == nil:
 		return operations.NewUpdatePasswordNoContent()
@@ -149,7 +149,7 @@ func (svc *service) updatePassword(params operations.UpdatePasswordParams, authU
 func (svc *service) updateUsername(params operations.UpdateUsernameParams, authUser *app.AuthUser) middleware.Responder {
 	ctx, log, _ := fromRequest(params.HTTPRequest, authUser)
 
-	err := svc.app.UpdateUsername(ctx, *authUser, string(params.Args.Username))
+	err := svc.userApp.UpdateUsername(ctx, *authUser, string(params.Args.Username))
 	switch {
 	case err == nil:
 		return operations.NewUpdateUsernameNoContent()
@@ -165,7 +165,7 @@ func (svc *service) updateUsername(params operations.UpdateUsernameParams, authU
 func (svc *service) updateEmail(params operations.UpdateEmailParams, authUser *app.AuthUser) middleware.Responder {
 	ctx, log, _ := fromRequest(params.HTTPRequest, authUser)
 
-	err := svc.app.UpdateEmail(ctx, *authUser, string(params.Args.Email))
+	err := svc.userApp.UpdateEmail(ctx, *authUser, string(params.Args.Email))
 	switch {
 	case err == nil:
 		return operations.NewUpdateEmailNoContent()
@@ -181,7 +181,7 @@ func (svc *service) updateEmail(params operations.UpdateEmailParams, authUser *a
 func (svc *service) createRecoveryCode(params operations.CreateRecoveryCodeParams) middleware.Responder {
 	ctx, log, _ := fromRequest(params.HTTPRequest, nil)
 
-	err := svc.app.CreateRecoveryCode(ctx, string(params.Args.Email))
+	err := svc.userApp.CreateRecoveryCode(ctx, string(params.Args.Email))
 	switch {
 	case err == nil:
 		return operations.NewCreateRecoveryCodeNoContent()
@@ -195,7 +195,7 @@ func (svc *service) createRecoveryCode(params operations.CreateRecoveryCodeParam
 func (svc *service) recoveryPassword(params operations.RecoveryPasswordParams) middleware.Responder {
 	ctx, log, _ := fromRequest(params.HTTPRequest, nil)
 
-	err := svc.app.RecoveryPassword(ctx, string(params.Args.RecoveryCode), string(params.Args.Password))
+	err := svc.userApp.RecoveryPassword(ctx, string(params.Args.RecoveryCode), string(params.Args.Password))
 	switch {
 	case err == nil:
 		return operations.NewRecoveryPasswordNoContent()
@@ -216,7 +216,7 @@ func (svc *service) getUsers(params operations.GetUsersParams, authUser *app.Aut
 		Offset: int(swag.Int32Value(params.Offset)),
 	}
 
-	u, total, err := svc.app.ListUserByUsername(ctx, *authUser, params.Username, page)
+	u, total, err := svc.userApp.ListUserByUsername(ctx, *authUser, params.Username, page)
 	switch {
 	case err == nil:
 		return operations.NewGetUsersOK().WithPayload(&operations.GetUsersOKBody{

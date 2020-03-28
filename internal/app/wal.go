@@ -1,79 +1,20 @@
 package app
 
-import (
-	"context"
-	"errors"
-	"time"
+import "context"
+
+type (
+	// WALApplication a provider to run tasks.
+	WALApplication interface {
+		// StartWALNotification starts the task of notifying users.
+		StartWALNotification(ctx context.Context) error
+	}
+	// WAL module returning tasks and also closing them.
+	WAL interface {
+		// NotificationTask returns the earliest task that has not been completed.
+		// Errors: ErrNotFound, unknown.
+		NotificationTask(ctx context.Context) (task *TaskNotification, err error)
+		// DeleteTaskNotification removes the task performed.
+		// Errors: unknown.
+		DeleteTaskNotification(ctx context.Context, id int) error
+	}
 )
-
-func wait(ctx context.Context) {
-	const timeDelay = time.Second
-
-	select {
-	case <-ctx.Done():
-	case <-time.After(timeDelay):
-	}
-}
-
-func (a *app) StartWALNotification(ctx context.Context) error {
-	for ctx.Err() == nil {
-		task, err := a.wal.NotificationTask(ctx)
-		switch {
-		case err == nil:
-			err := a.execNotification(ctx, *task)
-			if err != nil {
-				return err
-			}
-		case errors.Is(err, ErrNotFound):
-			wait(ctx)
-		default:
-			return err
-		}
-	}
-
-	return ctx.Err()
-}
-
-func (a *app) execNotification(ctx context.Context, task TaskNotification) error {
-	user, err := a.userRepo.UserByID(ctx, task.UserID)
-	if err != nil {
-		return err
-	}
-
-	switch task.Kind {
-	case Welcome:
-		err = a.sendNotification(Welcome, user.Email, welcomeMsg)
-	case ChangeEmail:
-		err = a.sendNotification(ChangeEmail, user.Email, changeEmailMsg)
-	case PassRecovery:
-		err = a.sendRecoveryCode(ctx, user.Email, task)
-	default:
-		err = ErrNotUnknownKindTask
-	}
-	if err != nil {
-		return err
-	}
-
-	return a.wal.DeleteTaskNotification(ctx, task.ID)
-}
-
-const (
-	welcomeMsg     = `Welcome`
-	changeEmailMsg = `Change email successful`
-)
-
-func (a *app) sendRecoveryCode(ctx context.Context, contact string, task TaskNotification) error {
-	code, err := a.codeRepo.Code(ctx, task.UserID)
-	if err != nil {
-		return err
-	}
-
-	return a.sendNotification(task.Kind, contact, code)
-}
-
-func (a *app) sendNotification(kind MessageKind, contact, content string) error {
-	return a.notification.Notification(contact, Message{
-		Kind:    kind,
-		Content: content,
-	})
-}

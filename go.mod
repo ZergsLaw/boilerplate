@@ -13,7 +13,7 @@ require (
 	github.com/go-openapi/swag v0.19.6
 	github.com/go-openapi/validate v0.19.5
 	github.com/gofrs/uuid v3.2.0+incompatible
-	github.com/golang/mock v1.3.1
+	github.com/golang/mock v1.4.3
 	github.com/golang/protobuf v1.3.2
 	github.com/grpc-ecosystem/go-grpc-middleware v1.1.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0

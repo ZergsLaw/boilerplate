@@ -19,7 +19,7 @@ const (
 func (svc *service) cookieKeyAuth(raw string) (*app.AuthUser, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), authTimeout)
 	defer cancel()
-	profile, err := svc.app.UserByAuthToken(ctx, parseToken(raw))
+	profile, err := svc.userApp.UserByAuthToken(ctx, parseToken(raw))
 	switch {
 	case errors.Is(err, app.ErrNotFound):
 		return nil, unautnError.Unauthenticated("service")

@@ -8,7 +8,7 @@ import (
 	"github.com/zergslaw/boilerplate/internal/app"
 )
 
-func TestApp_StartWAL(t *testing.T) {
+func TestApp_StartWALNotification(t *testing.T) {
 	t.Parallel()
 
 	application, mocks, shutdown := initTest(t)

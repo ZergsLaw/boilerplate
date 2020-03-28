@@ -74,7 +74,7 @@ type Mocks struct {
 	notification *mock.Notification
 }
 
-func initTest(t *testing.T) (app.App, *Mocks, func()) {
+func initTest(t *testing.T) (*app.Application, *Mocks, func()) {
 	t.Helper()
 	ctrl := gomock.NewController(t)
 

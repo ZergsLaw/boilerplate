@@ -227,7 +227,7 @@ func metricAPI(ctx context.Context, host string, port int) error {
 	return nil
 }
 
-func grpcAPI(ctx context.Context, application app.App, host string, port int) error {
+func grpcAPI(ctx context.Context, application app.UserApp, host string, port int) error {
 	gRPCLogger := logger.Named("gRPC")
 
 	api := rpc.New(application, gRPCLogger)
@@ -252,7 +252,7 @@ func grpcAPI(ctx context.Context, application app.App, host string, port int) er
 	return nil
 }
 
-func startWAL(ctx context.Context, application app.App) error {
+func startWAL(ctx context.Context, application app.WALApplication) error {
 	group, ctx := errgroup.WithContext(ctx)
 
 	group.Go(func() error {
