@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// VerificationEmail for implemented UserApp.
 func (a *Application) VerificationEmail(ctx context.Context, email string) error {
 	_, err := a.userRepo.UserByEmail(ctx, email)
 	switch {
@@ -19,6 +20,7 @@ func (a *Application) VerificationEmail(ctx context.Context, email string) error
 	}
 }
 
+// VerificationUsername for implemented UserApp.
 func (a *Application) VerificationUsername(ctx context.Context, username string) error {
 	_, err := a.userRepo.UserByUsername(ctx, username)
 	switch {
@@ -35,6 +37,7 @@ const (
 	tokenExpire = 24 * 7 * time.Hour
 )
 
+// Login for implemented UserApp.
 func (a *Application) Login(ctx context.Context, email, password string, origin Origin) (*User, AuthToken, error) {
 	email = strings.ToLower(email)
 
@@ -60,10 +63,12 @@ func (a *Application) Login(ctx context.Context, email, password string, origin 
 	return user, token, nil
 }
 
+// Logout for implemented UserApp.
 func (a *Application) Logout(ctx context.Context, authUser AuthUser) error {
 	return a.sessionRepo.DeleteSession(ctx, authUser.Session.TokenID)
 }
 
+// CreateUser for implemented UserApp.
 func (a *Application) CreateUser(ctx context.Context, email, username, password string, origin Origin) (*User, AuthToken, error) {
 	passHash, err := a.password.Hashing(password)
 	if err != nil {
@@ -83,14 +88,17 @@ func (a *Application) CreateUser(ctx context.Context, email, username, password 
 	return a.Login(ctx, email, password, origin)
 }
 
+// User for implemented UserApp.
 func (a *Application) User(ctx context.Context, _ AuthUser, userID UserID) (*User, error) {
 	return a.userRepo.UserByID(ctx, userID)
 }
 
+// DeleteUser for implemented UserApp.
 func (a *Application) DeleteUser(ctx context.Context, authUser AuthUser) error {
 	return a.userRepo.DeleteUser(ctx, authUser.ID)
 }
 
+// UpdateUsername for implemented UserApp.
 func (a *Application) UpdateUsername(ctx context.Context, authUser AuthUser, username string) error {
 	if authUser.Username == username {
 		return ErrUsernameNeedDifferentiate
@@ -99,6 +107,7 @@ func (a *Application) UpdateUsername(ctx context.Context, authUser AuthUser, use
 	return a.userRepo.UpdateUsername(ctx, authUser.ID, username)
 }
 
+// UpdateEmail for implemented UserApp.
 func (a *Application) UpdateEmail(ctx context.Context, authUser AuthUser, email string) error {
 	email = strings.ToLower(email)
 	if authUser.Email == email {
@@ -108,6 +117,7 @@ func (a *Application) UpdateEmail(ctx context.Context, authUser AuthUser, email 
 	return a.userRepo.UpdateEmail(ctx, authUser.ID, email)
 }
 
+// UpdatePassword for implemented UserApp.
 func (a *Application) UpdatePassword(ctx context.Context, authUser AuthUser, oldPass, newPass string) error {
 	if !a.password.Compare(authUser.PassHash, []byte(oldPass)) {
 		return ErrNotValidPassword
@@ -121,10 +131,12 @@ func (a *Application) UpdatePassword(ctx context.Context, authUser AuthUser, old
 	return a.userRepo.UpdatePassword(ctx, authUser.ID, passHash)
 }
 
+// ListUserByUsername for implemented UserApp.
 func (a *Application) ListUserByUsername(ctx context.Context, _ AuthUser, username string, page Page) ([]User, int, error) {
 	return a.userRepo.ListUserByUsername(ctx, username, page)
 }
 
+// CreateRecoveryCode for implemented UserApp.
 func (a *Application) CreateRecoveryCode(ctx context.Context, email string) error {
 	const codeLength = 6
 	email = strings.ToLower(email)
@@ -139,6 +151,7 @@ func (a *Application) CreateRecoveryCode(ctx context.Context, email string) erro
 	return a.codeRepo.SaveCode(ctx, user.ID, code)
 }
 
+// RecoveryPassword for implemented UserApp.
 func (a *Application) RecoveryPassword(ctx context.Context, code, newPassword string) error {
 	userID, createdAt, err := a.codeRepo.UserID(ctx, code)
 	if err != nil {
@@ -158,6 +171,7 @@ func (a *Application) RecoveryPassword(ctx context.Context, code, newPassword st
 	return a.userRepo.UpdatePassword(ctx, userID, passHash)
 }
 
+// UserByAuthToken for implemented UserApp.
 func (a *Application) UserByAuthToken(ctx context.Context, token AuthToken) (*AuthUser, error) {
 	if token == "" {
 		return nil, ErrInvalidToken

@@ -15,6 +15,7 @@ func wait(ctx context.Context) {
 	}
 }
 
+// StartWALNotification for implemented WALApplication.
 func (a *Application) StartWALNotification(ctx context.Context) error {
 	for ctx.Err() == nil {
 		task, err := a.wal.NotificationTask(ctx)
