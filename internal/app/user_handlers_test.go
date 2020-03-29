@@ -292,12 +292,12 @@ func TestApp_RecoveryPassword(t *testing.T) {
 	application, mocks, shutdown := initTest(t)
 	defer shutdown()
 
-	mocks.codeRepo.EXPECT().UserID(ctx, recoveryCode).Return(user1.ID, time.Now(), nil).Times(2)
+	mocks.codeRepo.EXPECT().UserIDByCode(ctx, recoveryCode).Return(user1.ID, time.Now(), nil).Times(2)
 	mocks.password.EXPECT().Hashing(password2).Return([]byte(password2), nil)
 	mocks.userRepo.EXPECT().UpdatePassword(ctx, user1.ID, []byte(password2)).Return(nil)
 	mocks.password.EXPECT().Hashing(password2).Return(nil, errAny)
-	mocks.codeRepo.EXPECT().UserID(ctx, recoveryCode).Return(user1.ID, time.Time{}, nil)
-	mocks.codeRepo.EXPECT().UserID(ctx, recoveryCode).Return(app.UserID(0), time.Time{}, app.ErrNotFound)
+	mocks.codeRepo.EXPECT().UserIDByCode(ctx, recoveryCode).Return(user1.ID, time.Time{}, nil)
+	mocks.codeRepo.EXPECT().UserIDByCode(ctx, recoveryCode).Return(app.UserID(0), time.Time{}, app.ErrNotFound)
 
 	testCases := []struct {
 		name string
@@ -328,8 +328,8 @@ func TestApp_UserByAuthToken(t *testing.T) {
 
 	mocks.auth.EXPECT().Parse(token1).Return(tokenID1, nil).Times(3)
 	mocks.auth.EXPECT().Parse(expiredToken).Return(app.TokenID(""), app.ErrExpiredToken)
-	mocks.userRepo.EXPECT().UserByTokenID(ctx, tokenID1).Return(&user1, nil).Times(2)
-	mocks.userRepo.EXPECT().UserByTokenID(ctx, tokenID1).Return(nil, app.ErrNotFound)
+	mocks.sessionRepo.EXPECT().UserByTokenID(ctx, tokenID1).Return(&user1, nil).Times(2)
+	mocks.sessionRepo.EXPECT().UserByTokenID(ctx, tokenID1).Return(nil, app.ErrNotFound)
 	mocks.sessionRepo.EXPECT().SessionByTokenID(ctx, tokenID1).Return(&session1, nil)
 	mocks.sessionRepo.EXPECT().SessionByTokenID(ctx, tokenID1).Return(nil, errAny)
 

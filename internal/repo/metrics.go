@@ -55,7 +55,12 @@ func InitMetrics(namespace string) {
 		[]string{methodLabel},
 	)
 
-	for _, method := range methodsOf(new(app.UserRepo), new(app.SessionRepo), new(app.CodeRepo), new(app.WAL)) {
+	for _, method := range methodsOf(
+		new(app.UserRepo),
+		new(app.SessionRepo),
+		new(app.CodeRepo),
+		new(app.WAL),
+	) {
 		l := prometheus.Labels{
 			methodLabel: method,
 		}

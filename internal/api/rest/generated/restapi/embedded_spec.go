@@ -50,7 +50,7 @@ func init() {
               ],
               "properties": {
                 "email": {
-                  "$ref": "#/definitions/UserID"
+                  "$ref": "#/definitions/UserIDByCode"
                 }
               }
             }
@@ -131,7 +131,7 @@ func init() {
               ],
               "properties": {
                 "email": {
-                  "$ref": "#/definitions/UserID"
+                  "$ref": "#/definitions/UserIDByCode"
                 }
               }
             }
@@ -269,7 +269,7 @@ func init() {
               ],
               "properties": {
                 "email": {
-                  "$ref": "#/definitions/UserID"
+                  "$ref": "#/definitions/UserIDByCode"
                 }
               }
             }
@@ -438,7 +438,7 @@ func init() {
       ],
       "properties": {
         "email": {
-          "$ref": "#/definitions/UserID"
+          "$ref": "#/definitions/UserIDByCode"
         },
         "password": {
           "$ref": "#/definitions/Password"
@@ -448,7 +448,7 @@ func init() {
         }
       }
     },
-    "UserID": {
+    "UserIDByCode": {
       "type": "string",
       "format": "email",
       "maxLength": 255,
@@ -473,7 +473,7 @@ func init() {
       ],
       "properties": {
         "email": {
-          "$ref": "#/definitions/UserID"
+          "$ref": "#/definitions/UserIDByCode"
         },
         "password": {
           "$ref": "#/definitions/Password"
@@ -515,17 +515,17 @@ func init() {
       ],
       "properties": {
         "email": {
-          "$ref": "#/definitions/UserID"
+          "$ref": "#/definitions/UserIDByCode"
         },
         "id": {
-          "$ref": "#/definitions/UserID"
+          "$ref": "#/definitions/UserIDByCode"
         },
         "username": {
           "$ref": "#/definitions/Username"
         }
       }
     },
-    "UserID": {
+    "UserIDByCode": {
       "type": "integer",
       "format": "int32"
     },
@@ -593,7 +593,7 @@ func init() {
               ],
               "properties": {
                 "email": {
-                  "$ref": "#/definitions/UserID"
+                  "$ref": "#/definitions/UserIDByCode"
                 }
               }
             }
@@ -683,7 +683,7 @@ func init() {
               ],
               "properties": {
                 "email": {
-                  "$ref": "#/definitions/UserID"
+                  "$ref": "#/definitions/UserIDByCode"
                 }
               }
             }
@@ -836,7 +836,7 @@ func init() {
               ],
               "properties": {
                 "email": {
-                  "$ref": "#/definitions/UserID"
+                  "$ref": "#/definitions/UserIDByCode"
                 }
               }
             }
@@ -1021,7 +1021,7 @@ func init() {
       ],
       "properties": {
         "email": {
-          "$ref": "#/definitions/UserID"
+          "$ref": "#/definitions/UserIDByCode"
         },
         "password": {
           "$ref": "#/definitions/Password"
@@ -1031,7 +1031,7 @@ func init() {
         }
       }
     },
-    "UserID": {
+    "UserIDByCode": {
       "type": "string",
       "format": "email",
       "maxLength": 255,
@@ -1056,7 +1056,7 @@ func init() {
       ],
       "properties": {
         "email": {
-          "$ref": "#/definitions/UserID"
+          "$ref": "#/definitions/UserIDByCode"
         },
         "password": {
           "$ref": "#/definitions/Password"
@@ -1098,17 +1098,17 @@ func init() {
       ],
       "properties": {
         "email": {
-          "$ref": "#/definitions/UserID"
+          "$ref": "#/definitions/UserIDByCode"
         },
         "id": {
-          "$ref": "#/definitions/UserID"
+          "$ref": "#/definitions/UserIDByCode"
         },
         "username": {
           "$ref": "#/definitions/Username"
         }
       }
     },
-    "UserID": {
+    "UserIDByCode": {
       "type": "integer",
       "format": "int32"
     },

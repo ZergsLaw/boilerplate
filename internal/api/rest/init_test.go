@@ -68,11 +68,11 @@ var (
 	restUser   = rest.User(&user)
 )
 
-func testNewServer(t *testing.T) (string, func(), *mock.App, *client.ServiceBoilerplate) {
+func testNewServer(t *testing.T) (string, func(), *mock.MockApp, *client.ServiceBoilerplate) {
 	t.Helper()
 
 	ctrl := gomock.NewController(t)
-	mockApp := mock.NewApp(ctrl)
+	mockApp := mock.NewMockApp(ctrl)
 	mockApp.EXPECT().UserByAuthToken(gomock.Any(), app.AuthToken(sessUser)).
 		Return(&authUser, nil).AnyTimes()
 

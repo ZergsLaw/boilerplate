@@ -64,28 +64,28 @@ var (
 )
 
 type Mocks struct {
-	userRepo     *mock.UserRepo
-	sessionRepo  *mock.SessionRepo
-	codeRepo     *mock.CodeRepo
-	code         *mock.Code
-	password     *mock.Password
-	auth         *mock.Auth
-	wal          *mock.WAL
-	notification *mock.Notification
+	userRepo     *mock.MockUserRepo
+	sessionRepo  *mock.MockSessionRepo
+	codeRepo     *mock.MockCodeRepo
+	code         *mock.MockCode
+	password     *mock.MockPassword
+	auth         *mock.MockAuth
+	wal          *mock.MockWAL
+	notification *mock.MockNotification
 }
 
 func initTest(t *testing.T) (*app.Application, *Mocks, func()) {
 	t.Helper()
 	ctrl := gomock.NewController(t)
 
-	mockUserRepo := mock.NewUserRepo(ctrl)
-	mockSessionRepo := mock.NewSessionRepo(ctrl)
-	mockCodeRepo := mock.NewCodeRepo(ctrl)
-	mockCode := mock.NewCode(ctrl)
-	mockPass := mock.NewPassword(ctrl)
-	mockToken := mock.NewAuth(ctrl)
-	mockWal := mock.NewWAL(ctrl)
-	mockNotification := mock.NewNotification(ctrl)
+	mockUserRepo := mock.NewMockUserRepo(ctrl)
+	mockSessionRepo := mock.NewMockSessionRepo(ctrl)
+	mockCodeRepo := mock.NewMockCodeRepo(ctrl)
+	mockCode := mock.NewMockCode(ctrl)
+	mockPass := mock.NewMockPassword(ctrl)
+	mockToken := mock.NewMockAuth(ctrl)
+	mockWal := mock.NewMockWAL(ctrl)
+	mockNotification := mock.NewMockNotification(ctrl)
 
 	appl := app.New(mockUserRepo, mockSessionRepo, mockCodeRepo, mockPass, mockToken, mockWal, mockNotification, mockCode)
 

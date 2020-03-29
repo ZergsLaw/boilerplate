@@ -21,6 +21,11 @@ func (repo *Repo) Close() error {
 	return repo.db.Close()
 }
 
+// DB returns database connections.
+func (repo *Repo) DB() *sql.DB {
+	return repo.db
+}
+
 // New creates and returns new app.UserRepo.
 func New(conn *sql.DB) *Repo {
 	return &Repo{db: conn}

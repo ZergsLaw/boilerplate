@@ -74,9 +74,6 @@ type (
 		// UserByID returning user info by id.
 		// Errors: ErrNotFound, unknown.
 		UserByID(context.Context, UserID) (*User, error)
-		// UserByAuthToken returning user info by authToken.
-		// Errors: ErrNotFound, unknown.
-		UserByTokenID(context.Context, TokenID) (*User, error)
 		// UserByEmail returning user info by email.
 		// This method is also required to create a notifying hoard.
 		// Errors: ErrNotFound, unknown.
@@ -96,6 +93,9 @@ type (
 		// Session returns user Session.
 		// Errors: ErrNotFound, unknown.
 		SessionByTokenID(context.Context, TokenID) (*Session, error)
+		// UserByAuthToken returning user info by authToken.
+		// Errors: ErrNotFound, unknown.
+		UserByTokenID(context.Context, TokenID) (*User, error)
 		// DeleteSession removes user Session.
 		// Errors: unknown.
 		DeleteSession(context.Context, TokenID) error
@@ -107,9 +107,9 @@ type (
 		// Creates a task to send the recovery code to the user's mail.
 		// Errors: unknown.
 		SaveCode(ctx context.Context, id UserID, code string) error
-		// UserID returns user id by recovery code.
+		// UserIDByCode returns user id by recovery code.
 		// Errors: ErrNotFound, unknown.
-		UserID(ctx context.Context, code string) (userID UserID, createAt time.Time, err error)
+		UserIDByCode(ctx context.Context, code string) (userID UserID, createAt time.Time, err error)
 		// Code returns recovery code for recovery password by user id.
 		// Errors: ErrNotFound, unknown.
 		Code(ctx context.Context, id UserID) (code string, err error)

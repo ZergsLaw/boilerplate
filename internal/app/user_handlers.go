@@ -153,7 +153,7 @@ func (a *Application) CreateRecoveryCode(ctx context.Context, email string) erro
 
 // RecoveryPassword for implemented UserApp.
 func (a *Application) RecoveryPassword(ctx context.Context, code, newPassword string) error {
-	userID, createdAt, err := a.codeRepo.UserID(ctx, code)
+	userID, createdAt, err := a.codeRepo.UserIDByCode(ctx, code)
 	if err != nil {
 		return err
 	}
@@ -182,7 +182,7 @@ func (a *Application) UserByAuthToken(ctx context.Context, token AuthToken) (*Au
 		return nil, err
 	}
 
-	user, err := a.userRepo.UserByTokenID(ctx, tokenID)
+	user, err := a.sessionRepo.UserByTokenID(ctx, tokenID)
 	if err != nil {
 		return nil, err
 	}

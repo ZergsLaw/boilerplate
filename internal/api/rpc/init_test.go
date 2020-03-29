@@ -41,14 +41,14 @@ var (
 	}
 )
 
-func testNew(t *testing.T) (rpc.UsersClient, *mock.App, func()) {
+func testNew(t *testing.T) (rpc.UsersClient, *mock.MockApp, func()) {
 	t.Helper()
 
 	logger, err := zap.NewDevelopment(zap.AddStacktrace(zap.FatalLevel))
 	assert.Nil(t, err)
 
 	ctrl := gomock.NewController(t)
-	mockApp := mock.NewApp(ctrl)
+	mockApp := mock.NewMockApp(ctrl)
 	server := rpc.New(mockApp, logger)
 
 	ln, err := net.Listen("tcp", "127.0.0.1:0")

@@ -9,9 +9,9 @@ import (
 	"github.com/go-openapi/strfmt"
 )
 
-// UserID user ID
+// UserIDByCode user ID
 //
-// swagger:model UserID
+// swagger:model UserIDByCode
 type UserID int32
 
 // Validate validates this user ID

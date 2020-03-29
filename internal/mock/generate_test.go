@@ -1,3 +1,6 @@
 package mock
 
-//go:generate mockgen -source=../app/app.go -destination=mock.go -package mock -mock_names App=App,UserRepo=UserRepo,Notification=Notification,Password=Password,Auth=Auth,OAuth=OAuth,WAL=WAL,SessionRepo=SessionRepo,CodeRepo=CodeRepo,Code=Code
+//go:generate mockgen -source=../app/app.go -aux_files github.com/zergslaw/boilerplate/internal/app=../app/user.go -destination mock.app.contracts.go -package mock
+//go:generate mockgen -source=../app/user.go -destination=mock.user.contracts.go -package mock
+//go:generate mockgen -source=../app/notification.go -destination=mock.notification.contracts.go -package mock
+//go:generate mockgen -source=../app/wal.go -destination=mock.wal.contracts.go -package mock
