@@ -1,6 +1,10 @@
 package app
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+	"time"
+)
 
 type (
 	// Notification module for working with alerts for registered users.
@@ -43,4 +47,57 @@ func (m MessageKind) String() string {
 	default:
 		panic(fmt.Sprintf("unknown kind: %d", m))
 	}
+}
+
+func wait(ctx context.Context) {
+	const timeDelay = time.Second
+
+	select {
+	case <-ctx.Done():
+	case <-time.After(timeDelay):
+	}
+}
+
+func (a *Application) execNotification(ctx context.Context, task TaskNotification) error {
+	user, err := a.userRepo.UserByID(ctx, task.UserID)
+	if err != nil {
+		return err
+	}
+
+	switch task.Kind {
+	case Welcome:
+		err = a.sendNotification(Welcome, user.Email, welcomeMsg)
+	case ChangeEmail:
+		err = a.sendNotification(ChangeEmail, user.Email, changeEmailMsg)
+	case PassRecovery:
+		err = a.sendRecoveryCode(ctx, user.Email, task)
+	default:
+		err = ErrNotUnknownKindTask
+	}
+	if err != nil {
+		return err
+	}
+
+	return a.wal.DeleteTaskNotification(ctx, task.ID)
+}
+
+const (
+	welcomeMsg     = `Welcome`
+	changeEmailMsg = `Change email successful`
+)
+
+func (a *Application) sendRecoveryCode(ctx context.Context, contact string, task TaskNotification) error {
+	code, err := a.codeRepo.Code(ctx, task.UserID)
+	if err != nil {
+		return err
+	}
+
+	return a.sendNotification(task.Kind, contact, code)
+}
+
+func (a *Application) sendNotification(kind MessageKind, contact, content string) error {
+	return a.notification.Notification(contact, Message{
+		Kind:    kind,
+		Content: content,
+	})
 }

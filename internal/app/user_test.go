@@ -340,7 +340,7 @@ func TestApp_UserByAuthToken(t *testing.T) {
 		wantErr error
 	}{
 		{"success", token1, &authUser, nil},
-		{"success", "", nil, app.ErrInvalidToken},
+		{"invalid token", "", nil, app.ErrInvalidToken},
 		{"err session by auth", token1, nil, errAny},
 		{"not found user by auth", token1, nil, app.ErrNotFound},
 		{"not valid auth", expiredToken, nil, app.ErrExpiredToken},

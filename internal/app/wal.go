@@ -1,6 +1,9 @@
 package app
 
-import "context"
+import (
+	"context"
+	"errors"
+)
 
 type (
 	// WALApplication a provider to run tasks.
@@ -18,3 +21,23 @@ type (
 		DeleteTaskNotification(ctx context.Context, id int) error
 	}
 )
+
+// StartWALNotification for implemented WALApplication.
+func (a *Application) StartWALNotification(ctx context.Context) error {
+	for ctx.Err() == nil {
+		task, err := a.wal.NotificationTask(ctx)
+		switch {
+		case err == nil:
+			err := a.execNotification(ctx, *task)
+			if err != nil {
+				return err
+			}
+		case errors.Is(err, ErrNotFound):
+			wait(ctx)
+		default:
+			return err
+		}
+	}
+
+	return ctx.Err()
+}
