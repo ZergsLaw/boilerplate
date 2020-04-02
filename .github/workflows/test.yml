@@ -18,5 +18,11 @@ jobs:
       - name: Checkout repository.
         uses: actions/checkout@v2
 
+      - name: Upload Coverage report to CodeCov
+        uses: codecov/codecov-action@v1.0.0
+        with:
+          token: ${{secrets.CODECOV_TOKEN}}
+          file: ./coverage.txt
+
       - name: Start test.
         run: make test
