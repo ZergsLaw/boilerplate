@@ -1,39 +1,26 @@
-name: Build and Test
-
-on:
-  push:
-    branches:
-      - master
-    tags: []
-  pull_request:
-
+on: [push, pull_request]
+name: CI
 jobs:
-  lint:
-    name: Lint
+  build-test-lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Set up Go
+      # Prepare
+      - name: Install Go 1.13
         uses: actions/setup-go@v1
         with:
-          go-version: 1.14.x
-
-      - name: Export GOPATH
-        run: |
-          echo "::set-env name=GOPATH::$(go env GOPATH)"
-
-      - name: Append GOPATH onto PATH
-        run: |
-          echo "::set-env name=PATH::$PATH:$GOPATH/bin"
-
-      - name: Check out code
+          go-version: 1.13
+      - name: Checkout repository
         uses: actions/checkout@v2
+      - name: Export GOPATH
+        run: echo "::set-env name=GOPATH::$(go env GOPATH)"
+      - name: Append GOPATH onto PATH
+        run: echo "::set-env name=PATH::$PATH:$GOPATH/bin"
 
+      # Install golangci-lint
       - name: Install golangci-lint
-        run: |
-          go get github.com/golangci/golangci-lint/cmd/golangci-lint
+        run: curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v1.23.6
 
-      - name: Lint Go Code
-        run: |
-          export PATH=$PATH:$(go env GOPATH)/bin
-          make lint
-
+      # golangci-lint
+      - name: golangci-lint
+        continue-on-error: true
+        run: golangci-lint run ./...
