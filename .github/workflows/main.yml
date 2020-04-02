@@ -1,6 +1,5 @@
 name: Build and Test
 
-# This workflow will run on master branch and on any pull requests targeting master
 on:
   push:
     branches:
@@ -28,4 +27,5 @@ jobs:
       - name: Lint Go Code
         run: |
           export PATH=$PATH:$(go env GOPATH)/bin
+          ls
           make lint
