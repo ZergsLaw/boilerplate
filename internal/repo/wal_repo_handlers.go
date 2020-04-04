@@ -15,8 +15,8 @@ func (repo *Repo) NotificationTask(ctx context.Context) (task *app.TaskNotificat
 		WHERE is_done = false 
 		ORDER BY created_at LIMIT 1`
 
-		id, userID, kind := 0, app.UserID(0), ""
-		err = db.QueryRowContext(ctx, query).Scan(&id, &kind, &userID)
+		res := &taskNotificationDBFormat{}
+		err = db.QueryRowContext(ctx, query).Scan(&res.ID, &res.Kind, &res.UserID)
 		switch {
 		case err == sql.ErrNoRows:
 			return app.ErrNotFound
@@ -24,32 +24,10 @@ func (repo *Repo) NotificationTask(ctx context.Context) (task *app.TaskNotificat
 			return fmt.Errorf("get notification task: %w", err)
 		}
 
-		msgKind, err := parseKindNotification(kind)
-		if err != nil {
-			return err
-		}
-
-		task = &app.TaskNotification{
-			ID:     id,
-			UserID: userID,
-			Kind:   msgKind,
-		}
+		task = res.toAppFormat()
 		return nil
 	})
 	return task, err
-}
-
-func parseKindNotification(str string) (app.MessageKind, error) {
-	switch str {
-	case app.Welcome.String():
-		return app.Welcome, nil
-	case app.ChangeEmail.String():
-		return app.ChangeEmail, nil
-	case app.PassRecovery.String():
-		return app.PassRecovery, nil
-	default:
-		return 0, app.ErrNotUnknownKindTask
-	}
 }
 
 // DeleteTaskNotification need for implements app.WAL.

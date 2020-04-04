@@ -17,13 +17,14 @@ create table users
 create table sessions
 (
     id         serial,
-    user_id    integer references users on delete cascade,
+    user_id    integer                 not null,
     token_id   text                    not null,
     ip         inet                    not null,
     user_agent text                    not null default '',
     created_at timestamp default now() not null,
     is_logout  bool      default false not null,
 
+    foreign key (user_id) references users on delete cascade,
     unique (token_id),
     primary key (id)
 );
@@ -31,23 +32,24 @@ create table sessions
 create table notifications
 (
     id         serial,
-    user_id    integer references users on delete cascade,
+    user_id    integer                 not null,
     kind       text                    not null,
     is_done    bool      default false not null,
     created_at timestamp default now() not null,
     exec_time  timestamp,
 
+    foreign key (user_id) references users on delete cascade,
     primary key (id)
 );
 
 create table recovery_code
 (
     id         serial,
-    user_id    integer references users on delete cascade not null,
-    code       text                                       not null,
-    created_at timestamp default now()                    not null,
+    user_id    integer                 not null,
+    code       text                    not null,
+    created_at timestamp default now() not null,
 
-    unique (user_id),
+    foreign key (user_id) references users on delete cascade,
     unique (code),
     primary key (id)
 );

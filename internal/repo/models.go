@@ -10,22 +10,28 @@ import (
 
 type (
 	userDBFormat struct {
-		ID        app.UserID   `db:"id"`
-		Email     string       `db:"email"`
-		Username  string       `db:"username"`
-		PassHash  pgtype.Bytea `db:"pass_hash"`
-		CreatedAt time.Time    `db:"created_at"`
-		UpdatedAt time.Time    `db:"updated_at"`
+		ID        app.UserID
+		Email     string
+		Username  string
+		PassHash  pgtype.Bytea
+		CreatedAt time.Time
+		UpdatedAt time.Time
 	}
 
 	sessionDBFormat struct {
-		ID        app.SessionID `db:"id"`
-		UserID    app.UserID    `db:"user_id"`
-		TokenID   app.AuthToken `db:"token_id"`
-		IP        *pgtype.Inet  `db:"ip"`
-		UserAgent string        `db:"user_agent"`
-		IsLogout  bool          `db:"is_logout"`
-		CreatedAt time.Time     `db:"created_at"`
+		ID        app.SessionID
+		UserID    app.UserID
+		TokenID   app.AuthToken
+		IP        *pgtype.Inet
+		UserAgent string
+		IsLogout  bool
+		CreatedAt time.Time
+	}
+
+	taskNotificationDBFormat struct {
+		ID     int
+		UserID app.UserID
+		Kind   string
 	}
 )
 
@@ -66,4 +72,20 @@ func inet(ip net.IP) (*pgtype.Inet, error) {
 	}
 
 	return inet, nil
+}
+
+func (s *taskNotificationDBFormat) toAppFormat() *app.TaskNotification {
+	kind := app.Welcome
+	switch s.Kind {
+	case app.ChangeEmail.String():
+		kind = app.ChangeEmail
+	case app.PassRecovery.String():
+		kind = app.PassRecovery
+	}
+
+	return &app.TaskNotification{
+		ID:     s.ID,
+		UserID: s.UserID,
+		Kind:   kind,
+	}
 }
