@@ -15,7 +15,7 @@ restart-dependencies:
 build:
 	rm -rf "bin"
 	mkdir "bin"
-	GOOS=linux go build -o "bin/" ./cmd/boilerplate
+	go build -o "bin/" ./cmd/boilerplate
 
 test-integration:
 	time go test ./... -tags=integration
