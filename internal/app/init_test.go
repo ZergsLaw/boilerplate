@@ -87,7 +87,16 @@ func initTest(t *testing.T) (*app.Application, *Mocks, func()) {
 	mockWal := mock.NewMockWAL(ctrl)
 	mockNotification := mock.NewMockNotification(ctrl)
 
-	appl := app.New(mockUserRepo, mockSessionRepo, mockCodeRepo, mockPass, mockToken, mockWal, mockNotification, mockCode)
+	appl := app.New(app.Config{
+		UserRepo:     mockUserRepo,
+		SessionRepo:  mockSessionRepo,
+		CodeRepo:     mockCodeRepo,
+		Password:     mockPass,
+		Auth:         mockToken,
+		Wal:          mockWal,
+		Notification: mockNotification,
+		Code:         mockCode,
+	})
 
 	mocks := &Mocks{
 		userRepo:     mockUserRepo,

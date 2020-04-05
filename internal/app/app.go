@@ -43,18 +43,28 @@ type (
 	}
 )
 
+// Config for build project.
+type Config struct {
+	UserRepo     UserRepo
+	SessionRepo  SessionRepo
+	CodeRepo     CodeRepo
+	Password     Password
+	Auth         Auth
+	Wal          WAL
+	Notification Notification
+	Code         Code
+}
+
 // New creates and returns new App.
-func New(userRepo UserRepo, sessionRepo SessionRepo, codeRepo CodeRepo,
-	password Password, auth Auth, wal WAL, notification Notification,
-	code Code) *Application {
+func New(cfg Config) *Application {
 	return &Application{
-		userRepo:     userRepo,
-		sessionRepo:  sessionRepo,
-		codeRepo:     codeRepo,
-		password:     password,
-		auth:         auth,
-		wal:          wal,
-		code:         code,
-		notification: notification,
+		userRepo:     cfg.UserRepo,
+		sessionRepo:  cfg.SessionRepo,
+		codeRepo:     cfg.CodeRepo,
+		password:     cfg.Password,
+		auth:         cfg.Auth,
+		wal:          cfg.Wal,
+		code:         cfg.Code,
+		notification: cfg.Notification,
 	}
 }
