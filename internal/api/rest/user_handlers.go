@@ -102,7 +102,7 @@ func (svc *service) logout(params operations.LogoutParams, authUser *app.AuthUse
 }
 
 func (svc *service) getUser(params operations.GetUserParams, authUser *app.AuthUser) middleware.Responder {
-	ctx, log, _ := fromRequest(params.HTTPRequest, nil)
+	ctx, log, _ := fromRequest(params.HTTPRequest, authUser)
 
 	getUserID := authUser.ID
 	if params.ID != nil {
