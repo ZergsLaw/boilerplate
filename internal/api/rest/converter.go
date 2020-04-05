@@ -5,7 +5,7 @@ import (
 	"github.com/zergslaw/boilerplate/internal/app"
 )
 
-// Users conversion []userApp.User => []*models.User.
+// Users conversion []app.User => []*models.User.
 func Users(u []app.User) []*models.User {
 	users := make([]*models.User, len(u))
 
@@ -16,7 +16,7 @@ func Users(u []app.User) []*models.User {
 	return users
 }
 
-// User conversion userApp.User => models.User.
+// User conversion app.User => models.User.
 func User(u *app.User) *models.User {
 	return &models.User{
 		ID:       models.UserID(u.ID),
