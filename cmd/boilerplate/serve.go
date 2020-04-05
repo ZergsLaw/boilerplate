@@ -149,7 +149,16 @@ func serverAction(c *cli.Context) error {
 	pass := password.New()
 	tokenizer := auth.New(c.String(jwtKey.Name))
 	rc := recoverycode.New()
-	application := app.New(r, r, r, pass, tokenizer, r, n, rc)
+	application := app.New(app.Config{
+		UserRepo:     r,
+		SessionRepo:  r,
+		CodeRepo:     r,
+		Password:     pass,
+		Auth:         tokenizer,
+		Wal:          r,
+		Notification: n,
+		Code:         rc,
+	})
 
 	group, ctx := errgroup.WithContext(c.Context)
 	services := []func() error{
