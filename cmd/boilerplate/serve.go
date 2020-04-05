@@ -120,10 +120,8 @@ func serverAction(c *cli.Context) error {
 	}
 
 	rabbitConn, err := notification.Connect(notification.Config{
-		User: c.String(rabbitUser.Name),
-		Pass: c.String(rabbitPass.Name),
-		Host: c.String(rabbitHost.Name),
-		Port: c.Int(rabbitPort.Name),
+		User: c.String(rabbitUser.Name), Pass: c.String(rabbitPass.Name),
+		Host: c.String(rabbitHost.Name), Port: c.Int(rabbitPort.Name),
 	})
 	if err != nil {
 		return fmt.Errorf("connect rabbit mq: %w", err)
@@ -134,12 +132,9 @@ func serverAction(c *cli.Context) error {
 		return fmt.Errorf("get rabbit channel: %w", err)
 	}
 
-	_, err = ch.QueueDeclare(c.String(queueName.Name), false, // durable
-		false, // delete when unused
-		false, // exclusive
-		false, // no-wait
-		nil,   // arguments
-	)
+	_, err = ch.QueueDeclare(c.String(queueName.Name),
+		false, false, false,
+		false, nil)
 	if err != nil {
 		return fmt.Errorf("declare queue: %w", err)
 	}
@@ -150,12 +145,9 @@ func serverAction(c *cli.Context) error {
 	tokenizer := auth.New(c.String(jwtKey.Name))
 	rc := recoverycode.New()
 	application := app.New(app.Config{
-		UserRepo:     r,
-		SessionRepo:  r,
-		CodeRepo:     r,
+		UserRepo: r, SessionRepo: r, CodeRepo: r, Wal: r,
 		Password:     pass,
 		Auth:         tokenizer,
-		Wal:          r,
 		Notification: n,
 		Code:         rc,
 	})
