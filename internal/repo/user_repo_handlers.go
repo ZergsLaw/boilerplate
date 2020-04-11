@@ -245,7 +245,7 @@ func (repo *Repo) ListUserByUsername(ctx context.Context, username string, page 
 				&total,
 			)
 			if err != nil {
-				return fmt.Errorf("scan user: %w", err)
+				return rowsCloseWithError(rows, fmt.Errorf("scan user: %w", err))
 			}
 
 			res = append(res, u)
