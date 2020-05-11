@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"net"
 	"net/http"
 	"strconv"
 
+	zergrepo "github.com/ZergsLaw/zerg-repo"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/urfave/cli/v2"
 	"github.com/zergslaw/boilerplate/internal/api/rest"
@@ -28,12 +30,6 @@ const (
 	RestServerPort   = 8080
 	GRPCServerPort   = 3000
 	MetricServerPort = 9080
-
-	RabbitHost  = "localhost"
-	RabbitUser  = "rabbit"
-	RabbitPass  = "rabbit"
-	RabbitPort  = 5672
-	RabbitQueue = "notification"
 )
 
 // nolint:gochecknoglobals,gocritic
@@ -59,16 +55,10 @@ var (
 	grpcPort = flag.NewIntFlag("gRPC-port", "serve internal gRPC API on port",
 		flag.IntRequired(), flag.IntAliases("GRPC_PORT"), flag.IntDefault(GRPCServerPort))
 
-	rabbitUser = flag.NewStrFlag("rabbit-user", "rabbit user",
-		flag.StrRequired(), flag.StrEnv("RABBIT_USER"), flag.StrDefault(RabbitUser))
-	rabbitPass = flag.NewStrFlag("rabbit-pass", "rabbit pass",
-		flag.StrRequired(), flag.StrEnv("RABBIT_PASS"), flag.StrDefault(RabbitPass))
-	rabbitHost = flag.NewStrFlag("rabbit-host", "rabbit host",
-		flag.StrRequired(), flag.StrEnv("RABBIT_HOST"), flag.StrDefault(RabbitHost))
-	rabbitPort = flag.NewIntFlag("rabbit-port", "rabbit port",
-		flag.IntRequired(), flag.IntEnv("RABBIT_PORT"), flag.IntDefault(RabbitPort))
-	queueName = flag.NewStrFlag("queue", "queue name for sending notification",
-		flag.StrRequired(), flag.StrEnv("RABBIT_PORT"), flag.StrDefault(RabbitQueue))
+	emailFrom = flag.NewStrFlag("email-from", "email for notification",
+		flag.StrRequired(), flag.StrEnv("EMAIL_FROM"))
+	emailAPIKey = flag.NewStrFlag("email-api-key", "set api key for send email",
+		flag.StrRequired(), flag.StrEnv("EMAIL_API_KEY"))
 
 	serve = &cli.Command{
 		Name:         "serve",
@@ -85,7 +75,6 @@ var (
 			restHost, restPort,
 			metricHost, metricPort,
 			grpcHost, grpcPort,
-			rabbitUser, rabbitHost, rabbitPass, rabbitPort,
 		},
 	}
 )
@@ -96,11 +85,11 @@ func beforeAction(c *cli.Context) error {
 	}
 
 	return goose(c.Context, c.String(migrateDir.Name), c.String(migrateFlag.Name),
-		repo.Name(c.String(dbName.Name)),
-		repo.User(c.String(dbUser.Name)),
-		repo.Pass(c.String(dbPass.Name)),
-		repo.Host(c.String(dbHost.Name)),
-		repo.Port(c.Int(dbPort.Name)),
+		zergrepo.Name(c.String(dbName.Name)),
+		zergrepo.User(c.String(dbUser.Name)),
+		zergrepo.Pass(c.String(dbPass.Name)),
+		zergrepo.Host(c.String(dbHost.Name)),
+		zergrepo.Port(c.Int(dbPort.Name)),
 	)
 }
 
@@ -108,39 +97,33 @@ func serverAction(c *cli.Context) error {
 	ctxConnect, cancelConnect := context.WithTimeout(context.Background(), ConnectTimeout)
 	defer cancelConnect()
 
-	dbConn, err := repo.Connect(ctxConnect,
-		repo.Name(c.String(dbName.Name)),
-		repo.User(c.String(dbUser.Name)),
-		repo.Pass(c.String(dbPass.Name)),
-		repo.Host(c.String(dbHost.Name)),
-		repo.Port(c.Int(dbPort.Name)),
-	)
+	dbConn, err := zergrepo.ConnectByCfg(ctxConnect, "postgres", zergrepo.Config{
+		Host:     c.String(dbHost.Name),
+		Port:     c.Int(dbPort.Name),
+		User:     c.String(dbUser.Name),
+		Password: c.String(dbPass.Name),
+		DBName:   c.String(dbName.Name),
+		SSLMode:  zergrepo.DBSSLMode,
+	})
 	if err != nil {
 		return fmt.Errorf("connect database: %w", err)
 	}
 
-	rabbitConn, err := notification.Connect(notification.Config{
-		User: c.String(rabbitUser.Name), Pass: c.String(rabbitPass.Name),
-		Host: c.String(rabbitHost.Name), Port: c.Int(rabbitPort.Name),
-	})
-	if err != nil {
-		return fmt.Errorf("connect rabbit mq: %w", err)
-	}
+	metric := zergrepo.MustMetric("serve", "repo")
+	mapper := zergrepo.NewMapper(
+		zergrepo.NewConvert(app.ErrNotFound, sql.ErrNoRows),
+		zergrepo.PQConstraint(app.ErrEmailExist, repo.ConstraintEmail),
+		zergrepo.PQConstraint(app.ErrUsernameExist, repo.ConstraintUsername),
+	)
 
-	ch, err := rabbitConn.Channel()
-	if err != nil {
-		return fmt.Errorf("get rabbit channel: %w", err)
-	}
+	r := repo.New(zergrepo.New(dbConn, logger, metric, mapper))
 
-	_, err = ch.QueueDeclare(c.String(queueName.Name),
-		false, false, false,
-		false, nil)
+	emailClientConn, err := notification.Connect(c.String(emailAPIKey.Name))
 	if err != nil {
-		return fmt.Errorf("declare queue: %w", err)
+		return fmt.Errorf("connect sendgrid: %w", err)
 	}
+	n := notification.New(emailClientConn, c.String(emailFrom.Name))
 
-	r := repo.New(dbConn)
-	n := notification.New(ch)
 	pass := password.New()
 	tokenizer := auth.New(c.String(jwtKey.Name))
 	rc := recoverycode.New()

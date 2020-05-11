@@ -10,7 +10,7 @@ import (
 
 // SaveSession need for implements app.SessionRepo.
 func (repo *Repo) SaveSession(ctx context.Context, userID app.UserID, tokenID app.TokenID, origin app.Origin) error {
-	return repo.execFunc(func(db *sql.DB) error {
+	return repo.db.Do(func(db *sql.DB) error {
 		const query = `INSERT INTO sessions (user_id, token_id, ip, user_agent) VALUES ($1, $2, $3, $4)`
 
 		inet, err := inet(origin.IP)
@@ -29,7 +29,7 @@ func (repo *Repo) SaveSession(ctx context.Context, userID app.UserID, tokenID ap
 
 // SessionByTokenID need for implements app.SessionRepo.
 func (repo *Repo) SessionByTokenID(ctx context.Context, tokenID app.TokenID) (session *app.Session, err error) {
-	err = repo.execFunc(func(db *sql.DB) error {
+	err = repo.db.Do(func(db *sql.DB) error {
 		const query = `SELECT * FROM sessions WHERE token_id = $1 AND is_logout = false`
 
 		item := &sessionDBFormat{}
@@ -42,11 +42,8 @@ func (repo *Repo) SessionByTokenID(ctx context.Context, tokenID app.TokenID) (se
 			&item.CreatedAt,
 			&item.IsLogout,
 		)
-		switch {
-		case err == sql.ErrNoRows:
-			return app.ErrNotFound
-		case err != nil:
-			return fmt.Errorf("query row: %w", err)
+		if err != nil {
+			return err
 		}
 
 		session = item.toAppFormat()
@@ -57,7 +54,7 @@ func (repo *Repo) SessionByTokenID(ctx context.Context, tokenID app.TokenID) (se
 
 // UserByTokenID need for implements app.UserRepo.
 func (repo *Repo) UserByTokenID(ctx context.Context, token app.TokenID) (user *app.User, err error) {
-	err = repo.execFunc(func(db *sql.DB) error {
+	err = repo.db.Do(func(db *sql.DB) error {
 		const query = `SELECT users.id, users.email, users.username, users.pass_hash, users.created_at, users.updated_at
 		FROM users LEFT JOIN sessions ON sessions.user_id = users.id WHERE sessions.token_id = $1
 		AND sessions.is_logout = false`
@@ -71,10 +68,7 @@ func (repo *Repo) UserByTokenID(ctx context.Context, token app.TokenID) (user *a
 			&u.CreatedAt,
 			&u.UpdatedAt,
 		)
-		switch {
-		case err == sql.ErrNoRows:
-			return app.ErrNotFound
-		case err != nil:
+		if err != nil {
 			return err
 		}
 
@@ -86,7 +80,7 @@ func (repo *Repo) UserByTokenID(ctx context.Context, token app.TokenID) (user *a
 
 // DeleteSession need for implements app.SessionRepo.
 func (repo *Repo) DeleteSession(ctx context.Context, tokenID app.TokenID) error {
-	return repo.execFunc(func(db *sql.DB) error {
+	return repo.db.Do(func(db *sql.DB) error {
 		const query = `UPDATE sessions SET is_logout = true WHERE token_id = $1`
 		_, err := db.ExecContext(ctx, query, tokenID)
 

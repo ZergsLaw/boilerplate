@@ -13,17 +13,6 @@ services:
       POSTGRES_DB:  "postgres"
       POSTGRES_PASSWORD: "postgres"
 
-  rabbit:
-    container_name: rabbit
-    image: "rabbitmq:3.7-management"
-    restart: always
-    environment:
-      RABBITMQ_DEFAULT_USER: "rabbit"
-      RABBITMQ_DEFAULT_PASS: "rabbit"
-    ports:
-      - 15672:15672
-      - 5672:5672
-
   boilerplate:
     build:
       context: .

@@ -4,6 +4,7 @@ package repo_test
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"net"
@@ -11,9 +12,11 @@ import (
 	"testing"
 	"time"
 
+	zergrepo "github.com/ZergsLaw/zerg-repo"
 	"github.com/zergslaw/boilerplate/internal/app"
 	"github.com/zergslaw/boilerplate/internal/repo"
 	"github.com/zergslaw/boilerplate/migration"
+	"go.uber.org/zap"
 )
 
 var (
@@ -23,8 +26,6 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	repo.InitMetrics("test")
-
 	ctx, cancel := context.WithTimeout(context.Background(), timeoutConnect)
 	defer cancel()
 
@@ -44,19 +45,31 @@ func TestMain(m *testing.M) {
 
 	defer resetDB()
 
-	dbConn, err := repo.Connect(ctx)
+	dbConn, err := zergrepo.Connect(ctx, "postgres")
 	if err != nil {
 		log.Fatal(fmt.Errorf("connect UserRepo: %w", err))
 	}
 
-	Repo = repo.New(dbConn)
+	metric := zergrepo.MustMetric("test", "repo")
+
+	mapper := zergrepo.NewMapper(
+		zergrepo.NewConvert(app.ErrNotFound, sql.ErrNoRows),
+		zergrepo.PQConstraint(app.ErrEmailExist, repo.ConstraintEmail),
+		zergrepo.PQConstraint(app.ErrUsernameExist, repo.ConstraintUsername),
+	)
+
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		log.Fatal(fmt.Errorf("connect zap: %w", err))
+	}
+
+	Repo = repo.New(zergrepo.New(dbConn, logger, metric, mapper))
 
 	os.Exit(m.Run())
 }
 
 func truncate() error {
-	_, err := Repo.DB().Exec("TRUNCATE users, sessions, notifications, recovery_code RESTART IDENTITY CASCADE")
-	return err
+	return Repo.Exec(ctx, "TRUNCATE users, sessions, notifications, recovery_code RESTART IDENTITY CASCADE")
 }
 
 var (

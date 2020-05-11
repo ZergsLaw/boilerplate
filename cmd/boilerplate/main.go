@@ -15,7 +15,6 @@ import (
 	"github.com/zergslaw/boilerplate/internal/api/rest"
 	"github.com/zergslaw/boilerplate/internal/api/rest/generated/restapi"
 	"github.com/zergslaw/boilerplate/internal/log"
-	"github.com/zergslaw/boilerplate/internal/repo"
 	"go.uber.org/zap"
 )
 
@@ -53,7 +52,6 @@ func initDefaultData() error {
 	ver = swaggerSpec.Spec().Info.Version
 
 	namespace := regexp.MustCompile(`[^a-zA-Z0-9]+`).ReplaceAllString(appl.Name, "_")
-	repo.InitMetrics(namespace)
 	rest.InitMetrics(namespace, restapi.FlatSwaggerJSON)
 
 	return nil

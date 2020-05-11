@@ -6,10 +6,11 @@ package mock
 
 import (
 	context "context"
-	gomock "github.com/golang/mock/gomock"
-	app "github.com/zergslaw/boilerplate/internal/app"
 	reflect "reflect"
 	time "time"
+
+	gomock "github.com/golang/mock/gomock"
+	app "github.com/zergslaw/boilerplate/internal/app"
 )
 
 // MockUserApp is a mock of UserApp interface

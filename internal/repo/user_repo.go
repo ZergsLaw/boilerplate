@@ -11,7 +11,7 @@ import (
 
 // CreateUser need for implements app.UserRepo.
 func (repo *Repo) CreateUser(ctx context.Context, newUser app.User) (userID app.UserID, err error) {
-	err = repo.execFunc(func(db *sql.DB) error {
+	err = repo.db.Tx(ctx, func(tx *sql.Tx) error {
 		const query = `INSERT INTO users (username, email, pass_hash) VALUES ($1, $2, $3) RETURNING id`
 
 		hash := pgtype.Bytea{
@@ -19,43 +19,24 @@ func (repo *Repo) CreateUser(ctx context.Context, newUser app.User) (userID app.
 			Status: pgtype.Present,
 		}
 
-		tx, err := db.BeginTx(ctx, nil)
-		if err != nil {
-			return fmt.Errorf("begin tx: %w", err)
-		}
-
 		err = tx.QueryRowContext(ctx, query, newUser.Username, newUser.Email, hash).Scan(&userID)
-		switch {
-		case pqErrConflictIn(err, constraintEmail):
-			return rollback(tx, app.ErrEmailExist)
-		case pqErrConflictIn(err, constraintUsername):
-			return rollback(tx, app.ErrUsernameExist)
-		case err != nil:
-			return rollback(tx, fmt.Errorf("create user: %w", err))
+		if err != nil {
+			return fmt.Errorf("create user: %w", err)
 		}
 
 		err = createTaskNotification(ctx, tx, userID, app.Welcome)
 		if err != nil {
-			return rollback(tx, err)
+			return err
 		}
 
-		return tx.Commit()
+		return nil
 	})
 	return userID, err
 }
 
-func rollback(tx *sql.Tx, err error) error {
-	errRollback := tx.Rollback()
-	if errRollback != nil {
-		err = fmt.Errorf("%w, err rollback: %s", err, errRollback)
-	}
-
-	return err
-}
-
 // DeleteUser need for implements app.UserRepo.
 func (repo *Repo) DeleteUser(ctx context.Context, userID app.UserID) error {
-	return repo.execFunc(func(db *sql.DB) error {
+	return repo.db.Do(func(db *sql.DB) error {
 		const query = `DELETE FROM users WHERE id = $1`
 		_, err := db.ExecContext(ctx, query, userID)
 
@@ -65,14 +46,11 @@ func (repo *Repo) DeleteUser(ctx context.Context, userID app.UserID) error {
 
 // UpdateUsername need for implements app.UserRepo.
 func (repo *Repo) UpdateUsername(ctx context.Context, userID app.UserID, username string) error {
-	return repo.execFunc(func(db *sql.DB) error {
+	return repo.db.Do(func(db *sql.DB) error {
 		const query = `UPDATE users SET username = $1, updated_at = now() WHERE id = $2`
 
 		_, err := db.ExecContext(ctx, query, username, userID)
-		switch {
-		case pqErrConflictIn(err, constraintUsername):
-			return app.ErrUsernameExist
-		case err != nil:
+		if err != nil {
 			return err
 		}
 
@@ -82,39 +60,26 @@ func (repo *Repo) UpdateUsername(ctx context.Context, userID app.UserID, usernam
 
 // UpdateEmail need for implements app.UserRepo.
 func (repo *Repo) UpdateEmail(ctx context.Context, userID app.UserID, email string) error {
-	return repo.execFunc(func(db *sql.DB) error {
+	return repo.db.Tx(ctx, func(tx *sql.Tx) error {
 		const query = `UPDATE users SET email = $1, updated_at = now() WHERE id = $2`
 
-		tx, err := db.BeginTx(ctx, nil)
+		_, err := tx.ExecContext(ctx, query, email, userID)
 		if err != nil {
-			return fmt.Errorf("begin tx: %w", err)
-		}
-
-		_, err = tx.ExecContext(ctx, query, email, userID)
-		switch {
-		case pqErrConflictIn(err, constraintEmail):
-			return rollback(tx, app.ErrEmailExist)
-		case err != nil:
-			return rollback(tx, err)
+			return fmt.Errorf("update email: %w", err)
 		}
 
 		err = createTaskNotification(ctx, tx, userID, app.ChangeEmail)
 		if err != nil {
-			return rollback(tx, err)
+			return err
 		}
 
-		return tx.Commit()
+		return nil
 	})
 }
 
 // UpdatePassword need for implements app.UserRepo.
 func (repo *Repo) UpdatePassword(ctx context.Context, userID app.UserID, passHash []byte) error {
-	return repo.execFunc(func(db *sql.DB) error {
-		tx, err := db.BeginTx(ctx, nil)
-		if err != nil {
-			return fmt.Errorf("begin tx: %w", err)
-		}
-
+	return repo.db.Tx(ctx, func(tx *sql.Tx) error {
 		const query = `UPDATE users SET pass_hash = $1, updated_at = now() WHERE id = $2 RETURNING email`
 
 		hash := pgtype.Bytea{
@@ -123,23 +88,23 @@ func (repo *Repo) UpdatePassword(ctx context.Context, userID app.UserID, passHas
 		}
 
 		userEmail := ""
-		err = tx.QueryRowContext(ctx, query, hash, userID).Scan(&userEmail)
+		err := tx.QueryRowContext(ctx, query, hash, userID).Scan(&userEmail)
 		if err != nil {
-			return rollback(tx, err)
+			return fmt.Errorf("update pass: %w", err)
 		}
 
 		err = cleanRecoveryCodes(ctx, tx, userID)
 		if err != nil {
-			return rollback(tx, err)
+			return err
 		}
 
-		return tx.Commit()
+		return nil
 	})
 }
 
 // UserByID need for implements app.UserRepo.
 func (repo *Repo) UserByID(ctx context.Context, userID app.UserID) (user *app.User, err error) {
-	err = repo.execFunc(func(db *sql.DB) error {
+	err = repo.db.Do(func(db *sql.DB) error {
 		const query = `SELECT * FROM users WHERE id = $1`
 
 		u := &userDBFormat{}
@@ -151,10 +116,7 @@ func (repo *Repo) UserByID(ctx context.Context, userID app.UserID) (user *app.Us
 			&u.CreatedAt,
 			&u.UpdatedAt,
 		)
-		switch {
-		case err == sql.ErrNoRows:
-			return app.ErrNotFound
-		case err != nil:
+		if err != nil {
 			return err
 		}
 
@@ -166,7 +128,7 @@ func (repo *Repo) UserByID(ctx context.Context, userID app.UserID) (user *app.Us
 
 // UserByEmail need for implements app.UserRepo.
 func (repo *Repo) UserByEmail(ctx context.Context, email string) (user *app.User, err error) {
-	err = repo.execFunc(func(db *sql.DB) error {
+	err = repo.db.Do(func(db *sql.DB) error {
 		const query = `SELECT * FROM users WHERE email = $1`
 
 		u := &userDBFormat{}
@@ -178,10 +140,7 @@ func (repo *Repo) UserByEmail(ctx context.Context, email string) (user *app.User
 			&u.CreatedAt,
 			&u.UpdatedAt,
 		)
-		switch {
-		case err == sql.ErrNoRows:
-			return app.ErrNotFound
-		case err != nil:
+		if err != nil {
 			return err
 		}
 
@@ -193,7 +152,7 @@ func (repo *Repo) UserByEmail(ctx context.Context, email string) (user *app.User
 
 // UserByUsername need for implements app.UserRepo.
 func (repo *Repo) UserByUsername(ctx context.Context, username string) (user *app.User, err error) {
-	err = repo.execFunc(func(db *sql.DB) error {
+	err = repo.db.Do(func(db *sql.DB) error {
 		const query = `SELECT * FROM users WHERE username = $1`
 
 		u := &userDBFormat{}
@@ -205,10 +164,7 @@ func (repo *Repo) UserByUsername(ctx context.Context, username string) (user *ap
 			&u.CreatedAt,
 			&u.UpdatedAt,
 		)
-		switch {
-		case err == sql.ErrNoRows:
-			return app.ErrNotFound
-		case err != nil:
+		if err != nil {
 			return err
 		}
 
@@ -220,13 +176,14 @@ func (repo *Repo) UserByUsername(ctx context.Context, username string) (user *ap
 
 // ListUserByUsername need for implements app.UserRepo.
 func (repo *Repo) ListUserByUsername(ctx context.Context, username string, page app.Page) (users []app.User, total int, err error) {
-	err = repo.execFunc(func(db *sql.DB) error {
+	err = repo.db.Do(func(db *sql.DB) error {
 		const query = `SELECT *, count(*) OVER() AS total FROM users WHERE username LIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`
 
 		rows, err := db.QueryContext(ctx, query, "%"+username+"%", page.Limit, page.Offset)
 		if err != nil {
 			return fmt.Errorf("query context: %w", err)
 		}
+		defer repo.db.WarnIfFail(rows.Close)
 
 		if err = rows.Err(); err != nil {
 			return fmt.Errorf("rows error: %w", err)
@@ -245,7 +202,7 @@ func (repo *Repo) ListUserByUsername(ctx context.Context, username string, page 
 				&total,
 			)
 			if err != nil {
-				return rowsCloseWithError(rows, fmt.Errorf("scan user: %w", err))
+				return err
 			}
 
 			res = append(res, u)

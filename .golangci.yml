@@ -270,9 +270,9 @@ issues:
         - gocritic
 
     # Package def is designed to contain global constants.
-    - path: internal/def/
+    - path: internal/api/rest/generated
       linters:
-        - gochecknoglobals
+        - godot
 
     # Commands are allowed to contain a lot of flags.
     - path: cmd/.*/main.go

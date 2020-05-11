@@ -29,12 +29,3 @@ func cleanRecoveryCodes(ctx context.Context, tx *sql.Tx, id app.UserID) error {
 
 	return nil
 }
-
-func rowsCloseWithError(rows *sql.Rows, err error) error {
-	errFromRows := rows.Close()
-	if errFromRows != nil {
-		err = fmt.Errorf("error: %w, rows close: %s", err, errFromRows)
-	}
-
-	return err
-}

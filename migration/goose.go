@@ -7,8 +7,9 @@ import (
 	"strings"
 	"sync"
 
+	zergrepo "github.com/ZergsLaw/zerg-repo"
+
 	"github.com/pressly/goose"
-	"github.com/zergslaw/boilerplate/internal/repo"
 )
 
 // nolint:gochecknoglobals,gocritic
@@ -17,11 +18,11 @@ var (
 )
 
 // Run executes goose command. It also enforce "fix" after "create".
-func Run(ctx context.Context, dir string, command string, options ...repo.Option) error {
+func Run(ctx context.Context, dir string, command string, options ...zergrepo.Option) error {
 	gooseMu.Lock()
 	defer gooseMu.Unlock()
 
-	dbConn, err := repo.Connect(ctx, options...)
+	dbConn, err := zergrepo.Connect(ctx, "postgres", options...)
 	if err != nil {
 		return err
 	}
