@@ -116,7 +116,7 @@ type (
 		// Errors: ErrNotFound, unknown.
 		Code(ctx context.Context, id UserID) (code string, err error)
 	}
-	// Code module for generate random code.
+	// Code module for generated random code.
 	Code interface {
 		// Generate random code of a specified length.
 		Generate(length int) string

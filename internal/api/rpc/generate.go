@@ -1,3 +1,3 @@
 package rpc
 
-//go:generate protoc @protoc.cfg service.proto
+//go:generated protoc @protoc.cfg service.proto

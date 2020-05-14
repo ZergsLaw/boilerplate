@@ -12,13 +12,12 @@ import (
 
 	"github.com/go-openapi/loads"
 	"github.com/urfave/cli/v2"
-	"github.com/zergslaw/boilerplate/internal/api/rest"
-	"github.com/zergslaw/boilerplate/internal/api/rest/generated/restapi"
+	"github.com/zergslaw/boilerplate/internal/api/web"
+	"github.com/zergslaw/boilerplate/internal/api/web/generated/restapi"
 	"github.com/zergslaw/boilerplate/internal/log"
 	"go.uber.org/zap"
 )
 
-// nolint:gochecknoglobals,gocritic
 var (
 	logger *zap.Logger
 	ver    string
@@ -52,7 +51,7 @@ func initDefaultData() error {
 	ver = swaggerSpec.Spec().Info.Version
 
 	namespace := regexp.MustCompile(`[^a-zA-Z0-9]+`).ReplaceAllString(appl.Name, "_")
-	rest.InitMetrics(namespace, restapi.FlatSwaggerJSON)
+	web.InitMetrics(namespace, restapi.FlatSwaggerJSON)
 
 	return nil
 }

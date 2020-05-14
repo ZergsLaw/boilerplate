@@ -1,4 +1,4 @@
-// Package recoverycode contains an implementation to generate random lines of code.
+// Package recoverycode contains an implementation to generated random lines of code.
 package recoverycode
 
 import (

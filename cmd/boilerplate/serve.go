@@ -11,8 +11,8 @@ import (
 	zergrepo "github.com/ZergsLaw/zerg-repo"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/urfave/cli/v2"
-	"github.com/zergslaw/boilerplate/internal/api/rest"
 	"github.com/zergslaw/boilerplate/internal/api/rpc"
+	"github.com/zergslaw/boilerplate/internal/api/web"
 	"github.com/zergslaw/boilerplate/internal/app"
 	"github.com/zergslaw/boilerplate/internal/auth"
 	"github.com/zergslaw/boilerplate/internal/flag"
@@ -32,7 +32,6 @@ const (
 	MetricServerPort = 9080
 )
 
-// nolint:gochecknoglobals,gocritic
 var (
 	migrateFlag = flag.NewStrFlag("migrate", "goose migrate when you start the service",
 		flag.StrEnv("MIGRATE"))
@@ -40,9 +39,9 @@ var (
 	jwtKey = flag.NewStrFlag("jwt-key", "jwt key for hashing auth",
 		flag.StrRequired(), flag.StrAliases("JWT_KEY"))
 
-	restHost = flag.NewStrFlag("rest-host", "rest server host",
+	restHost = flag.NewStrFlag("web-host", "web server host",
 		flag.StrRequired(), flag.StrAliases("SERVER_HOST"), flag.StrDefault(host))
-	restPort = flag.NewIntFlag("rest-port", "rest server port",
+	restPort = flag.NewIntFlag("web-port", "web server port",
 		flag.IntRequired(), flag.IntAliases("SERVER_PORT"), flag.IntDefault(RestServerPort))
 
 	metricHost = flag.NewStrFlag("metric-host", "serve prometheus metrics on host",
@@ -151,15 +150,15 @@ func serverAction(c *cli.Context) error {
 }
 
 func swaggerAPI(ctx context.Context, application app.App, host string, port int) error {
-	restLogger := logger.Named("rest")
+	restLogger := logger.Named("web")
 
-	api, err := rest.New(application,
+	api, err := web.New(application,
 		restLogger,
-		rest.SetHost(host),
-		rest.SetPort(port),
+		web.SetHost(host),
+		web.SetPort(port),
 	)
 	if err != nil {
-		return fmt.Errorf("rest new: %w", err)
+		return fmt.Errorf("web new: %w", err)
 	}
 
 	errc := make(chan error, 1)

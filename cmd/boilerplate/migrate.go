@@ -20,7 +20,6 @@ const (
 	ConnectTimeout = time.Second * 5
 )
 
-// nolint:gochecknoglobals,gocritic
 var (
 	migrateDir = flag.NewStrFlag("dir-migrate", "goose migrations dir",
 		flag.StrRequired(), flag.StrEnv("DIR_MIGRATE"), flag.StrDefault(DirMigrate))

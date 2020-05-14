@@ -96,7 +96,7 @@ func TestApp_Login(t *testing.T) {
 		{"success", email1, password1, &user1, token1, nil},
 		{"user not found", notExistEmail, "", nil, "", app.ErrNotFound},
 		{"not correct password", email1, password2, nil, "", app.ErrNotValidPassword},
-		{"error generate token1", email1, password1, nil, "", errAny},
+		{"error generated token1", email1, password1, nil, "", errAny},
 		{"not save session", email1, password1, nil, "", errAny},
 	}
 

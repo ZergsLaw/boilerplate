@@ -73,7 +73,7 @@ func (c *client) Notification(contact string, msg app.Message) error {
 
 	htmlContent, err := c.hermes.GenerateHTML(email)
 	if err != nil {
-		return fmt.Errorf("generate html: %w", err)
+		return fmt.Errorf("generated html: %w", err)
 	}
 
 	message := mail.NewSingleEmail(from, subjectByKind(msg.Kind), to, "", htmlContent)

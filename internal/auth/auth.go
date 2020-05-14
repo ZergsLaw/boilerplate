@@ -60,7 +60,7 @@ func SetIDGenerator(generatorID func() (string, error)) Option {
 func (t *Auth) Token(expired time.Duration) (app.AuthToken, app.TokenID, error) {
 	tokenID, err := t.generatorID()
 	if err != nil {
-		return "", "", fmt.Errorf("uuid generate: %w", err)
+		return "", "", fmt.Errorf("uuid generated: %w", err)
 	}
 
 	claims := &jwt.StandardClaims{
