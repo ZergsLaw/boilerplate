@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	cookieTokenName = "__Secure-authKey" // nolint:gosec,gocritic
+	cookieTokenName = "authKey"
 	authTimeout     = 250 * time.Millisecond
 )
 

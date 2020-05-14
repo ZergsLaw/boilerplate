@@ -1,3 +1,3 @@
 package rpc
 
-//go:generated protoc @protoc.cfg service.proto
+//go:generate protoc -I . service.proto --go_out=plugins=grpc:.

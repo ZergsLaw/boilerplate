@@ -1,4 +1,4 @@
-package mock // nolint:testpackage,gocritic
+package mock
 
 //go:generated mockgen -source=../app/app.go -aux_files github.com/zergslaw/boilerplate/internal/app=../app/user.go -destination mock.app.contracts.go -package mock
 //go:generated mockgen -source=../app/user.go -destination=mock.user.contracts.go -package mock

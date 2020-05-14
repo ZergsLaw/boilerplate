@@ -64,7 +64,7 @@ var (
 	}
 
 	sessUser   = "sessUser"
-	apiKeyAuth = httptransport.APIKeyAuth("Cookie", "header", "__Secure-authKey="+sessUser)
+	apiKeyAuth = httptransport.APIKeyAuth("Cookie", "header", "authKey="+sessUser)
 	restUser   = web.User(&user)
 )
 

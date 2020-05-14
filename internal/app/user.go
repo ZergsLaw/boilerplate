@@ -140,7 +140,6 @@ type (
 		Parse(token AuthToken) (TokenID, error)
 	}
 	// OAuth module responsible for working with social network.
-	// TODO Implements.
 	OAuth interface {
 		// Account converts an authorization code into user information.
 		// Errors: unknown.

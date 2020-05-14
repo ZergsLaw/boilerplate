@@ -1,7 +1,9 @@
 run:
   tests: false
   skip-dirs:
-    - api/web/generated
+    - generated
+    - mock
+    - migration
 
 linters-settings:
   lll:
@@ -29,3 +31,6 @@ issues:
     - linters:
         - lll
       source: "^//go:generate "
+    - linters:
+        - gochecknoglobals
+      source: "var metric "

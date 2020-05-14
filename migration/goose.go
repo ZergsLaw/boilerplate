@@ -12,7 +12,6 @@ import (
 	"github.com/pressly/goose"
 )
 
-// nolint:gochecknoglobals,gocritic
 var (
 	gooseMu sync.Mutex
 )
