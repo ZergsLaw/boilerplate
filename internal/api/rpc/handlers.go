@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 
+	"github.com/zergslaw/boilerplate/internal/api/rpc/pb"
 	"github.com/zergslaw/boilerplate/internal/app"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func (s *service) GetUserByAuthToken(ctx context.Context, in *AuthInfo) (*User, error) {
+func (s *service) GetUserByAuthToken(ctx context.Context, in *pb.AuthInfo) (*pb.User, error) {
 	info, err := s.app.UserByAuthToken(ctx, app.AuthToken(in.Token))
 	if err != nil {
 		return nil, apiError(err)
@@ -18,8 +19,8 @@ func (s *service) GetUserByAuthToken(ctx context.Context, in *AuthInfo) (*User, 
 	return apiUser(&info.User), nil
 }
 
-func apiUser(user *app.User) *User {
-	return &User{
+func apiUser(user *app.User) *pb.User {
+	return &pb.User{
 		Id:       int32(user.ID),
 		Username: user.Username,
 		Email:    user.Email,

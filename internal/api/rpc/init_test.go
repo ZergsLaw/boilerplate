@@ -7,6 +7,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/zergslaw/boilerplate/internal/api/rpc/pb"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/zergslaw/boilerplate/internal/api/rpc"
@@ -27,7 +29,7 @@ var (
 	errAny  = errors.New("any err")
 	ctx     = context.Background()
 	token   = "token"
-	rpcUser = rpc.User{
+	rpcUser = pb.User{
 		Id:       1,
 		Username: "username",
 		Email:    "email@email.com",
@@ -41,7 +43,7 @@ var (
 	}
 )
 
-func testNew(t *testing.T) (rpc.UsersClient, *mock.MockApp, func()) {
+func testNew(t *testing.T) (pb.UsersClient, *mock.MockApp, func()) {
 	t.Helper()
 
 	logger, err := zap.NewDevelopment(zap.AddStacktrace(zap.FatalLevel))
@@ -74,5 +76,5 @@ func testNew(t *testing.T) (rpc.UsersClient, *mock.MockApp, func()) {
 		cancel()
 	}
 
-	return rpc.NewUsersClient(conn), mockApp, shutdown
+	return pb.NewUsersClient(conn), mockApp, shutdown
 }

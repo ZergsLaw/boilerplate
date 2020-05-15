@@ -7,6 +7,7 @@ import (
 
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	"github.com/zergslaw/boilerplate/internal/api/rpc/pb"
 	"github.com/zergslaw/boilerplate/internal/app"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -41,7 +42,7 @@ func New(application users, logger *zap.Logger) *grpc.Server {
 		)),
 	)
 
-	RegisterUsersServer(server, &service{app: application})
+	pb.RegisterUsersServer(server, &service{app: application})
 
 	prometheus.Register(server)
 

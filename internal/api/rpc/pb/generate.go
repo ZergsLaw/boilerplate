@@ -1,3 +1,3 @@
-package rpc
+package pb
 
 //go:generate protoc -I . service.proto --go_out=plugins=grpc:.

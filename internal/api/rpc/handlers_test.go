@@ -6,7 +6,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"github.com/zergslaw/boilerplate/internal/api/rpc"
+	"github.com/zergslaw/boilerplate/internal/api/rpc/pb"
 	"github.com/zergslaw/boilerplate/internal/app"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -26,7 +26,7 @@ func TestService_GetUserByAuthToken(t *testing.T) {
 	testCases := []struct {
 		name    string
 		auth    *app.AuthUser
-		want    *rpc.User
+		want    *pb.User
 		appErr  error
 		wantErr error
 	}{
@@ -42,10 +42,18 @@ func TestService_GetUserByAuthToken(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockApp.EXPECT().UserByAuthToken(gomock.Any(), app.AuthToken(token)).Return(tc.auth, tc.appErr)
 
-			res, err := c.GetUserByAuthToken(ctx, &rpc.AuthInfo{Token: token})
+			res, err := c.GetUserByAuthToken(ctx, &pb.AuthInfo{Token: token})
 			if tc.wantErr == nil {
 				assert.Nil(t, err)
-				assert.Equal(t, tc.want, res)
+				assert.Equal(t, app.User{
+					ID:       app.UserID(res.Id),
+					Email:    res.Email,
+					Username: res.Username,
+				}, app.User{
+					ID:       tc.auth.ID,
+					Email:    tc.auth.Email,
+					Username: tc.auth.Username,
+				})
 			} else {
 				assert.Nil(t, res)
 				assert.Equal(t, tc.wantErr, err)
