@@ -31,7 +31,7 @@ func TestUserRepoSmoke(t *testing.T) {
 	newUsername := "newUsername"
 	err = Repo.UpdateUsername(ctx, user.ID, newUsername)
 	require.Nil(t, err)
-	user.Username = newUsername
+	user.Name = newUsername
 
 	newEmail := "newEmail@gmail.com"
 	err = Repo.UpdateEmail(ctx, user.ID, newEmail, app.TaskNotification{
@@ -59,7 +59,7 @@ func TestUserRepoSmoke(t *testing.T) {
 	require.Nil(t, err)
 	require.NotZero(t, user2.ID)
 
-	res, err = Repo.UserByUsername(ctx, user2.Username)
+	res, err = Repo.UserByUsername(ctx, user2.Name)
 	require.Nil(t, err)
 	user2.CreatedAt = res.CreatedAt
 	user2.UpdatedAt = res.UpdatedAt
