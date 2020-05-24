@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"net"
+	"strconv"
+	"sync"
 	"testing"
 	"time"
 
@@ -12,56 +14,88 @@ import (
 	"github.com/zergslaw/boilerplate/internal/mock"
 )
 
-var (
-	ctx    = context.Background()
-	errAny = errors.New("any error")
+const (
+	username  = "username"
+	userEmail = "email@email.com"
 
-	notExistEmail = "notExist@email.com"
-	email1        = "exist@email1.com"
-
+	notExistEmail    = "notExist@email.com"
 	notExistUsername = "notExistUsername"
-	username         = "username"
 
-	password1 = "password1"
-	password2 = "password2"
+	password = "password"
 
-	token1 app.AuthToken = "token1"
-
-	tokenID1 app.TokenID = "tokenID1"
-
-	session1 = app.Session{
-		Origin:  origin,
-		ID:      1,
-		TokenID: tokenID1,
-	}
-
-	origin = app.Origin{
-		IP:        net.ParseIP("192.100.10.4"),
-		UserAgent: "UserAgent",
-	}
-
-	user1 = app.User{
-		ID:        1,
-		Email:     email1,
-		Username:  username,
-		PassHash:  []byte(password1),
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
-
-	authUser = app.AuthUser{
-		User:    user1,
-		Session: session1,
-	}
-
-	taskNotification = app.TaskNotification{
-		ID:     1,
-		UserID: user1.ID,
-		Kind:   app.Welcome,
-	}
+	token   app.AuthToken = "token"
+	tokenID app.TokenID   = "tokenID"
 
 	recoveryCode = "123456"
+
+	ip        = "192.100.10.4"
+	userAgent = "UserAgent"
 )
+
+var (
+	ctx        = context.Background()
+	errAny     = errors.New("any error")
+	userGen    = userGenerator()
+	sessionGen = sessionGenerator()
+)
+
+func userGenerator() func(t *testing.T) app.User {
+	x := app.UserID(0)
+	mu := sync.Mutex{}
+
+	return func(t *testing.T) app.User {
+		t.Helper()
+
+		mu.Lock()
+		defer mu.Unlock()
+		x++
+
+		xStr := strconv.Itoa(int(x))
+		return app.User{
+			ID:        x,
+			Email:     userEmail + xStr,
+			Name:      username + xStr,
+			PassHash:  []byte(password + xStr),
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		}
+	}
+}
+
+func sessionGenerator() func(t *testing.T) app.Session {
+	x := app.SessionID(0)
+	mu := sync.Mutex{}
+
+	return func(t *testing.T) app.Session {
+		t.Helper()
+
+		mu.Lock()
+		defer mu.Unlock()
+		x++
+
+		xStr := strconv.Itoa(int(x))
+		return app.Session{
+			Origin:  newOrigin(),
+			ID:      x,
+			TokenID: tokenID + app.TokenID(xStr),
+		}
+	}
+}
+
+func newSession() app.Session {
+	return app.Session{
+		Origin:  newOrigin(),
+		ID:      1,
+		TokenID: tokenID,
+	}
+}
+
+func newOrigin() app.Origin {
+	return app.Origin{
+		IP:        net.ParseIP(ip),
+		UserAgent: userAgent,
+	}
+}
 
 type Mocks struct {
 	userRepo     *mock.MockUserRepo

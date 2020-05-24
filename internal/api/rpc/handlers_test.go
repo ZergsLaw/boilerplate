@@ -46,13 +46,13 @@ func TestService_GetUserByAuthToken(t *testing.T) {
 			if tc.wantErr == nil {
 				assert.Nil(t, err)
 				assert.Equal(t, app.User{
-					ID:       app.UserID(res.Id),
-					Email:    res.Email,
-					Username: res.Username,
+					ID:    app.UserID(res.Id),
+					Email: res.Email,
+					Name:  res.Username,
 				}, app.User{
-					ID:       tc.auth.ID,
-					Email:    tc.auth.Email,
-					Username: tc.auth.Username,
+					ID:    tc.auth.ID,
+					Email: tc.auth.Email,
+					Name:  tc.auth.Name,
 				})
 			} else {
 				assert.Nil(t, res)

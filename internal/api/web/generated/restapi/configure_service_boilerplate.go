@@ -14,7 +14,7 @@ import (
 	"github.com/zergslaw/boilerplate/internal/app"
 )
 
-//go:generated swagger generated server --target ../../generated --name ServiceBoilerplate --spec ../../swagger.yml --principal app.AuthUser --exclude-main
+//go:generate swagger generate server --target ../../generated --name ServiceBoilerplate --spec ../../swagger.yml --principal app.AuthUser --exclude-main
 
 func configureFlags(api *operations.ServiceBoilerplateAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }

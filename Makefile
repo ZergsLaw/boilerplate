@@ -14,7 +14,7 @@ test:
 
 restart-dependencies:
 	docker-compose down --volumes
-	docker-compose up --build -d postgres rabbit
+	docker-compose up --build -d postgres
 
 build:
 	rm -rf "bin"
@@ -29,4 +29,4 @@ start: build
 	docker-compose up --build
 
 migrate: build
-	./bin/boilerplate migrate up
+	./bin/boilerplate migrate --operation up

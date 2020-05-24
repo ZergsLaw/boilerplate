@@ -43,7 +43,7 @@ var (
 	user                    = app.User{
 		ID:        1,
 		Email:     email,
-		Username:  username,
+		Name:      username,
 		PassHash:  []byte(password),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),

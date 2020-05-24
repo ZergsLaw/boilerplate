@@ -52,14 +52,14 @@ type (
 		CreateRecoveryCode(ctx context.Context, email string) error
 		// RecoveryPassword replaces the password with a new one from the user who owns this recovery code.
 		// Errors: ErrCodeExpired, ErrNotFound, unknown.
-		RecoveryPassword(ctx context.Context, code, newPassword string) error
+		RecoveryPassword(ctx context.Context, email, code, newPassword string) error
 	}
 	// UserRepo interface for user data repository.
 	UserRepo interface {
 		// CreateUser adds to the new user in repository.
 		// This method is also required to create a notifying hoard.
 		// Errors: ErrEmailExist, ErrUsernameExist, unknown.
-		CreateUser(context.Context, User) (UserID, error)
+		CreateUser(context.Context, User, TaskNotification) (UserID, error)
 		// DeleteUser removes user from repository.
 		// Errors: unknown.
 		DeleteUser(context.Context, UserID) error
@@ -67,8 +67,9 @@ type (
 		// Errors: ErrUsernameExist, unknown.
 		UpdateUsername(context.Context, UserID, string) error
 		// UpdateEmail changes email if he's not busy.
+		// This method is also required to create a notifying hoard.
 		// Errors: ErrEmailExist, unknown.
-		UpdateEmail(context.Context, UserID, string) error
+		UpdateEmail(context.Context, UserID, string, TaskNotification) error
 		// UpdatePassword changes password.
 		// Resets all codes to reset the password.
 		// Errors: unknown.
@@ -77,7 +78,6 @@ type (
 		// Errors: ErrNotFound, unknown.
 		UserByID(context.Context, UserID) (*User, error)
 		// UserByEmail returning user info by email.
-		// This method is also required to create a notifying hoard.
 		// Errors: ErrNotFound, unknown.
 		UserByEmail(context.Context, string) (*User, error)
 		// UserByUsername returning user info by id.
@@ -108,13 +108,16 @@ type (
 		// Removes all recovery codes from this email before adding a new one.
 		// Creates a task to send the recovery code to the user's mail.
 		// Errors: unknown.
-		SaveCode(ctx context.Context, id UserID, code string) error
-		// UserIDByCode returns user id by recovery code.
+		SaveCode(ctx context.Context, email, code string, task TaskNotification) error
+		// Code returns recovery code for recovery password by user email.
 		// Errors: ErrNotFound, unknown.
-		UserIDByCode(ctx context.Context, code string) (userID UserID, createAt time.Time, err error)
-		// Code returns recovery code for recovery password by user id.
-		// Errors: ErrNotFound, unknown.
-		Code(ctx context.Context, id UserID) (code string, err error)
+		Code(ctx context.Context, email string) (codeInfo *CodeInfo, err error)
+	}
+	// CodeInfo contains information for recovery code.
+	CodeInfo struct {
+		Code      string
+		Email     string
+		CreatedAt time.Time
 	}
 	// Code module for generated random code.
 	Code interface {
@@ -176,7 +179,7 @@ type (
 	User struct {
 		ID       UserID
 		Email    string
-		Username string
+		Name     string
 		PassHash []byte
 
 		CreatedAt time.Time
@@ -258,11 +261,18 @@ func (a *Application) CreateUser(ctx context.Context, email, username, password 
 	}
 	email = strings.ToLower(email)
 
-	_, err = a.userRepo.CreateUser(ctx, User{
+	newUser := User{
 		Email:    email,
-		Username: username,
+		Name:     username,
 		PassHash: passHash,
-	})
+	}
+
+	task := TaskNotification{
+		Email: email,
+		Kind:  Welcome,
+	}
+
+	_, err = a.userRepo.CreateUser(ctx, newUser, task)
 	if err != nil {
 		return nil, "", err
 	}
@@ -282,7 +292,7 @@ func (a *Application) DeleteUser(ctx context.Context, authUser AuthUser) error {
 
 // UpdateUsername for implemented UserApp.
 func (a *Application) UpdateUsername(ctx context.Context, authUser AuthUser, username string) error {
-	if authUser.Username == username {
+	if authUser.Name == username {
 		return ErrUsernameNeedDifferentiate
 	}
 
@@ -296,7 +306,12 @@ func (a *Application) UpdateEmail(ctx context.Context, authUser AuthUser, email 
 		return ErrEmailNeedDifferentiate
 	}
 
-	return a.userRepo.UpdateEmail(ctx, authUser.ID, email)
+	task := TaskNotification{
+		Email: email,
+		Kind:  ChangeEmail,
+	}
+
+	return a.userRepo.UpdateEmail(ctx, authUser.ID, email, task)
 }
 
 // UpdatePassword for implemented UserApp.
@@ -330,18 +345,32 @@ func (a *Application) CreateRecoveryCode(ctx context.Context, email string) erro
 
 	code := a.code.Generate(codeLength)
 
-	return a.codeRepo.SaveCode(ctx, user.ID, code)
+	task := TaskNotification{
+		Email: user.Email,
+		Kind:  PassRecovery,
+	}
+
+	return a.codeRepo.SaveCode(ctx, user.Email, code, task)
 }
 
 // RecoveryPassword for implemented UserApp.
-func (a *Application) RecoveryPassword(ctx context.Context, code, newPassword string) error {
-	userID, createdAt, err := a.codeRepo.UserIDByCode(ctx, code)
+func (a *Application) RecoveryPassword(ctx context.Context, email, code, newPassword string) error {
+	user, err := a.userRepo.UserByEmail(ctx, email)
 	if err != nil {
 		return err
 	}
 
+	info, err := a.codeRepo.Code(ctx, email)
+	if err != nil {
+		return err
+	}
+
+	if info.Code != code {
+		return ErrNotValidCode
+	}
+
 	const recoveryCodeLifetime = time.Hour * 24
-	if time.Since(createdAt) > recoveryCodeLifetime {
+	if time.Since(info.CreatedAt) > recoveryCodeLifetime {
 		return ErrCodeExpired
 	}
 
@@ -350,7 +379,7 @@ func (a *Application) RecoveryPassword(ctx context.Context, code, newPassword st
 		return err
 	}
 
-	return a.userRepo.UpdatePassword(ctx, userID, passHash)
+	return a.userRepo.UpdatePassword(ctx, user.ID, passHash)
 }
 
 // UserByAuthToken for implemented UserApp.

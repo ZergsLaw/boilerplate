@@ -20,6 +20,6 @@ services:
     image: boilerplate
     container_name: boilerplate
     restart: always
-    command: "./boilerplate serve --jwt-key testKey --db-host postgres --rabbit-host rabbit --migrate up"
+    command: "./boilerplate serve --jwt-key testKey --db-host postgres --operation up"
     ports:
       - "8080:8080"
