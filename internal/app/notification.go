@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"time"
 )
 
@@ -21,9 +20,9 @@ type (
 	}
 	// TaskNotification contains information to perform the task of notifying the user.
 	TaskNotification struct {
-		ID     int
-		UserID UserID
-		Kind   MessageKind
+		ID    int
+		Email string
+		Kind  MessageKind
 	}
 	// MessageKind selects the type of message to be sent.
 	MessageKind int
@@ -36,19 +35,6 @@ const (
 	PassRecovery
 )
 
-func (m MessageKind) String() string {
-	switch m {
-	case Welcome:
-		return "welcome"
-	case ChangeEmail:
-		return "change email"
-	case PassRecovery:
-		return "password recovery"
-	default:
-		panic(fmt.Sprintf("unknown kind: %d", m))
-	}
-}
-
 func wait(ctx context.Context) {
 	const timeDelay = time.Second
 
@@ -58,19 +44,14 @@ func wait(ctx context.Context) {
 	}
 }
 
-func (a *Application) execNotification(ctx context.Context, task TaskNotification) error {
-	user, err := a.userRepo.UserByID(ctx, task.UserID)
-	if err != nil {
-		return err
-	}
-
+func (a *Application) execNotification(ctx context.Context, task TaskNotification) (err error) {
 	switch task.Kind {
 	case Welcome:
-		err = a.sendNotification(Welcome, user.Email, welcomeMsg)
+		err = a.sendNotification(Welcome, task.Email, welcomeMsg)
 	case ChangeEmail:
-		err = a.sendNotification(ChangeEmail, user.Email, changeEmailMsg)
+		err = a.sendNotification(ChangeEmail, task.Email, changeEmailMsg)
 	case PassRecovery:
-		err = a.sendRecoveryCode(ctx, user.Email, task)
+		err = a.sendRecoveryCode(ctx, task.Email)
 	default:
 		err = ErrNotUnknownKindTask
 	}
@@ -86,13 +67,13 @@ const (
 	changeEmailMsg = `Change email successful`
 )
 
-func (a *Application) sendRecoveryCode(ctx context.Context, contact string, task TaskNotification) error {
-	code, err := a.codeRepo.Code(ctx, task.UserID)
+func (a *Application) sendRecoveryCode(ctx context.Context, contact string) error {
+	info, err := a.codeRepo.Code(ctx, contact)
 	if err != nil {
 		return err
 	}
 
-	return a.sendNotification(task.Kind, contact, code)
+	return a.sendNotification(PassRecovery, contact, info.Code)
 }
 
 func (a *Application) sendNotification(kind MessageKind, contact, content string) error {

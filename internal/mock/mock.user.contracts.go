@@ -6,11 +6,10 @@ package mock
 
 import (
 	context "context"
-	reflect "reflect"
-	time "time"
-
 	gomock "github.com/golang/mock/gomock"
 	app "github.com/zergslaw/boilerplate/internal/app"
+	reflect "reflect"
+	time "time"
 )
 
 // MockUserApp is a mock of UserApp interface
@@ -227,17 +226,17 @@ func (mr *MockUserAppMockRecorder) CreateRecoveryCode(ctx, email interface{}) *g
 }
 
 // RecoveryPassword mocks base method
-func (m *MockUserApp) RecoveryPassword(ctx context.Context, code, newPassword string) error {
+func (m *MockUserApp) RecoveryPassword(ctx context.Context, email, code, newPassword string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecoveryPassword", ctx, code, newPassword)
+	ret := m.ctrl.Call(m, "RecoveryPassword", ctx, email, code, newPassword)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RecoveryPassword indicates an expected call of RecoveryPassword
-func (mr *MockUserAppMockRecorder) RecoveryPassword(ctx, code, newPassword interface{}) *gomock.Call {
+func (mr *MockUserAppMockRecorder) RecoveryPassword(ctx, email, code, newPassword interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecoveryPassword", reflect.TypeOf((*MockUserApp)(nil).RecoveryPassword), ctx, code, newPassword)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecoveryPassword", reflect.TypeOf((*MockUserApp)(nil).RecoveryPassword), ctx, email, code, newPassword)
 }
 
 // MockUserRepo is a mock of UserRepo interface
@@ -264,18 +263,18 @@ func (m *MockUserRepo) EXPECT() *MockUserRepoMockRecorder {
 }
 
 // CreateUser mocks base method
-func (m *MockUserRepo) CreateUser(arg0 context.Context, arg1 app.User) (app.UserID, error) {
+func (m *MockUserRepo) CreateUser(arg0 context.Context, arg1 app.User, arg2 app.TaskNotification) (app.UserID, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateUser", arg0, arg1)
+	ret := m.ctrl.Call(m, "CreateUser", arg0, arg1, arg2)
 	ret0, _ := ret[0].(app.UserID)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateUser indicates an expected call of CreateUser
-func (mr *MockUserRepoMockRecorder) CreateUser(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockUserRepoMockRecorder) CreateUser(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockUserRepo)(nil).CreateUser), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockUserRepo)(nil).CreateUser), arg0, arg1, arg2)
 }
 
 // DeleteUser mocks base method
@@ -307,17 +306,17 @@ func (mr *MockUserRepoMockRecorder) UpdateUsername(arg0, arg1, arg2 interface{})
 }
 
 // UpdateEmail mocks base method
-func (m *MockUserRepo) UpdateEmail(arg0 context.Context, arg1 app.UserID, arg2 string) error {
+func (m *MockUserRepo) UpdateEmail(arg0 context.Context, arg1 app.UserID, arg2 string, arg3 app.TaskNotification) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateEmail", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "UpdateEmail", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateEmail indicates an expected call of UpdateEmail
-func (mr *MockUserRepoMockRecorder) UpdateEmail(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockUserRepoMockRecorder) UpdateEmail(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEmail", reflect.TypeOf((*MockUserRepo)(nil).UpdateEmail), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEmail", reflect.TypeOf((*MockUserRepo)(nil).UpdateEmail), arg0, arg1, arg2, arg3)
 }
 
 // UpdatePassword mocks base method
@@ -500,48 +499,32 @@ func (m *MockCodeRepo) EXPECT() *MockCodeRepoMockRecorder {
 }
 
 // SaveCode mocks base method
-func (m *MockCodeRepo) SaveCode(ctx context.Context, id app.UserID, code string) error {
+func (m *MockCodeRepo) SaveCode(ctx context.Context, email, code string, task app.TaskNotification) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveCode", ctx, id, code)
+	ret := m.ctrl.Call(m, "SaveCode", ctx, email, code, task)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SaveCode indicates an expected call of SaveCode
-func (mr *MockCodeRepoMockRecorder) SaveCode(ctx, id, code interface{}) *gomock.Call {
+func (mr *MockCodeRepoMockRecorder) SaveCode(ctx, email, code, task interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveCode", reflect.TypeOf((*MockCodeRepo)(nil).SaveCode), ctx, id, code)
-}
-
-// UserIDByCode mocks base method
-func (m *MockCodeRepo) UserIDByCode(ctx context.Context, code string) (app.UserID, time.Time, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserIDByCode", ctx, code)
-	ret0, _ := ret[0].(app.UserID)
-	ret1, _ := ret[1].(time.Time)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// UserIDByCode indicates an expected call of UserIDByCode
-func (mr *MockCodeRepoMockRecorder) UserIDByCode(ctx, code interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserIDByCode", reflect.TypeOf((*MockCodeRepo)(nil).UserIDByCode), ctx, code)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveCode", reflect.TypeOf((*MockCodeRepo)(nil).SaveCode), ctx, email, code, task)
 }
 
 // Code mocks base method
-func (m *MockCodeRepo) Code(ctx context.Context, id app.UserID) (string, error) {
+func (m *MockCodeRepo) Code(ctx context.Context, email string) (*app.CodeInfo, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Code", ctx, id)
-	ret0, _ := ret[0].(string)
+	ret := m.ctrl.Call(m, "Code", ctx, email)
+	ret0, _ := ret[0].(*app.CodeInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Code indicates an expected call of Code
-func (mr *MockCodeRepoMockRecorder) Code(ctx, id interface{}) *gomock.Call {
+func (mr *MockCodeRepoMockRecorder) Code(ctx, email interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Code", reflect.TypeOf((*MockCodeRepo)(nil).Code), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Code", reflect.TypeOf((*MockCodeRepo)(nil).Code), ctx, email)
 }
 
 // MockCode is a mock of Code interface

@@ -1,11 +1,11 @@
-package main
+package cmd
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"strconv"
 
 	zergrepo "github.com/ZergsLaw/zerg-repo"
@@ -15,7 +15,6 @@ import (
 	"github.com/zergslaw/boilerplate/internal/api/web"
 	"github.com/zergslaw/boilerplate/internal/app"
 	"github.com/zergslaw/boilerplate/internal/auth"
-	"github.com/zergslaw/boilerplate/internal/flag"
 	"github.com/zergslaw/boilerplate/internal/log"
 	"github.com/zergslaw/boilerplate/internal/notification"
 	"github.com/zergslaw/boilerplate/internal/password"
@@ -27,39 +26,76 @@ import (
 
 // Default values.
 const (
-	RestServerPort   = 8080
+	WebServerPort    = 8080
 	GRPCServerPort   = 3000
 	MetricServerPort = 9080
 )
 
 var (
-	migrateFlag = flag.NewStrFlag("migrate", "goose migrate when you start the service",
-		flag.StrEnv("MIGRATE"))
+	jwtKey = &cli.StringFlag{
+		Name:     "jwt-key",
+		Usage:    "jwt key for hashing auth",
+		EnvVars:  []string{"JWT_KEY"},
+		Required: true,
+	}
 
-	jwtKey = flag.NewStrFlag("jwt-key", "jwt key for hashing auth",
-		flag.StrRequired(), flag.StrAliases("JWT_KEY"))
+	webHost = &cli.StringFlag{
+		Name:    "web-host",
+		Usage:   "web server host",
+		EnvVars: []string{"SERVER_HOST"},
+	}
 
-	restHost = flag.NewStrFlag("web-host", "web server host",
-		flag.StrRequired(), flag.StrAliases("SERVER_HOST"), flag.StrDefault(host))
-	restPort = flag.NewIntFlag("web-port", "web server port",
-		flag.IntRequired(), flag.IntAliases("SERVER_PORT"), flag.IntDefault(RestServerPort))
+	restPort = &cli.IntFlag{
+		Name:     "web-port",
+		Usage:    "web server port",
+		EnvVars:  []string{"SERVER_PORT"},
+		Required: true,
+		Value:    WebServerPort,
+	}
 
-	metricHost = flag.NewStrFlag("metric-host", "serve prometheus metrics on host",
-		flag.StrRequired(), flag.StrAliases("METRIC_HOST"), flag.StrDefault(host))
-	metricPort = flag.NewIntFlag("metric-port", "serve prometheus metrics on port",
-		flag.IntRequired(), flag.IntAliases("METRIC_PORT"), flag.IntDefault(MetricServerPort))
+	metricHost = &cli.StringFlag{
+		Name:    "metric-host",
+		Usage:   "metric server host",
+		EnvVars: []string{"METRIC_HOST"},
+	}
 
-	grpcHost = flag.NewStrFlag("gRPC-host", "serve internal gRPC API on host",
-		flag.StrRequired(), flag.StrAliases("GRPC_HOST"), flag.StrDefault(host))
-	grpcPort = flag.NewIntFlag("gRPC-port", "serve internal gRPC API on port",
-		flag.IntRequired(), flag.IntAliases("GRPC_PORT"), flag.IntDefault(GRPCServerPort))
+	metricPort = &cli.IntFlag{
+		Name:     "metric-port",
+		Usage:    "metric server port",
+		EnvVars:  []string{"METRIC_PORT"},
+		Required: true,
+		Value:    MetricServerPort,
+	}
 
-	emailFrom = flag.NewStrFlag("email-from", "email for notification",
-		flag.StrRequired(), flag.StrEnv("EMAIL_FROM"))
-	emailAPIKey = flag.NewStrFlag("email-api-key", "set api key for send email",
-		flag.StrRequired(), flag.StrEnv("EMAIL_API_KEY"))
+	gRPCHost = &cli.StringFlag{
+		Name:    "gRPC-host",
+		Usage:   "gRPC server host",
+		EnvVars: []string{"GRPC_HOST"},
+	}
 
-	serve = &cli.Command{
+	gRPCPort = &cli.IntFlag{
+		Name:     "gRPC-port",
+		Usage:    "gRPC server port",
+		EnvVars:  []string{"GRPC_PORT"},
+		Required: true,
+		Value:    GRPCServerPort,
+	}
+
+	emailFrom = &cli.StringFlag{
+		Name:     "email-from",
+		Usage:    "email for notification",
+		EnvVars:  []string{"EMAIL_FROM"},
+		Required: true,
+	}
+
+	emailAPIKey = &cli.StringFlag{
+		Name:     "email-api-key",
+		Usage:    "set api key for send email",
+		EnvVars:  []string{"EMAIL_API_KEY"},
+		Required: true,
+	}
+
+	Serve = &cli.Command{
 		Name:         "serve",
 		Aliases:      []string{"s"},
 		Usage:        "starts the service.",
@@ -68,32 +104,31 @@ var (
 		Before:       beforeAction,
 		Action:       serverAction,
 		Flags: []cli.Flag{
-			migrateFlag,
-			dbName, dbUser, dbPass, dbHost, dbPort, migrateDir,
+			operation,
+			dbName, dbUser, dbPass, dbHost, dbPort,
 			jwtKey,
-			restHost, restPort,
+			webHost, restPort,
 			metricHost, metricPort,
-			grpcHost, grpcPort,
+			gRPCHost, gRPCPort,
 		},
 	}
 )
 
 func beforeAction(c *cli.Context) error {
-	if c.String(migrateFlag.Name) == "" {
+	if c.String(operation.Name) == "" {
 		return nil
 	}
 
-	return goose(c.Context, c.String(migrateDir.Name), c.String(migrateFlag.Name),
-		zergrepo.Name(c.String(dbName.Name)),
-		zergrepo.User(c.String(dbUser.Name)),
-		zergrepo.Pass(c.String(dbPass.Name)),
-		zergrepo.Host(c.String(dbHost.Name)),
-		zergrepo.Port(c.Int(dbPort.Name)),
-	)
+	return migrateAction(c)
 }
 
 func serverAction(c *cli.Context) error {
-	ctxConnect, cancelConnect := context.WithTimeout(context.Background(), ConnectTimeout)
+	hostName, err := os.Hostname()
+	if err != nil {
+		return fmt.Errorf("hostname: %w", err)
+	}
+
+	ctxConnect, cancelConnect := context.WithTimeout(c.Context, ConnectTimeout)
 	defer cancelConnect()
 
 	dbConn, err := zergrepo.ConnectByCfg(ctxConnect, "postgres", zergrepo.Config{
@@ -108,14 +143,8 @@ func serverAction(c *cli.Context) error {
 		return fmt.Errorf("connect database: %w", err)
 	}
 
-	metric := zergrepo.MustMetric("serve", "repo")
-	mapper := zergrepo.NewMapper(
-		zergrepo.NewConvert(app.ErrNotFound, sql.ErrNoRows),
-		zergrepo.PQConstraint(app.ErrEmailExist, repo.ConstraintEmail),
-		zergrepo.PQConstraint(app.ErrUsernameExist, repo.ConstraintUsername),
-	)
-
-	r := repo.New(zergrepo.New(dbConn, logger, metric, mapper))
+	zp := repo.Connect(dbConn, log.FromContext(c.Context).Named("zergrepo").Sugar(), c.App.Name)
+	r := repo.New(zp)
 
 	emailClientConn, err := notification.Connect(c.String(emailAPIKey.Name))
 	if err != nil {
@@ -134,11 +163,15 @@ func serverAction(c *cli.Context) error {
 		Code:         rc,
 	})
 
+	webAPIHost := host(c.String(webHost.Name), hostName)
+	gRPCAPIHost := host(c.String(gRPCHost.Name), hostName)
+	metricAPIHost := host(c.String(metricHost.Name), hostName)
+
 	group, ctx := errgroup.WithContext(c.Context)
 	services := []func() error{
-		func() error { return swaggerAPI(ctx, application, c.String(restHost.Name), c.Int(restPort.Name)) },
-		func() error { return metricAPI(ctx, c.String(metricHost.Name), c.Int(metricPort.Name)) },
-		func() error { return grpcAPI(ctx, application, c.String(grpcHost.Name), c.Int(grpcPort.Name)) },
+		func() error { return webAPI(ctx, application, webAPIHost, c.Int(restPort.Name)) },
+		func() error { return metricAPI(ctx, metricAPIHost, c.Int(metricPort.Name)) },
+		func() error { return grpcAPI(ctx, application, gRPCAPIHost, c.Int(gRPCPort.Name)) },
 		func() error { return startWAL(ctx, application) },
 	}
 
@@ -149,11 +182,19 @@ func serverAction(c *cli.Context) error {
 	return group.Wait()
 }
 
-func swaggerAPI(ctx context.Context, application app.App, host string, port int) error {
-	restLogger := logger.Named("web")
+func host(host, defHost string) string {
+	if host == "" {
+		return defHost
+	}
+
+	return host
+}
+
+func webAPI(ctx context.Context, application app.App, host string, port int) error {
+	logger := log.FromContext(ctx).Named("web")
 
 	api, err := web.New(application,
-		restLogger,
+		logger,
 		web.SetHost(host),
 		web.SetPort(port),
 	)
@@ -163,11 +204,7 @@ func swaggerAPI(ctx context.Context, application app.App, host string, port int)
 
 	errc := make(chan error, 1)
 	go func() { errc <- api.Serve() }()
-
-	restLogger.With(
-		zap.String(log.Host, host),
-		zap.Int(log.Port, port),
-	).Info("serve server")
+	logger.Info("server started", zap.String(log.Host, host), zap.Int(log.Port, port))
 
 	select {
 	case err = <-errc:
@@ -178,23 +215,21 @@ func swaggerAPI(ctx context.Context, application app.App, host string, port int)
 		return fmt.Errorf("failed to serve Swagger protocol: %w", err)
 	}
 
-	restLogger.Info("shutdown server")
+	logger.Info("shutdown server")
 	return nil
 }
 
 func metricAPI(ctx context.Context, host string, port int) error {
+	logger := log.FromContext(ctx).Named("prometheus")
+
 	http.Handle("/metrics", promhttp.Handler())
 	metricSrv := &http.Server{
 		Addr: net.JoinHostPort(host, strconv.Itoa(port)),
 	}
 
-	logger.Named("prometheus").With(
-		zap.String(log.Host, host),
-		zap.Int(log.Port, port),
-	).Info("serve metrics")
-
 	errc := make(chan error, 1)
 	go func() { errc <- metricSrv.ListenAndServe() }()
+	logger.Info("server started", zap.String(log.Host, host), zap.Int(log.Port, port))
 
 	var err error
 	select {
@@ -203,35 +238,37 @@ func metricAPI(ctx context.Context, host string, port int) error {
 		err = metricSrv.Shutdown(context.Background())
 	}
 	if err != nil {
-		return fmt.Errorf("failed to serve Prometheus metrics: %w", err)
+		return fmt.Errorf("failed to serve prometheus metrics: %w", err)
 	}
 
-	logger.Info("shutdown Prometheus metrics")
+	logger.Info("shutdown server")
 	return nil
 }
 
 func grpcAPI(ctx context.Context, application app.UserApp, host string, port int) error {
-	gRPCLogger := logger.Named("gRPC")
+	logger := log.FromContext(ctx).Named("gRPC")
 
-	api := rpc.New(application, gRPCLogger)
+	api := rpc.New(application, logger)
 	ln, err := net.Listen("tcp", net.JoinHostPort(host, strconv.Itoa(port)))
 	if err != nil {
 		return fmt.Errorf("listen: %w", err)
 	}
 
-	gRPCLogger.With(
-		zap.String(log.Host, host),
-		zap.Int(log.Port, port),
-	).Info("serve server")
+	errc := make(chan error, 1)
+	go func() { errc <- api.Serve(ln) }()
 
-	go func() { <-ctx.Done(); api.GracefulStop() }()
+	logger.Info("server started", zap.String(log.Host, host), zap.Int(log.Port, port))
 
-	err = api.Serve(ln)
+	select {
+	case err = <-errc:
+	case <-ctx.Done():
+		api.GracefulStop()
+	}
 	if err != nil {
-		return fmt.Errorf("failed to serve gRPC server: %w", err)
+		return fmt.Errorf("failed to serve prometheus metrics: %w", err)
 	}
 
-	gRPCLogger.Info("shutdown server")
+	logger.Info("shutdown server")
 	return nil
 }
 

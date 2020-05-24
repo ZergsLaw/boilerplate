@@ -10,10 +10,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-openapi/loads"
 	"github.com/urfave/cli/v2"
 	"github.com/zergslaw/boilerplate/internal/api/web"
 	"github.com/zergslaw/boilerplate/internal/api/web/generated/restapi"
+	"github.com/zergslaw/boilerplate/internal/cmd"
 	"github.com/zergslaw/boilerplate/internal/log"
 	"go.uber.org/zap"
 )
@@ -21,54 +21,34 @@ import (
 var (
 	logger *zap.Logger
 	ver    string
-	host   string
-	appl   = &cli.App{
+	app    = &cli.App{
 		Name:         filepath.Base(os.Args[0]),
 		HelpName:     filepath.Base(os.Args[0]),
 		Usage:        "Boilerplate application.",
 		BashComplete: cli.DefaultAppComplete,
 		Writer:       os.Stdout,
-		Commands:     []*cli.Command{version, migrate, serve},
+		Commands:     []*cli.Command{cmd.Version, cmd.Migrate, cmd.Serve},
 	}
 )
 
-func initDefaultData() error {
-	var err error
-	host, err = os.Hostname()
-	if err != nil {
-		return fmt.Errorf("get hostname: %w", err)
-	}
-
-	logger, err = zap.NewProduction()
-	if err != nil {
-		return fmt.Errorf("init logger: %w", err)
-	}
-
-	swaggerSpec, err := loads.Embedded(restapi.SwaggerJSON, restapi.FlatSwaggerJSON)
-	if err != nil {
-		return fmt.Errorf("load embedded swagger spec: %w", err)
-	}
-	ver = swaggerSpec.Spec().Info.Version
-
-	namespace := regexp.MustCompile(`[^a-zA-Z0-9]+`).ReplaceAllString(appl.Name, "_")
+func main() {
+	namespace := regexp.MustCompile(`[^a-zA-Z0-9]+`).ReplaceAllString(app.Name, "_")
 	web.InitMetrics(namespace, restapi.FlatSwaggerJSON)
 
-	return nil
-}
-
-func main() {
-	err := initDefaultData()
+	var err error
+	logger, err = zap.NewProduction()
 	if err != nil {
-		logger.Fatal("init service", zap.Error(err))
+		panic(fmt.Errorf("init logger: %w", err))
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx := log.SetContext(context.Background(), logger)
+	ctx, cancel := context.WithCancel(ctx)
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGHUP, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGABRT, syscall.SIGTERM)
 	go func() { <-signals; cancel() }()
 	go forceShutdown(ctx)
 
-	err = appl.RunContext(ctx, os.Args)
+	err = app.RunContext(ctx, os.Args)
 	if err != nil {
 		logger.Fatal("run service", zap.Error(err))
 	}

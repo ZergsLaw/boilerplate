@@ -36,9 +36,9 @@ var (
 	}
 	appUser = app.AuthUser{
 		User: app.User{
-			ID:       app.UserID(rpcUser.Id),
-			Email:    rpcUser.Email,
-			Username: rpcUser.Username,
+			ID:    app.UserID(rpcUser.Id),
+			Email: rpcUser.Email,
+			Name:  rpcUser.Username,
 		},
 	}
 )

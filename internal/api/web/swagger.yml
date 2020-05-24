@@ -265,9 +265,12 @@ paths:
           schema:
             type: object
             required:
+              - email
               - recovery_code
               - password
             properties:
+              email:
+                $ref: '#/definitions/Email'
               recoveryCode:
                 $ref: '#/definitions/RecoveryCode'
               password:

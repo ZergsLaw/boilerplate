@@ -2,16 +2,24 @@ package repo
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
+
+	"github.com/jmoiron/sqlx"
 
 	"github.com/zergslaw/boilerplate/internal/app"
 )
 
-func createTaskNotification(ctx context.Context, tx *sql.Tx, userID app.UserID, kind app.MessageKind) error {
-	const queryCreateTask = `INSERT INTO notifications (user_id, kind) VALUES ($1, $2)`
+func createTaskNotification(ctx context.Context, tx *sqlx.Tx, task app.TaskNotification) error {
+	const queryCreateTask = `INSERT INTO notifications (email, kind) VALUES (:email, :kind)`
+	type args struct {
+		Email string `db:"email"`
+		Kind  string `db:"kind"`
+	}
 
-	_, err := tx.ExecContext(ctx, queryCreateTask, userID, kind.String())
+	_, err := tx.NamedExecContext(ctx, queryCreateTask, args{
+		Email: task.Email,
+		Kind:  task.Kind.String(),
+	})
 	if err != nil {
 		return fmt.Errorf("create task notification: %w", err)
 	}
@@ -19,10 +27,10 @@ func createTaskNotification(ctx context.Context, tx *sql.Tx, userID app.UserID, 
 	return nil
 }
 
-func cleanRecoveryCodes(ctx context.Context, tx *sql.Tx, id app.UserID) error {
-	const query = `DELETE FROM recovery_code WHERE user_id = $1`
+func cleanRecoveryCodes(ctx context.Context, tx *sqlx.Tx, email string) error {
+	const query = `DELETE FROM recovery_code WHERE email = $1`
 
-	_, err := tx.ExecContext(ctx, query, id)
+	_, err := tx.ExecContext(ctx, query, email)
 	if err != nil {
 		return fmt.Errorf("delete recovery recoverycode: %w", err)
 	}

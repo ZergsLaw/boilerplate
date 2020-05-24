@@ -195,7 +195,7 @@ func (svc *service) createRecoveryCode(params operations.CreateRecoveryCodeParam
 func (svc *service) recoveryPassword(params operations.RecoveryPasswordParams) middleware.Responder {
 	ctx, log, _ := fromRequest(params.HTTPRequest, nil)
 
-	err := svc.userApp.RecoveryPassword(ctx, string(params.Args.RecoveryCode), string(params.Args.Password))
+	err := svc.userApp.RecoveryPassword(ctx, string(params.Args.Email), string(params.Args.RecoveryCode), string(params.Args.Password))
 	switch {
 	case err == nil:
 		return operations.NewRecoveryPasswordNoContent()

@@ -22,7 +22,7 @@ func (s *service) GetUserByAuthToken(ctx context.Context, in *pb.AuthInfo) (*pb.
 func apiUser(user *app.User) *pb.User {
 	return &pb.User{
 		Id:       int32(user.ID),
-		Username: user.Username,
+		Username: user.Name,
 		Email:    user.Email,
 	}
 }

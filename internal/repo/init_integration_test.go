@@ -4,7 +4,6 @@ package repo_test
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"net"
@@ -13,63 +12,64 @@ import (
 	"time"
 
 	zergrepo "github.com/ZergsLaw/zerg-repo"
+	"github.com/jmoiron/sqlx"
 	"github.com/zergslaw/boilerplate/internal/app"
 	"github.com/zergslaw/boilerplate/internal/repo"
-	"github.com/zergslaw/boilerplate/migration"
+	"github.com/zergslaw/boilerplate/internal/repo/migration"
 	"go.uber.org/zap"
 )
 
 var (
-	Repo *repo.Repo
+	Repo     *repo.Repo
+	truncate func() error
 
-	timeoutConnect = time.Second * 5
+	timeoutConnect = time.Second * 1000
 )
 
 func TestMain(m *testing.M) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeoutConnect)
 	defer cancel()
 
-	resetDB := func() {
-		err := migration.Run(ctx, "../../migration", "reset")
-		if err != nil {
-			log.Fatal(fmt.Errorf("migration: %w", err))
-		}
-	}
-	// For convenient cleaning DB.
-	resetDB()
-
-	err := migration.Run(ctx, "../../migration", "up")
-	if err != nil {
-		log.Fatal(fmt.Errorf("migration: %w", err))
-	}
-
-	defer resetDB()
-
 	dbConn, err := zergrepo.Connect(ctx, "postgres")
 	if err != nil {
 		log.Fatal(fmt.Errorf("connect UserRepo: %w", err))
 	}
-
-	metric := zergrepo.MustMetric("test", "repo")
-
-	mapper := zergrepo.NewMapper(
-		zergrepo.NewConvert(app.ErrNotFound, sql.ErrNoRows),
-		zergrepo.PQConstraint(app.ErrEmailExist, repo.ConstraintEmail),
-		zergrepo.PQConstraint(app.ErrUsernameExist, repo.ConstraintUsername),
-	)
 
 	logger, err := zap.NewDevelopment()
 	if err != nil {
 		log.Fatal(fmt.Errorf("connect zap: %w", err))
 	}
 
-	Repo = repo.New(zergrepo.New(dbConn, logger, metric, mapper))
+	zp := repo.Connect(dbConn, logger.Named("test").Sugar(), "test")
+	err = zergrepo.RegisterMetric(migration.Migrations...)
+	if err != nil {
+		log.Fatal(fmt.Errorf("register migration: %w", err))
+	}
+
+	resetDB := func() {
+		err := zp.Reset(ctx)
+		if err != nil {
+			log.Fatal(fmt.Errorf("migration reset: %w", err))
+		}
+	}
+	// For convenient cleaning DB.
+	resetDB()
+
+	err = zp.Up(ctx)
+	if err != nil {
+		log.Fatal(fmt.Errorf("migration up: %w", err))
+	}
+	defer resetDB()
+
+	Repo = repo.New(zp)
+	truncate = func() error {
+		return zp.Do(func(db *sqlx.DB) error {
+			_, err := db.Exec("TRUNCATE users, sessions, notifications, recovery_code RESTART IDENTITY CASCADE")
+			return err
+		})
+	}
 
 	os.Exit(m.Run())
-}
-
-func truncate() error {
-	return Repo.Exec(ctx, "TRUNCATE users, sessions, notifications, recovery_code RESTART IDENTITY CASCADE")
 }
 
 var (
@@ -90,7 +90,7 @@ func generatorUser() func() app.User {
 		return app.User{
 			ID:        app.UserID(x),
 			Email:     fmt.Sprintf("email%d@gmail.com", x),
-			Username:  fmt.Sprintf("username%d", x),
+			Name:      fmt.Sprintf("username%d", x),
 			PassHash:  []byte("pass"),
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),

@@ -2,60 +2,50 @@ package repo
 
 import (
 	"context"
-	"database/sql"
-	"time"
+	"fmt"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/zergslaw/boilerplate/internal/app"
 )
 
 // SaveCode need for implements app.CodeRepo.
-func (repo *Repo) SaveCode(ctx context.Context, userID app.UserID, code string) error {
-	return repo.db.Tx(ctx, func(tx *sql.Tx) error {
-		err := cleanRecoveryCodes(ctx, tx, userID)
+func (repo *Repo) SaveCode(ctx context.Context, email, code string, task app.TaskNotification) error {
+	return repo.db.Tx(ctx, func(tx *sqlx.Tx) error {
+		err := cleanRecoveryCodes(ctx, tx, email)
 		if err != nil {
 			return err
 		}
 
-		const query = `INSERT INTO recovery_code(user_id, code) VALUES ($1, $2)`
-		_, err = tx.ExecContext(ctx, query, userID, code)
-		if err != nil {
-			return err
+		const query = `INSERT INTO recovery_code(email, code) VALUES (:email, :code)`
+		type args struct {
+			Email string `db:"email"`
+			Code  string `db:"code"`
 		}
 
-		err = createTaskNotification(ctx, tx, userID, app.PassRecovery)
+		_, err = tx.NamedExecContext(ctx, query, args{
+			Email: email,
+			Code:  code,
+		})
 		if err != nil {
-			return err
+			return fmt.Errorf("insert code: %w", err)
 		}
 
-		return nil
+		return createTaskNotification(ctx, tx, task)
 	})
-}
-
-// UserIDByCode need for implements app.CodeRepo.
-func (repo *Repo) UserIDByCode(ctx context.Context, code string) (userID app.UserID, createAt time.Time, err error) {
-	err = repo.db.Do(func(db *sql.DB) error {
-		const query = `SELECT user_id, created_at FROM recovery_code WHERE code = $1`
-
-		err = db.QueryRowContext(ctx, query, code).Scan(&userID, &createAt)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	})
-	return
 }
 
 // Code need for implements app.CodeRepo.
-func (repo *Repo) Code(ctx context.Context, id app.UserID) (code string, err error) {
-	err = repo.db.Do(func(db *sql.DB) error {
-		const query = `SELECT code FROM recovery_code WHERE user_id = $1`
+func (repo *Repo) Code(ctx context.Context, email string) (codeInfo *app.CodeInfo, err error) {
+	err = repo.db.Do(func(db *sqlx.DB) error {
+		const query = `SELECT * FROM recovery_code WHERE email = $1`
 
-		err = db.QueryRowContext(ctx, query, id).Scan(&code)
+		c := &codeInfoDBFormat{}
+		err = db.GetContext(ctx, c, query, email)
 		if err != nil {
 			return err
 		}
 
+		codeInfo = c.toAppFormat()
 		return nil
 	})
 	return

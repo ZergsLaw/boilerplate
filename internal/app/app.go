@@ -18,6 +18,7 @@ var (
 	ErrEmailNeedDifferentiate    = errors.New("email need to differentiate")
 	ErrNotUnknownKindTask        = errors.New("unknown task kind")
 	ErrCodeExpired               = errors.New("code is expired")
+	ErrNotValidCode              = errors.New("code not equal")
 )
 
 type (
