@@ -69,8 +69,6 @@ func TestApp_VerificationUsername(t *testing.T) {
 	}
 }
 
-const tokenExpire = 24 * 7 * time.Hour
-
 func TestApp_Login(t *testing.T) {
 	t.Parallel()
 
@@ -82,34 +80,43 @@ func TestApp_Login(t *testing.T) {
 
 	const notValidPass = "notValidPass"
 	const notValidTokenID app.TokenID = "notValidTokenID"
+	// Couldn't come up with a proper name for the fucking var.
+	notValidTokenExpireForGenerateNotValidTokenID := time.Second
+	notValidTokenExpired := time.Second * 2
 
 	mocks.userRepo.EXPECT().UserByEmail(ctx, strings.ToLower(user.Email)).Return(&user, nil).Times(4)
 	mocks.password.EXPECT().Compare(user.PassHash, []byte(password)).Return(true).Times(3)
-	mocks.auth.EXPECT().Token(tokenExpire).Return(token, tokenID, nil)
+	mocks.auth.EXPECT().Token(app.TokenExpire).Return(token, tokenID, nil)
 	mocks.sessionRepo.EXPECT().SaveSession(ctx, user.ID, tokenID, origin).Return(nil)
-	mocks.auth.EXPECT().Token(tokenExpire).Return(token, notValidTokenID, nil)
+
+	mocks.auth.EXPECT().Token(notValidTokenExpireForGenerateNotValidTokenID).Return(token, notValidTokenID, nil)
 	mocks.sessionRepo.EXPECT().SaveSession(ctx, user.ID, notValidTokenID, origin).Return(errAny)
-	mocks.auth.EXPECT().Token(tokenExpire).Return(app.AuthToken(""), app.TokenID(""), errAny)
+	mocks.auth.EXPECT().Token(notValidTokenExpired).Return(app.AuthToken(""), app.TokenID(""), errAny)
 	mocks.password.EXPECT().Compare(user.PassHash, []byte(notValidPass)).Return(false)
 	mocks.userRepo.EXPECT().UserByEmail(ctx, strings.ToLower(notExistEmail)).Return(nil, app.ErrNotFound)
 
 	testCases := map[string]struct {
-		email     string
-		password  string
-		want      *app.User
-		wantToken app.AuthToken
-		wantErr   error
+		email       string
+		password    string
+		tokenExpire time.Duration
+		want        *app.User
+		wantToken   app.AuthToken
+		wantErr     error
 	}{
-		"success":               {user.Email, password, &user, token, nil},
-		"err from save session": {user.Email, password, nil, "", errAny},
-		"err from gen token":    {user.Email, password, nil, "", errAny},
-		"err from compare pass": {user.Email, notValidPass, nil, "", app.ErrNotValidPassword},
-		"user not found":        {notExistEmail, "", nil, "", app.ErrNotFound},
+		"success":               {user.Email, password, app.TokenExpire, &user, token, nil},
+		"err from save session": {user.Email, password, notValidTokenExpireForGenerateNotValidTokenID, nil, "", errAny},
+		"err from gen token":    {user.Email, password, notValidTokenExpired, nil, "", errAny},
+		"err from compare pass": {user.Email, notValidPass, app.TokenExpire, nil, "", app.ErrNotValidPassword},
+		"user not found":        {notExistEmail, "", app.TokenExpire, nil, "", app.ErrNotFound},
 	}
 
 	for name, tc := range testCases {
 		name, tc := name, tc
 		t.Run(name, func(t *testing.T) {
+			muTokenExpire.Lock()
+			app.TokenExpire = tc.tokenExpire
+			defer muTokenExpire.Unlock()
+
 			user, token, err := application.Login(ctx, tc.email, tc.password, origin)
 			if tc.wantErr == nil {
 				assert.Nil(t, err)
@@ -125,6 +132,8 @@ func TestApp_Login(t *testing.T) {
 }
 
 func TestApp_CreateUser(t *testing.T) {
+	t.Parallel()
+
 	application, mocks, shutdown := initTest(t)
 	defer shutdown()
 
@@ -134,6 +143,7 @@ func TestApp_CreateUser(t *testing.T) {
 		Email: user.Email,
 		Kind:  app.Welcome,
 	}
+	tokenExpire := 24 * 7 * time.Hour
 
 	mocks.password.EXPECT().Hashing(password).Return([]byte(password), nil).Times(2)
 	mocks.userRepo.EXPECT().CreateUser(ctx, app.User{
@@ -141,6 +151,7 @@ func TestApp_CreateUser(t *testing.T) {
 		Name:     user.Name,
 		PassHash: []byte(password),
 	}, task).Return(user.ID, nil)
+
 	mocks.userRepo.EXPECT().UserByEmail(ctx, user.Email).Return(&user, nil)
 	mocks.password.EXPECT().Compare(user.PassHash, []byte(password)).Return(true)
 	mocks.auth.EXPECT().Token(tokenExpire).Return(token, tokenID, nil)
@@ -168,6 +179,10 @@ func TestApp_CreateUser(t *testing.T) {
 	for name, tc := range testCases {
 		name, tc := name, tc
 		t.Run(name, func(t *testing.T) {
+			muTokenExpire.Lock()
+			app.TokenExpire = tokenExpire
+			defer muTokenExpire.Unlock()
+
 			user, token, err := application.CreateUser(ctx, tc.email, tc.username, tc.password, origin)
 			if tc.wantErr == nil {
 				assert.Nil(t, err)
@@ -183,6 +198,8 @@ func TestApp_CreateUser(t *testing.T) {
 }
 
 func TestApp_UpdateUsername(t *testing.T) {
+	t.Parallel()
+
 	application, mocks, shutdown := initTest(t)
 	defer shutdown()
 
@@ -207,6 +224,8 @@ func TestApp_UpdateUsername(t *testing.T) {
 }
 
 func TestApp_UpdateEmail(t *testing.T) {
+	t.Parallel()
+
 	application, mocks, shutdown := initTest(t)
 	defer shutdown()
 
@@ -236,23 +255,27 @@ func TestApp_UpdateEmail(t *testing.T) {
 }
 
 func TestApp_UpdatePassword(t *testing.T) {
+	t.Parallel()
+
 	application, mocks, shutdown := initTest(t)
 	defer shutdown()
+
+	const notValidPass = "notValidPass"
 
 	user := userGen(t)
 	mocks.userRepo.EXPECT().UpdatePassword(ctx, user.ID, []byte(password)).Return(nil)
 	mocks.password.EXPECT().Compare(user.PassHash, []byte(password)).Return(true).Times(2)
-	mocks.password.EXPECT().Compare(user.PassHash, []byte(password)).Return(false).Times(1)
+	mocks.password.EXPECT().Compare(user.PassHash, []byte(notValidPass)).Return(false).Times(1)
 	mocks.password.EXPECT().Hashing(password).Return([]byte(password), nil)
-	mocks.password.EXPECT().Hashing(password).Return(nil, errAny)
+	mocks.password.EXPECT().Hashing(notValidPass).Return(nil, errAny)
 
 	testCases := map[string]struct {
 		oldPass, newPass string
 		want             error
 	}{
 		"success":                {password, password, nil},
-		"err hashing":            {password, password, errAny},
-		"err not valid password": {password, password, app.ErrNotValidPassword},
+		"err hashing":            {password, notValidPass, errAny},
+		"err not valid password": {notValidPass, password, app.ErrNotValidPassword},
 	}
 
 	for name, tc := range testCases {
@@ -265,6 +288,8 @@ func TestApp_UpdatePassword(t *testing.T) {
 }
 
 func TestApp_CreateRecoveryCode(t *testing.T) {
+	t.Parallel()
+
 	application, mocks, shutdown := initTest(t)
 	defer shutdown()
 
@@ -300,6 +325,8 @@ func TestApp_CreateRecoveryCode(t *testing.T) {
 }
 
 func TestApp_RecoveryPassword(t *testing.T) {
+	t.Parallel()
+
 	application, mocks, shutdown := initTest(t)
 	defer shutdown()
 
@@ -310,46 +337,61 @@ func TestApp_RecoveryPassword(t *testing.T) {
 		CreatedAt: time.Now(),
 	}
 	newPassword := "newPassword"
+	notValidPass := "notValidPass"
+	emailForExpiredCode := "expiredCode@test.test"
+	emailForNotValidCode := "notValidCode@test.test"
+	emailForNotExistCode := "notExistCode@test.test"
 
-	mocks.userRepo.EXPECT().UserByEmail(ctx, user.Email).Return(&user, nil).Times(5)
+	mocks.userRepo.EXPECT().UserByEmail(ctx, user.Email).Return(&user, nil).Times(2)
 	mocks.codeRepo.EXPECT().Code(ctx, user.Email).Return(&codeInfo, nil).Times(2)
 	mocks.password.EXPECT().Hashing(newPassword).Return([]byte(newPassword), nil)
 	mocks.userRepo.EXPECT().UpdatePassword(ctx, user.ID, []byte(newPassword)).Return(nil)
-	mocks.password.EXPECT().Hashing(newPassword).Return(nil, errAny)
-	mocks.codeRepo.EXPECT().Code(ctx, user.Email).Return(&app.CodeInfo{
+
+	mocks.password.EXPECT().Hashing(notValidPass).Return(nil, errAny)
+
+	mocks.userRepo.EXPECT().UserByEmail(ctx, emailForExpiredCode).Return(&user, nil)
+	mocks.codeRepo.EXPECT().Code(ctx, emailForExpiredCode).Return(&app.CodeInfo{
 		Code:      codeInfo.Code,
 		Email:     codeInfo.Email,
 		CreatedAt: time.Time{},
 	}, nil)
-	mocks.codeRepo.EXPECT().Code(ctx, user.Email).Return(&app.CodeInfo{
+
+	mocks.userRepo.EXPECT().UserByEmail(ctx, emailForNotValidCode).Return(&user, nil)
+	mocks.codeRepo.EXPECT().Code(ctx, emailForNotValidCode).Return(&app.CodeInfo{
 		Code:      "any code",
 		Email:     codeInfo.Email,
 		CreatedAt: codeInfo.CreatedAt,
 	}, nil)
-	mocks.codeRepo.EXPECT().Code(ctx, user.Email).Return(nil, errAny)
-	mocks.userRepo.EXPECT().UserByEmail(ctx, user.Email).Return(nil, errAny)
+
+	mocks.userRepo.EXPECT().UserByEmail(ctx, emailForNotExistCode).Return(&user, nil)
+	mocks.codeRepo.EXPECT().Code(ctx, emailForNotExistCode).Return(nil, app.ErrNotFound)
+	mocks.userRepo.EXPECT().UserByEmail(ctx, notExistEmail).Return(nil, app.ErrNotFound)
 
 	testCases := map[string]struct {
-		want error
+		email   string
+		newPass string
+		want    error
 	}{
-		"success":           {nil},
-		"err from hashing":  {errAny},
-		"expired":           {app.ErrCodeExpired},
-		"not valid":         {app.ErrNotValidCode},
-		"err from get code": {errAny},
-		"err from get user": {errAny},
+		"success":           {user.Email, newPassword, nil},
+		"err from hashing":  {user.Email, notValidPass, errAny},
+		"expired":           {emailForExpiredCode, "", app.ErrCodeExpired},
+		"not valid":         {emailForNotValidCode, "", app.ErrNotValidCode},
+		"err from get code": {emailForNotExistCode, "", app.ErrNotFound},
+		"err from get user": {notExistEmail, "", app.ErrNotFound},
 	}
 
 	for name, tc := range testCases {
 		name, tc := name, tc
 		t.Run(name, func(t *testing.T) {
-			err := application.RecoveryPassword(ctx, user.Email, recoveryCode, newPassword)
+			err := application.RecoveryPassword(ctx, tc.email, recoveryCode, tc.newPass)
 			assert.Equal(t, tc.want, err)
 		})
 	}
 }
 
 func TestApp_UserByAuthToken(t *testing.T) {
+	t.Parallel()
+
 	application, mocks, shutdown := initTest(t)
 	defer shutdown()
 

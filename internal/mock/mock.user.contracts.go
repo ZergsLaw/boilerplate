@@ -6,11 +6,10 @@ package mock
 
 import (
 	context "context"
-	reflect "reflect"
-	time "time"
-
 	gomock "github.com/golang/mock/gomock"
 	app "github.com/zergslaw/boilerplate/internal/app"
+	reflect "reflect"
+	time "time"
 )
 
 // MockUserApp is a mock of UserApp interface
@@ -227,17 +226,17 @@ func (mr *MockUserAppMockRecorder) CreateRecoveryCode(ctx, email interface{}) *g
 }
 
 // RecoveryPassword mocks base method
-func (m *MockUserApp) RecoveryPassword(ctx context.Context, code, newPassword string) error {
+func (m *MockUserApp) RecoveryPassword(ctx context.Context, email, code, newPassword string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecoveryPassword", ctx, code, newPassword)
+	ret := m.ctrl.Call(m, "RecoveryPassword", ctx, email, code, newPassword)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RecoveryPassword indicates an expected call of RecoveryPassword
-func (mr *MockUserAppMockRecorder) RecoveryPassword(ctx, code, newPassword interface{}) *gomock.Call {
+func (mr *MockUserAppMockRecorder) RecoveryPassword(ctx, email, code, newPassword interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecoveryPassword", reflect.TypeOf((*MockUserApp)(nil).RecoveryPassword), ctx, code, newPassword)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecoveryPassword", reflect.TypeOf((*MockUserApp)(nil).RecoveryPassword), ctx, email, code, newPassword)
 }
 
 // MockUserRepo is a mock of UserRepo interface

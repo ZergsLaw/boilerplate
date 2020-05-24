@@ -459,10 +459,11 @@ func TestServiceRecoveryPassword(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			mockApp.EXPECT().RecoveryPassword(gomock.Any(), recoveryCode, password).Return(tc.appErr)
+			mockApp.EXPECT().RecoveryPassword(gomock.Any(), email, recoveryCode, password).Return(tc.appErr)
 
 			params := operations.NewRecoveryPasswordParams().
 				WithArgs(operations.RecoveryPasswordBody{
+					Email:        models.Email(email),
 					Password:     models.Password(password),
 					RecoveryCode: recoveryCode,
 				})

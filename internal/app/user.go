@@ -218,8 +218,9 @@ func (a *Application) VerificationUsername(ctx context.Context, username string)
 	}
 }
 
-const (
-	tokenExpire = 24 * 7 * time.Hour
+// It is not a constant for ease of testing.
+var (
+	TokenExpire = 24 * 7 * time.Hour
 )
 
 // Login for implemented UserApp.
@@ -235,7 +236,7 @@ func (a *Application) Login(ctx context.Context, email, password string, origin 
 		return nil, "", ErrNotValidPassword
 	}
 
-	token, tokenID, err := a.auth.Token(tokenExpire)
+	token, tokenID, err := a.auth.Token(TokenExpire)
 	if err != nil {
 		return nil, "", err
 	}

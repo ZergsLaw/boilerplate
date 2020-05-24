@@ -37,6 +37,9 @@ var (
 	errAny     = errors.New("any error")
 	userGen    = userGenerator()
 	sessionGen = sessionGenerator()
+
+	// For def app.TokenExpire in test.
+	muTokenExpire = sync.Mutex{}
 )
 
 func userGenerator() func(t *testing.T) app.User {
