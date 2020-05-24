@@ -219,6 +219,7 @@ func (a *Application) VerificationUsername(ctx context.Context, username string)
 }
 
 // It is not a constant for ease of testing.
+// nolint:gochecknoglobals
 var (
 	TokenExpire = 24 * 7 * time.Hour
 )
