@@ -1,6 +1,6 @@
 FROM alpine
 
-COPY ./migration /migration
+COPY ./migrate /migrate
 
 COPY ./bin/ /
 

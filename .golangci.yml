@@ -25,6 +25,9 @@ issues:
     - path: cmd/
       linters:
         - gochecknoglobals
+    - path: main.go
+      linters:
+        - gochecknoglobals
     - path: internal/metrics/
       linters:
         - gochecknoglobals

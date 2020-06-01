@@ -20,6 +20,11 @@ services:
     image: boilerplate
     container_name: boilerplate
     restart: always
-    command: "./boilerplate serve --jwt-key testKey --db-host postgres --operation up"
+    command: >
+      sh -c "./boilerplate migrate --dir migrate --operation up --db-host postgres &&
+             ./boilerplate serve --web-port 8080 --jwt-key testKey --db-host postgres"
+    environment:
+      EMAIL_API_KEY: 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
+      EMAIL_FROM: test@test.com
     ports:
       - "8080:8080"

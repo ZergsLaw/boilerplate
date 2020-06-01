@@ -7,8 +7,10 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	zergrepo "github.com/ZergsLaw/zerg-repo"
+	dbFlag "github.com/ZergsLaw/zerg-repo/zergrepo/cmd"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/urfave/cli/v2"
 	"github.com/zergslaw/boilerplate/internal/api/rpc"
@@ -46,11 +48,10 @@ var (
 	}
 
 	restPort = &cli.IntFlag{
-		Name:     "web-port",
-		Usage:    "web server port",
-		EnvVars:  []string{"SERVER_PORT"},
-		Required: true,
-		Value:    WebServerPort,
+		Name:    "web-port",
+		Usage:   "web server port",
+		EnvVars: []string{"SERVER_PORT"},
+		Value:   WebServerPort,
 	}
 
 	metricHost = &cli.StringFlag{
@@ -60,11 +61,10 @@ var (
 	}
 
 	metricPort = &cli.IntFlag{
-		Name:     "metric-port",
-		Usage:    "metric server port",
-		EnvVars:  []string{"METRIC_PORT"},
-		Required: true,
-		Value:    MetricServerPort,
+		Name:    "metric-port",
+		Usage:   "metric server port",
+		EnvVars: []string{"METRIC_PORT"},
+		Value:   MetricServerPort,
 	}
 
 	gRPCHost = &cli.StringFlag{
@@ -74,11 +74,10 @@ var (
 	}
 
 	gRPCPort = &cli.IntFlag{
-		Name:     "gRPC-port",
-		Usage:    "gRPC server port",
-		EnvVars:  []string{"GRPC_PORT"},
-		Required: true,
-		Value:    GRPCServerPort,
+		Name:    "gRPC-port",
+		Usage:   "gRPC server port",
+		EnvVars: []string{"GRPC_PORT"},
+		Value:   GRPCServerPort,
 	}
 
 	emailFrom = &cli.StringFlag{
@@ -101,26 +100,19 @@ var (
 		Usage:        "starts the service.",
 		UsageText:    "Starts the service.",
 		BashComplete: cli.DefaultAppComplete,
-		Before:       beforeAction,
 		Action:       serverAction,
 		Flags: []cli.Flag{
-			operation,
-			dbName, dbUser, dbPass, dbHost, dbPort,
+			dbFlag.Name, dbFlag.User, dbFlag.Pass, dbFlag.Host, dbFlag.Port,
 			jwtKey,
 			webHost, restPort,
 			metricHost, metricPort,
 			gRPCHost, gRPCPort,
+			emailFrom, emailAPIKey,
 		},
 	}
 )
 
-func beforeAction(c *cli.Context) error {
-	if c.String(operation.Name) == "" {
-		return nil
-	}
-
-	return migrateAction(c)
-}
+const connectTimeout = time.Second * 5
 
 func serverAction(c *cli.Context) error {
 	hostName, err := os.Hostname()
@@ -128,15 +120,15 @@ func serverAction(c *cli.Context) error {
 		return fmt.Errorf("hostname: %w", err)
 	}
 
-	ctxConnect, cancelConnect := context.WithTimeout(c.Context, ConnectTimeout)
+	ctxConnect, cancelConnect := context.WithTimeout(c.Context, connectTimeout)
 	defer cancelConnect()
 
 	dbConn, err := zergrepo.ConnectByCfg(ctxConnect, "postgres", zergrepo.Config{
-		Host:     c.String(dbHost.Name),
-		Port:     c.Int(dbPort.Name),
-		User:     c.String(dbUser.Name),
-		Password: c.String(dbPass.Name),
-		DBName:   c.String(dbName.Name),
+		Host:     c.String(dbFlag.Host.Name),
+		Port:     c.Int(dbFlag.Port.Name),
+		User:     c.String(dbFlag.User.Name),
+		Password: c.String(dbFlag.Pass.Name),
+		DBName:   c.String(dbFlag.Name.Name),
 		SSLMode:  zergrepo.DBSSLMode,
 	})
 	if err != nil {
@@ -273,11 +265,5 @@ func grpcAPI(ctx context.Context, application app.UserApp, host string, port int
 }
 
 func startWAL(ctx context.Context, application app.WALApplication) error {
-	group, ctx := errgroup.WithContext(ctx)
-
-	group.Go(func() error {
-		return application.StartWALNotification(ctx)
-	})
-
-	return group.Wait()
+	return application.StartWALNotification(ctx)
 }

@@ -5,9 +5,10 @@
 package mock
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	app "github.com/zergslaw/boilerplate/internal/app"
-	reflect "reflect"
 )
 
 // MockNotification is a mock of Notification interface

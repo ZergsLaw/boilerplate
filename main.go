@@ -10,10 +10,11 @@ import (
 	"syscall"
 	"time"
 
+	migrate "github.com/ZergsLaw/zerg-repo/zergrepo/cmd"
 	"github.com/urfave/cli/v2"
+	"github.com/zergslaw/boilerplate/cmd"
 	"github.com/zergslaw/boilerplate/internal/api/web"
 	"github.com/zergslaw/boilerplate/internal/api/web/generated/restapi"
-	"github.com/zergslaw/boilerplate/internal/cmd"
 	"github.com/zergslaw/boilerplate/internal/log"
 	"go.uber.org/zap"
 )
@@ -27,7 +28,7 @@ var (
 		Usage:        "Boilerplate application.",
 		BashComplete: cli.DefaultAppComplete,
 		Writer:       os.Stdout,
-		Commands:     []*cli.Command{cmd.Version, cmd.Migrate, cmd.Serve},
+		Commands:     []*cli.Command{cmd.Version, migrate.Migrate, cmd.Serve},
 	}
 )
 

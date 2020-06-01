@@ -12,10 +12,10 @@ import (
 	"time"
 
 	zergrepo "github.com/ZergsLaw/zerg-repo"
+	"github.com/ZergsLaw/zerg-repo/zergrepo/fs"
 	"github.com/jmoiron/sqlx"
 	"github.com/zergslaw/boilerplate/internal/app"
 	"github.com/zergslaw/boilerplate/internal/repo"
-	"github.com/zergslaw/boilerplate/internal/repo/migration"
 	"go.uber.org/zap"
 )
 
@@ -41,9 +41,26 @@ func TestMain(m *testing.M) {
 	}
 
 	zp := repo.Connect(dbConn, logger.Named("test").Sugar(), "test")
-	err = zergrepo.RegisterMetric(migration.Migrations...)
+
+	const dir = "../../migrate/"
+	f := fs.New()
+	migrates, err := f.Walk(dir)
 	if err != nil {
-		log.Fatal(fmt.Errorf("register migration: %w", err))
+		log.Fatal(fmt.Errorf("walk migrate: %w", err))
+	}
+
+	regMigrates := make([]zergrepo.Migrate, len(migrates))
+	for i := range migrates {
+		regMigrates[i] = zergrepo.Migrate{
+			Version: migrates[i].Version,
+			Up:      zergrepo.Query(migrates[i].Query.Up),
+			Down:    zergrepo.Query(migrates[i].Query.Down),
+		}
+	}
+
+	err = zergrepo.RegisterMetric(regMigrates...)
+	if err != nil {
+		log.Fatal(fmt.Errorf("register migrate: %w", err))
 	}
 
 	resetDB := func() {
@@ -57,7 +74,7 @@ func TestMain(m *testing.M) {
 
 	err = zp.Up(ctx)
 	if err != nil {
-		log.Fatal(fmt.Errorf("migration up: %w", err))
+		log.Fatal(fmt.Errorf("up migration: %w", err))
 	}
 	defer resetDB()
 

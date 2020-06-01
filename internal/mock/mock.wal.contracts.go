@@ -6,9 +6,10 @@ package mock
 
 import (
 	context "context"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	app "github.com/zergslaw/boilerplate/internal/app"
-	reflect "reflect"
 )
 
 // MockWALApplication is a mock of WALApplication interface

@@ -1,9 +1,4 @@
-package migration
-
-import zergrepo "github.com/ZergsLaw/zerg-repo"
-
-const (
-	createNotificationT = `
+--up
 create table notifications
 (
     id         serial,
@@ -16,14 +11,7 @@ create table notifications
     foreign key (email) references users(email) on delete cascade on update cascade,
     primary key (id)
 );
-`
-	dropNotificationT = `
-drop table notifications;
-`
-)
 
-var NotificationTable = zergrepo.Migrate{
-	Version: 3,
-	Up:      zergrepo.Query(createNotificationT),
-	Down:    zergrepo.Query(dropNotificationT),
-}
+
+--down
+drop table notifications;

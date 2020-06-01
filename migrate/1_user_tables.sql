@@ -1,9 +1,4 @@
-package migration
-
-import zergrepo "github.com/ZergsLaw/zerg-repo"
-
-const (
-	createUserT = `
+--up
 create table users
 (
     id         serial,
@@ -16,14 +11,7 @@ create table users
     unique (username),
     unique (email),
     primary key (id)
-);`
-	dropUserT = `
-drop table users;
-`
-)
+);
 
-var UserTable = zergrepo.Migrate{
-	Version: 1,
-	Up:      zergrepo.Query(createUserT),
-	Down:    zergrepo.Query(dropUserT),
-}
+--down
+drop table users;

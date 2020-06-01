@@ -1,9 +1,4 @@
-package migration
-
-import zergrepo "github.com/ZergsLaw/zerg-repo"
-
-const (
-	createSessionT = `
+--up
 create table sessions
 (
     id         serial,
@@ -18,14 +13,7 @@ create table sessions
     unique (token_id),
     primary key (id)
 );
-`
-	dropSessionT = `
-drop table sessions;
-`
-)
 
-var SessionTable = zergrepo.Migrate{
-	Version: 2,
-	Up:      zergrepo.Query(createSessionT),
-	Down:    zergrepo.Query(dropSessionT),
-}
+
+--down
+drop table sessions;
