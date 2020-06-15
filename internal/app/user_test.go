@@ -137,10 +137,16 @@ func TestApp_CreateUser(t *testing.T) {
 	application, mocks, shutdown := initTest(t)
 	defer shutdown()
 
+	const notValidEmail = "notValidEmail"
+	const notCorrectPass = "notCorrectPass"
 	user := userGen(t)
 	origin := newOrigin()
 	task := app.TaskNotification{
 		Email: user.Email,
+		Kind:  app.Welcome,
+	}
+	notValidTask := app.TaskNotification{
+		Email: strings.ToLower(notValidEmail),
 		Kind:  app.Welcome,
 	}
 	tokenExpire := 24 * 7 * time.Hour
@@ -157,11 +163,11 @@ func TestApp_CreateUser(t *testing.T) {
 	mocks.auth.EXPECT().Token(tokenExpire).Return(token, tokenID, nil)
 	mocks.sessionRepo.EXPECT().SaveSession(ctx, user.ID, tokenID, origin).Return(nil)
 	mocks.userRepo.EXPECT().CreateUser(ctx, app.User{
-		Email:    user.Email,
+		Email:    strings.ToLower(notValidEmail),
 		Name:     user.Name,
 		PassHash: []byte(password),
-	}, task).Return(app.UserID(0), errAny)
-	mocks.password.EXPECT().Hashing(password).Return(nil, errAny)
+	}, notValidTask).Return(app.UserID(0), errAny)
+	mocks.password.EXPECT().Hashing(notCorrectPass).Return(nil, errAny)
 
 	testCases := map[string]struct {
 		email     string
@@ -172,8 +178,8 @@ func TestApp_CreateUser(t *testing.T) {
 		wantErr   error
 	}{
 		"success":         {user.Email, user.Name, password, &user, token, nil},
-		"err create user": {user.Email, user.Name, password, nil, "", errAny},
-		"err hashing":     {user.Email, user.Name, password, nil, "", errAny},
+		"err create user": {notValidEmail, user.Name, password, nil, "", errAny},
+		"err hashing":     {user.Email, user.Name, notCorrectPass, nil, "", errAny},
 	}
 
 	for name, tc := range testCases {
