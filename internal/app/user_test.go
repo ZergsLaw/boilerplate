@@ -75,6 +75,9 @@ func TestApp_Login(t *testing.T) {
 	application, mocks, shutdown := initTest(t)
 	defer shutdown()
 
+	muTokenExpire.Lock()
+	defer muTokenExpire.Unlock()
+
 	user := userGen(t)
 	origin := newOrigin()
 
@@ -113,9 +116,7 @@ func TestApp_Login(t *testing.T) {
 	for name, tc := range testCases {
 		name, tc := name, tc
 		t.Run(name, func(t *testing.T) {
-			muTokenExpire.Lock()
 			app.TokenExpire = tc.tokenExpire
-			defer muTokenExpire.Unlock()
 
 			user, token, err := application.Login(ctx, tc.email, tc.password, origin)
 			if tc.wantErr == nil {
@@ -136,6 +137,9 @@ func TestApp_CreateUser(t *testing.T) {
 
 	application, mocks, shutdown := initTest(t)
 	defer shutdown()
+
+	muTokenExpire.Lock()
+	defer muTokenExpire.Unlock()
 
 	const notValidEmail = "notValidEmail"
 	const notCorrectPass = "notCorrectPass"
@@ -185,9 +189,7 @@ func TestApp_CreateUser(t *testing.T) {
 	for name, tc := range testCases {
 		name, tc := name, tc
 		t.Run(name, func(t *testing.T) {
-			muTokenExpire.Lock()
 			app.TokenExpire = tokenExpire
-			defer muTokenExpire.Unlock()
 
 			user, token, err := application.CreateUser(ctx, tc.email, tc.username, tc.password, origin)
 			if tc.wantErr == nil {
