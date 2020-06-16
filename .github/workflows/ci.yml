@@ -4,6 +4,8 @@ on:
   push:
     paths-ignore:
       - 'README.adoc'
+      - 'go.mod'
+      - 'go.sum'
     branches:
       - master
   pull_request:
