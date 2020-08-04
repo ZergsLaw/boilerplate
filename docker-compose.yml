@@ -24,7 +24,7 @@ services:
       sh -c "./boilerplate migrate --dir migrate --operation up --db-host postgres &&
              ./boilerplate serve --web-port 8080 --jwt-key testKey --db-host postgres"
     environment:
-      EMAIL_API_KEY: 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
+      EMAIL_API_KEY: TOKEN
       EMAIL_FROM: test@test.com
     ports:
       - "8080:8080"
